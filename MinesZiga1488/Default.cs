@@ -1,4 +1,5 @@
-﻿using MinesServer.Server;
+﻿using MinesServer.GameShit;
+using MinesServer.Server;
 using Newtonsoft.Json;
 using System.Linq.Expressions;
 
@@ -10,6 +11,7 @@ namespace MinesServer
         private static Dictionary<string, Action> commands = new Dictionary<string, Action>();
         public static void Main(string[] args)
         {
+            CellsSerializer.Load();
             var configPath = "config.json";
             if (File.Exists(configPath))
             {
