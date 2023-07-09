@@ -10,14 +10,10 @@
         {
 
         }
-        public bool isFallable()
-        {
-            return type == 91 || type == 222;
-        }
-        public bool isCrys()
-        {
-            return type == 1 || type == 2;
-        }
+        [NonSerialized]
+        public bool islocked;
+        public bool isFallable;
+        public bool isCry;
         public int durability;
         public int damage;
         public byte type; public int x; public int y;

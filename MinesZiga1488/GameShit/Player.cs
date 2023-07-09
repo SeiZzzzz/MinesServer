@@ -33,7 +33,6 @@ namespace MinesServer.GameShit
         }
         public Player()
         {
-
         }
         public void CreatePlayer()
         {
