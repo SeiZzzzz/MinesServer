@@ -1,5 +1,6 @@
 ﻿using MinesServer.GameShit;
 using NetCoreServer;
+using System.Text;
 
 namespace MinesServer.Server
 {
@@ -7,27 +8,32 @@ namespace MinesServer.Server
     {
         MServer father;
         public Player player;
-        public Session(TcpServer server) : base(server) { father = server as MServer; tyevents = new Dictionary<string, TYTypedEvent>(); ; te = new Dictionary<string, TypedEvent>();InitEvents(); }
+        public Session(TcpServer server) : base(server) { father = server as MServer; tyevents = new Dictionary<string, TYEventAction>(); ; te = new Dictionary<string, EventAction>();InitEvents(); }
         public void InitEvents()
         {
-            te.Add("AU", () =>
+            te.Add("AU", (p) =>
             {
                 Console.WriteLine("Au");
                 Send("AH", this.player.Id + "_" + this.player.hash);
             });
-            te.Add("PO", () =>
+            te.Add("PO", (p) =>
             {
-                Console.WriteLine("Ping");
+                var po = Encoding.Default.GetString(p.data).Split(':');
+                Send("PI", $"{0}:{0}:{int.Parse(po[0]) - 10}");
             });
             InitTYEvents();
-            te.Add("TY", () =>
+            te.Add("TY", (p) =>
             {
-                Console.WriteLine("Other Methods");
+                var ty = new TYPacket(p.data);
+                if (tyevents.Keys.Contains(ty.eventType))
+                {
+                    tyevents[ty.eventType](ty);
+                }
             });
         }
         public void InitTYEvents()
         {
-            tyevents.Add("Xmov", () =>
+            tyevents.Add("Xmov", (tp) =>
             {
                 Console.WriteLine("Move");
             });
@@ -91,13 +97,16 @@ namespace MinesServer.Server
             System.Buffer.BlockCopy(cells, 0, data, 7, cells.Length);
             Send("HB", data);
         }
-        public delegate void TypedEvent();
-        public delegate void TYTypedEvent();
-        public Dictionary<string, TYTypedEvent> tyevents;
-        public Dictionary<string, TypedEvent> te;
+        public delegate void EventAction(Packet p);
+        public delegate void TYEventAction(TYPacket tp);
+        public Dictionary<string, TYEventAction> tyevents;
+        public Dictionary<string, EventAction> te;
         public void DecodeRecive(Packet p)
         {
-            te[p.eventType]();
+            if (te.Keys.Contains(p.eventType))
+            {
+                te[p.eventType](p);
+            }
         }
     }
 }

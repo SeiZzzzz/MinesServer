@@ -46,6 +46,7 @@ namespace MinesServer.GameShit
             health.HP = 100;
             inventory = new Inventory();
             crys = new Basket(this);
+            pos = new Vector2(0, 0);
         }
         public void SendMoney()
         {
@@ -86,6 +87,7 @@ namespace MinesServer.GameShit
             SendMoney();
             SendLvl();
             SendMap();
+
         }
         public string GenerateSessionId()
         {
@@ -120,6 +122,7 @@ namespace MinesServer.GameShit
             var i = 0;
             Send("LV", i.ToString());
         }
+        public bool needupdmap = true;
         public void SendMap()
         {
             var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
@@ -129,7 +132,7 @@ namespace MinesServer.GameShit
             {
                 return;
             }
-            if (lastchunk != (ChunkX, ChunkY))
+            if (lastchunk != (ChunkX, ChunkY) || needupdmap)
             {
                 MoveToChunk(ChunkX, ChunkY);
                 lastchunk = lastchunk == null ? (ChunkX, ChunkY) : lastchunk;
@@ -150,6 +153,7 @@ namespace MinesServer.GameShit
                         }
                     }
                 }
+                needupdmap = false;
             }
         }
         public void Send(string t,string c)
@@ -165,10 +169,7 @@ namespace MinesServer.GameShit
         }
         public void MoveToChunk(int x,int y)
         {
-            if (lastchunk == null)
-            {
-                return;
-            }
+            lastchunk = lastchunk == null ? (x, y) : lastchunk;
             var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
             var chtoadd = World.W.chunks[x, y];
             if (World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2] != null)

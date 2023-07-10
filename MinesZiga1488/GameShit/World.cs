@@ -23,7 +23,7 @@ namespace MinesServer.GameShit
             map = new Map(width, height);
             CreateEmptyMap();
             chunks = new Chunk[chunksCountW, chunksCountH];
-            Console.WriteLine(GetCell(0, 0).type);
+            CreateChunks();
         }
         public void CreateChunks()
         {
