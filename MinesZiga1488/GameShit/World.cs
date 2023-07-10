@@ -31,7 +31,7 @@ namespace MinesServer.GameShit
             {
                 for (int chy = 0; chy < chunksCountH; chy++)
                 {
-                    chunks[chx, chy] = new Chunk((chx,chx));
+                    chunks[chx, chy] = new Chunk((chx, chx));
                     for (int y = 0; y < 32; y++)
                     {
                         for (int x = 0; x < 32; x++)
@@ -56,15 +56,16 @@ namespace MinesServer.GameShit
                 }
             }
         }
-        public void SetCell(int x,int y, Cell cell)
+        public void SetCell(int x, int y, Cell cell)
         {
             map.mapmesh[x + y * height] = cell;
             UpdateChunkByCoords(x, y);
         }
-        public Cell GetCell(int x,int y)
+        public Cell GetCell(int x, int y)
         {
             return map.mapmesh[x + y * height];
         }
+        public bool ValidCoord(int x, int y) => (x >= 0 && y >= 0) && (x < width && y < height);
         public void UpdateChunkByCoords(int x, int y) => GetChunk(x, y).Update();
         private (int, int) GetChunkPosByCoords(int x, int y) => ((int)Math.Floor((decimal)x / 32), (int)Math.Floor((decimal)y / 32));
         public Chunk GetChunk(int x, int y)

@@ -15,10 +15,15 @@ namespace MinesServer.GameShit
         public string hash { get; set; }
         public string passwd { get; set; }
         public Health health { get; set; }
+        public int tail { get; set; }
+        public int skin { get; set; }
+        public int clanid { get; set; }
         public Vector2 pos = Vector2.Zero;
         public Basket crys { get; set; }
         public Inventory inventory { get; set; }
         public Stack<byte> geo = new Stack<byte>();
+        public DateTime Delay;
+        public int dir { get; set; }
         public int x
         {
             get => (int)pos.X;
@@ -31,8 +36,44 @@ namespace MinesServer.GameShit
             set => pos.Y = value;
 
         }
+        public int ChunkX
+        {
+            get => (int)Math.Floor(pos.X / 32);
+        }
+        public int ChunkY
+        {
+            get => (int)Math.Floor(pos.Y / 32);
+        }
         public Player()
         {
+            Delay = DateTime.Now;
+        }
+        public bool CanAct { get { return Delay < DateTime.Now; } }
+        public void AddDelay(double ms)
+        {
+            Delay = DateTime.Now + TimeSpan.FromMilliseconds(ms);
+        }
+        public void Move(int x,int y,int dir)
+        {
+            if (CanAct)
+            {
+                if (!World.W.ValidCoord(x,y))
+                {
+                    var cell = World.W.GetCell(x, y);
+                    if (!cell.isEmpty)
+                    {
+                        AddDelay(0.1);
+                        return;
+                    }
+                    var newpos = new Vector2(x, y);
+                    if (Vector2.Distance(pos, newpos) < 1.2f)
+                    {
+                        pos = newpos;
+                    }
+                    SendMap();
+                }
+                AddDelay(0.1);
+            }
         }
         public void CreatePlayer()
         {
@@ -47,6 +88,10 @@ namespace MinesServer.GameShit
             inventory = new Inventory();
             crys = new Basket(this);
             pos = new Vector2(0, 0);
+            dir = 0;
+            clanid = 0;
+            skin = 0;
+            tail = 0;
         }
         public void SendMoney()
         {
@@ -122,12 +167,35 @@ namespace MinesServer.GameShit
             var i = 0;
             Send("LV", i.ToString());
         }
+        public void SendBots()
+        {
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
+            for (var xxx = -2; xxx <= 2; xxx++)
+            {
+                for (var yyy = -2; yyy <= 2; yyy++)
+                {
+                    var x = (ChunkX + xxx);
+                    var y = (ChunkX + yyy);
+                    if (valid(x,y))
+                    { 
+                        var ch = World.W.chunks[x, y];
+
+                        foreach (var id in ch.bots)
+                        {
+                            var player = MServer.Instance.players[id.Key].player;
+
+                            connection.SendBot(player.Id, (uint)player.pos.X, (uint)player.pos.Y, player.dir,
+                                player.clanid, player.skin, player.tail);
+                            connection.SendNick(id.Key, player.name);
+                        }
+                    }
+                }
+            }
+        }
         public bool needupdmap = true;
         public void SendMap()
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
-            var ChunkX = (int)Math.Floor(pos.X / 32);
-            var ChunkY = (int)Math.Floor(pos.Y / 32);
+            var valid = bool (uint x, uint y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
             if (!valid(ChunkX,ChunkY))
             {
                 return;

@@ -33,9 +33,10 @@ namespace MinesServer.Server
         }
         public void InitTYEvents()
         {
-            tyevents.Add("Xmov", (tp) =>
+            tyevents.Add("Xmov", (ty) =>
             {
-                Console.WriteLine("Move");
+                int.TryParse(Encoding.UTF8.GetString(ty.data).Trim(), out var dir);
+                this.player.Move(ty.x, ty.y, dir > 9 ? dir - 10 : dir);
             });
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)
@@ -96,6 +97,23 @@ namespace MinesServer.Server
             System.Buffer.BlockCopy(_y, 0, data, 5, 2);
             System.Buffer.BlockCopy(cells, 0, data, 7, cells.Length);
             Send("HB", data);
+        }
+        public void SendBot(int bid, uint x, uint y, int dir, int cid, int skin, int tail)
+        {
+            var data = new byte[13];
+            data[0] = (byte)'X';
+            data[1] = (byte)dir;
+            data[2] = (byte)skin;
+            data[3] = (byte)tail;
+            System.Buffer.BlockCopy(BitConverter.GetBytes(bid), 0, data, 4, 2);
+            System.Buffer.BlockCopy(BitConverter.GetBytes(x), 0, data, 6, 2);
+            System.Buffer.BlockCopy(BitConverter.GetBytes(y), 0, data, 8, 2);
+            System.Buffer.BlockCopy(BitConverter.GetBytes(cid), 0, data, 10, 2);
+            Send("HB", data);
+        }
+        public void SendNick(int id, string nick)
+        {
+            Send("NL", id + ":" + nick);
         }
         public delegate void EventAction(Packet p);
         public delegate void TYEventAction(TYPacket tp);

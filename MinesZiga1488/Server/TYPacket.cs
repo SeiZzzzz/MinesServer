@@ -14,8 +14,8 @@ namespace MinesServer.Server
 
         public readonly string eventType;
         public readonly uint eventTime;
-        public readonly uint x;
-        public readonly uint y;
+        public readonly int x;
+        public readonly int y;
         public readonly byte[] data;
 
         public TYPacket(byte[] input)
@@ -24,17 +24,17 @@ namespace MinesServer.Server
             Buffer.BlockCopy(input, 0, et, 0, et.Length);
             Buffer.BlockCopy(input, et.Length, t, 0, t.Length);
             Buffer.BlockCopy(input, et.Length + t.Length, loc, 0, loc.Length);
-            x = BitConverter.ToUInt32(loc);
+            x = BitConverter.ToInt32(loc);
             var headerLength = et.Length + t.Length + loc.Length * 2;
             Buffer.BlockCopy(input, headerLength - loc.Length, loc, 0, loc.Length);
-            y = BitConverter.ToUInt32(loc);
+            y = BitConverter.ToInt32(loc);
             data = new byte[input.Length - headerLength];
             Buffer.BlockCopy(input, headerLength, data, 0, data.Length);
             eventType = Encoding.UTF8.GetString(et);
             eventTime = BitConverter.ToUInt32(t);
         }
 
-        public TYPacket(uint eventTime, string eventType, uint x, uint y, byte[] data)
+        public TYPacket(uint eventTime, string eventType, int x, int y, byte[] data)
         {
             this.eventTime = eventTime;
             this.eventType = eventType;
@@ -43,7 +43,7 @@ namespace MinesServer.Server
             this.data = data;
         }
 
-        public TYPacket(uint eventTime, string eventType, uint x, uint y, string data) : this(eventTime, eventType, x,
+        public TYPacket(uint eventTime, string eventType, int x, int y, string data) : this(eventTime, eventType, x,
             y, Encoding.UTF8.GetBytes(data))
         {
         }
