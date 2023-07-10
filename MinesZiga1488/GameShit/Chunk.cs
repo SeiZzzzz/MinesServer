@@ -18,7 +18,7 @@ namespace MinesServer.GameShit
         public byte[] getCells()
         {
             var l = new List<byte>();
-            foreach (var c in cells)
+            foreach (Cell c in cells)
             {
                 l.Add(c.type);
             }
@@ -46,7 +46,7 @@ namespace MinesServer.GameShit
         }
         public void SendCellToBots(int x, int y, Cell cell)
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
             {
                 for (var yyy = -2; yyy <= 2; yyy++)

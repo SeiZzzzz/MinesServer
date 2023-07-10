@@ -73,6 +73,7 @@ namespace MinesServer.GameShit
                 pos = newpos;
             }
             SendMap();
+            AddDelay(0.01);
         }
         public void CreatePlayer()
         {
@@ -143,11 +144,11 @@ namespace MinesServer.GameShit
         public void SendWorldInfo()
         {
             Send("cf",
-            "{\"width\":" + MServer.Instance.wrld.width + ",\"height\":" + MServer.Instance.wrld.height +
-                ",\"name\":\"" + MServer.Instance.wrld.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
+            "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
+                ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
             Send("CF",
-            "{\"width\":" + MServer.Instance.wrld.width + ",\"height\":" + MServer.Instance.wrld.height +
-                ",\"name\":\"" + MServer.Instance.wrld.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
+            "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
+                ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
         }
         public void SendPing()
         {
@@ -168,7 +169,7 @@ namespace MinesServer.GameShit
         }
         public void SendBots()
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
             {
                 for (var yyy = -2; yyy <= 2; yyy++)
@@ -194,7 +195,7 @@ namespace MinesServer.GameShit
         public bool needupdmap = true;
         public void SendMap()
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             if (!valid(ChunkX, ChunkY))
             {
                 return;

@@ -82,7 +82,7 @@ namespace MinesServer.Server
         }
         public void SendCell(int x, int y, byte cell)
         {
-            if ((x >= 0 && y >= 0) && (x <= MServer.Instance.wrld.width && y <= MServer.Instance.wrld.height))
+            if ((x >= 0 && y >= 0) && (x <= World.W.width && y <= World.W.height))
             {
                 var dat = new byte[1];
                 dat[0] = cell;

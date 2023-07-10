@@ -1,4 +1,6 @@
-﻿namespace MinesServer.GameShit
+﻿using System.Globalization;
+
+namespace MinesServer.GameShit
 {
     public class World
     {
@@ -17,8 +19,8 @@
             this.height = height;
             this.name = name;
             map = new Map(width, height);
-            CreateEmptyMap();
             chunks = new Chunk[chunksCountW, chunksCountH];
+            CreateEmptyMap();
             CreateChunks();
         }
         public void CreateChunks()
@@ -48,21 +50,39 @@
             {
                 for (int y = 0; y < height; y++)
                 {
-                    map.mapmesh[x + y * height] = Cell.CreateCell(x,y,35);
+                    SetCell(x,y,Cell.CreateCell(x,y,35));
                 }
             }
         }
         public void SetCell(int x, int y, Cell cell)
         {
-            map.mapmesh[x + y * height] = cell;
+            if (cell.isEmpty)
+            {
+                map.mapmesh[0, x + y * height] = cell;
+            }
+            else
+            {
+                map.mapmesh[1, x + y * height] = cell;
+            }
             UpdateChunkByCoords(x, y);
         }
         public Cell GetCell(int x, int y)
         {
-            return map.mapmesh[x + y * height];
+            if (map.mapmesh[1, x + y * height] == null)
+            {
+                return map.mapmesh[0, x + y * height];
+            }
+            return map.mapmesh[1,x + y * height];
         }
         public bool ValidCoord(int x, int y) => (x >= 0 && y >= 0) && (x < width && y < height);
-        public void UpdateChunkByCoords(int x, int y) => GetChunk(x, y).Update();
+        public void UpdateChunkByCoords(int x, int y)
+        {
+            var ch = GetChunk(x, y);
+            if (ch != null)
+            {
+                ch.Update();
+            }
+        }
         private (int, int) GetChunkPosByCoords(int x, int y) => ((int)Math.Floor((decimal)x / 32), (int)Math.Floor((decimal)y / 32));
         public Chunk GetChunk(int x, int y)
         {
