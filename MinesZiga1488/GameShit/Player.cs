@@ -1,4 +1,5 @@
-﻿using MinesServer.Server;
+﻿using MinesServer.GameShit.Buildings;
+using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
 
@@ -61,6 +62,10 @@ namespace MinesServer.GameShit
             }
 
             var cell = World.W.GetCell(x, y);
+            if (cell is PackHeart)
+            {
+                Console.WriteLine("packhrt");
+            }
             if (!cell.isEmpty)
             {
                 connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
