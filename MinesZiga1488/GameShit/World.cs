@@ -48,7 +48,7 @@
             {
                 for (int y = 0; y < height; y++)
                 {
-                    map.mapmesh[x + y * height] = new Cell(x, y, 35);
+                    map.mapmesh[x + y * height] = Cell.CreateCell(x,y,35);
                 }
             }
         }

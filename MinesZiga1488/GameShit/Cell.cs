@@ -4,7 +4,15 @@
     {
         public Cell(int x, int y, byte type)
         {
-            CellsSerializer.cells[type].CreateNormalCell(this);
+            this.x = x;this.y = y;
+        }
+        public static Cell CreateCell(int x, int y,byte type)
+        {
+            if (CellsSerializer.cells[type].isFallable)
+            {
+                return CellsSerializer.cells[type].SetCellProp(new Fallable(x, y, type));
+            }
+            return CellsSerializer.cells[type].SetCellProp(new Cell(x,y,type));
         }
         public virtual void Update()
         {

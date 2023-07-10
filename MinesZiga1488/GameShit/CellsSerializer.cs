@@ -30,7 +30,7 @@ namespace MinesServer.GameShit
             name = "";
             this.type = type;
         }
-        public void CreateNormalCell(Cell cell)
+        public Cell SetCellProp(Cell cell)
         {
             foreach (var i in GetType().GetFields())
             {
@@ -41,6 +41,7 @@ namespace MinesServer.GameShit
                     x.SetValue(cell, i.GetValue(this));
                 }
             }
+            return cell;
         }
         public bool isEmpty;
         public string name;
