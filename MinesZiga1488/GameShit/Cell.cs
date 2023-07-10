@@ -2,7 +2,7 @@
 {
     public class Cell
     {
-        public Cell(int x,int y,byte type)
+        public Cell(int x, int y, byte type)
         {
             CellsSerializer.cells[type].CreateNormalCell(this);
         }

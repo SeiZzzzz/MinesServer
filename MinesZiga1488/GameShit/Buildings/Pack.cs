@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MinesServer.GameShit.Buildings
+﻿namespace MinesServer.GameShit.Buildings
 {
     public class Pack
     {
@@ -12,9 +6,9 @@ namespace MinesServer.GameShit.Buildings
         {
 
         }
-        public Pack(int x,int y,int ownerid,Packs type)
+        public Pack(int x, int y, int ownerid, Packs type)
         {
-            this.x = x;this.y = y;this.ownerid = ownerid; this.type = type;
+            this.x = x; this.y = y; this.ownerid = ownerid; this.type = type;
         }
         public int x { get; set; }
         public int y { get; set; }

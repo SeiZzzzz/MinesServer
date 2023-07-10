@@ -1,8 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Update.Internal;
-using MinesServer.Server;
-using NetCoreServer;
-
-namespace MinesServer.GameShit
+﻿namespace MinesServer.GameShit
 {
     public class World
     {

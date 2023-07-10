@@ -1,10 +1,4 @@
 ﻿using MinesServer.Server;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity.Core.Metadata.Edm;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinesServer.GameShit
 {
@@ -59,8 +53,8 @@ namespace MinesServer.GameShit
                 {
                     var cx = (pos.Item1 + xxx);
                     var cy = (pos.Item2 + yyy);
-                    if (valid(cx,cy))
-                    { 
+                    if (valid(cx, cy))
+                    {
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {

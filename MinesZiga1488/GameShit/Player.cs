@@ -1,8 +1,6 @@
 ﻿using MinesServer.Server;
-using NetCoreServer;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
-using System.Security.Cryptography;
 
 namespace MinesServer.GameShit
 {
@@ -32,7 +30,7 @@ namespace MinesServer.GameShit
         }
         public int y
         {
-            get => (int)pos.Y; 
+            get => (int)pos.Y;
             set => pos.Y = value;
 
         }
@@ -53,27 +51,28 @@ namespace MinesServer.GameShit
         {
             Delay = DateTime.Now + TimeSpan.FromMilliseconds(ms);
         }
-        public void Move(int x,int y,int dir)
+        public void Move(int x, int y, int dir)
         {
-            if (CanAct)
+            if (!CanAct || !World.W.ValidCoord(x, y))
             {
-                if (!World.W.ValidCoord(x,y))
-                {
-                    var cell = World.W.GetCell(x, y);
-                    if (!cell.isEmpty)
-                    {
-                        AddDelay(0.1);
-                        return;
-                    }
-                    var newpos = new Vector2(x, y);
-                    if (Vector2.Distance(pos, newpos) < 1.2f)
-                    {
-                        pos = newpos;
-                    }
-                    SendMap();
-                }
                 AddDelay(0.1);
+                connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                return;
             }
+
+            var cell = World.W.GetCell(x, y);
+            if (!cell.isEmpty)
+            {
+                connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                AddDelay(0.01);
+                return;
+            }
+            var newpos = new Vector2(x, y);
+            if (Vector2.Distance(pos, newpos) < 1.2f)
+            {
+                pos = newpos;
+            }
+            SendMap();
         }
         public void CreatePlayer()
         {
@@ -160,7 +159,7 @@ namespace MinesServer.GameShit
         }
         public void SendBInfo()
         {
-            Send("BI","{\"x\":" + pos.X + ",\"y\":" + pos.Y + ",\"id\":" + Id + ",\"name\":\"" + name + "\"}");
+            Send("BI", "{\"x\":" + pos.X + ",\"y\":" + pos.Y + ",\"id\":" + Id + ",\"name\":\"" + name + "\"}");
         }
         public void SendLvl()
         {
@@ -176,8 +175,8 @@ namespace MinesServer.GameShit
                 {
                     var x = (ChunkX + xxx);
                     var y = (ChunkX + yyy);
-                    if (valid(x,y))
-                    { 
+                    if (valid(x, y))
+                    {
                         var ch = World.W.chunks[x, y];
 
                         foreach (var id in ch.bots)
@@ -195,8 +194,8 @@ namespace MinesServer.GameShit
         public bool needupdmap = true;
         public void SendMap()
         {
-            var valid = bool (uint x, uint y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
-            if (!valid(ChunkX,ChunkY))
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < MServer.Instance.wrld.chunksCountW && y < MServer.Instance.wrld.chunksCountH);
+            if (!valid(ChunkX, ChunkY))
             {
                 return;
             }
@@ -204,13 +203,13 @@ namespace MinesServer.GameShit
             {
                 MoveToChunk(ChunkX, ChunkY);
                 lastchunk = lastchunk == null ? (ChunkX, ChunkY) : lastchunk;
-                for (int x = -2;x <= 2;x++)
+                for (int x = -2; x <= 2; x++)
                 {
                     for (int y = -2; y <= 2; y++)
                     {
                         var cx = (ChunkX + x);
                         var cy = (ChunkY + y);
-                        if (valid(cx,cy))
+                        if (valid(cx, cy))
                         {
                             var ch = World.W.chunks[cx, cy];
                             if (ch != null)
@@ -224,7 +223,7 @@ namespace MinesServer.GameShit
                 needupdmap = false;
             }
         }
-        public void Send(string t,string c)
+        public void Send(string t, string c)
         {
             this.connection.Send(t, c);
         }
@@ -235,7 +234,7 @@ namespace MinesServer.GameShit
             return new string(Enumerable.Repeat(chars, 12)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
         }
-        public void MoveToChunk(int x,int y)
+        public void MoveToChunk(int x, int y)
         {
             lastchunk = lastchunk == null ? (x, y) : lastchunk;
             var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];

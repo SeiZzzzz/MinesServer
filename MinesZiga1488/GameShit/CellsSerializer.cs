@@ -1,11 +1,4 @@
-﻿using MinesServer.Server;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace MinesServer.GameShit
 {
@@ -21,7 +14,7 @@ namespace MinesServer.GameShit
             else
             {
                 cells = new ShadowCell[126];
-                for (int i = 0; i < 126;i++)
+                for (int i = 0; i < 126; i++)
                 {
                     cells[i] = new ShadowCell((byte)i);
                 }
@@ -45,7 +38,7 @@ namespace MinesServer.GameShit
                 if (x != default)
                 {
                     var type = i.FieldType;
-                    x.SetValue(cell,i.GetValue(this));
+                    x.SetValue(cell, i.GetValue(this));
                 }
             }
         }

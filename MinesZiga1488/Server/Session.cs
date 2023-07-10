@@ -8,13 +8,13 @@ namespace MinesServer.Server
     {
         MServer father;
         public Player player;
-        public Session(TcpServer server) : base(server) { father = server as MServer; tyevents = new Dictionary<string, TYEventAction>(); ; te = new Dictionary<string, EventAction>();InitEvents(); }
+        public Session(TcpServer server) : base(server) { father = server as MServer; tyevents = new Dictionary<string, TYEventAction>(); ; te = new Dictionary<string, EventAction>(); InitEvents(); }
         public void InitEvents()
         {
             te.Add("AU", (p) =>
             {
                 Console.WriteLine("Au");
-                Send("AH", this.player.Id + "_" + this.player.hash);
+                Console.WriteLine(Encoding.Default.GetString(p.data));
             });
             te.Add("PO", (p) =>
             {
@@ -35,8 +35,11 @@ namespace MinesServer.Server
         {
             tyevents.Add("Xmov", (ty) =>
             {
-                int.TryParse(Encoding.UTF8.GetString(ty.data).Trim(), out var dir);
-                this.player.Move(ty.x, ty.y, dir > 9 ? dir - 10 : dir);
+                father.time.AddAction(() =>
+                {
+                    int.TryParse(Encoding.UTF8.GetString(ty.data).Trim(), out var dir);
+                    player.Move(ty.x, ty.y, dir > 9 ? dir - 10 : dir);
+                });
             });
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)
@@ -59,7 +62,8 @@ namespace MinesServer.Server
             player = new Player();
             player.connection = this;
             player.CreatePlayer();
-            father.players.Add(player.Id,this);
+            father.players.Add(player.Id, this);
+            Send("ST", "черный хуй в твоей жопе");
             Send("AU", player.GenerateSessionId());
             player.Init();
         }

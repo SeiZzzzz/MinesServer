@@ -1,7 +1,6 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.Server;
 using Newtonsoft.Json;
-using System.Linq.Expressions;
 
 namespace MinesServer
 {
@@ -46,7 +45,7 @@ namespace MinesServer
             var method = trace.GetFrame(1).GetMethod().Name;
             Console.WriteLine($"{method} caused error {ex}");
         }
-        
+
         public static MServer server { get; set; }
     }
 }
