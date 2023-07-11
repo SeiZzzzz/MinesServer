@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using MinesServer.Server;
+using Newtonsoft.Json;
 using System.Dynamic;
 
 namespace MinesServer.GameShit.GUI
@@ -6,9 +7,9 @@ namespace MinesServer.GameShit.GUI
     public class Builder
     {
         public dynamic _horb = new ExpandoObject();
-        public void Send(Player player)
+        public void Send(Session s)
         {
-            player.connection.Send("GU",$"horb:{JsonConvert.SerializeObject(_horb, Formatting.None)}");
+            s.Send("GU", $"horb:{JsonConvert.SerializeObject(_horb, Formatting.None)}");
         }
         public Builder AddButton(string text, string command)
         {
@@ -46,9 +47,10 @@ namespace MinesServer.GameShit.GUI
         {
             if (!FieldExists("text"))
             {
-                _horb.text = text;
+                _horb.text = text + '\n';
+                return this;
             }
-            _horb.text += text + "\n";
+            _horb.text += text + '\n';
             return this;
         }
         public Builder AddIConsole()

@@ -22,6 +22,7 @@ namespace MinesServer.Server
             timer = new System.Timers.Timer(1);
             timer.Elapsed += (object s, ElapsedEventArgs e) => { time.Update(); };
             timer.Start();
+            OptionKeepAlive = true;
         }
         protected override TcpSession CreateSession()
         {

@@ -1,6 +1,8 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.Server;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Numerics;
 
 namespace MinesServer.GameShit
@@ -13,13 +15,13 @@ namespace MinesServer.GameShit
         public long creds { get; set; }
         public string hash { get; set; }
         public string passwd { get; set; }
-        public Health health { get; set; }
         public int tail { get; set; }
         public int skin { get; set; }
         public int clanid { get; set; }
         public Vector2 pos = Vector2.Zero;
         public Basket crys { get; set; }
         public Inventory inventory { get; set; }
+        public Health health { get; set; }
         public Stack<byte> geo = new Stack<byte>();
         public DateTime Delay;
         public int dir { get; set; }
@@ -123,6 +125,10 @@ namespace MinesServer.GameShit
         }
         public void Init()
         {
+            using var db = new DataBase();
+            crys = db.baskets.First(x => x.Id == Id);
+            inventory = db.inventories.First(x => x.Id == Id);
+            health = db.healths.First(x => x.Id == Id);
             SendPing();
             SendWorldInfo();
             Send("sp", "125:57:200");
@@ -132,19 +138,16 @@ namespace MinesServer.GameShit
             Send("@T", $"{x}:{y}");
             SendBInfo();
             Send("sp", "25:20:100000");
-            Send("@B", this.crys.GetCry);
+            SendCrys();
             SendHp();
             SendMoney();
             SendLvl();
             SendMap();
 
         }
-        public string GenerateSessionId()
+        public void SendCrys()
         {
-            var random = new Random();
-            const string chars = "abcdefghijklmnoprtsuxyz0123456789";
-            return new string(Enumerable.Repeat(chars, 5)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
+            Send("@B", crys.GetCry);
         }
         public void SendWorldInfo()
         {

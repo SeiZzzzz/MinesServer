@@ -4,9 +4,9 @@
     {
         public Cell(int x, int y, byte type)
         {
-            this.x = x;this.y = y; this.type = type;
+            this.x = x; this.y = y; this.type = type;
         }
-        public static Cell CreateCell(int x, int y,byte type)
+        public static Cell CreateCell(int x, int y, byte type)
         {
             if (CellsSerializer.cells[type].isEmpty)
             {
@@ -16,7 +16,7 @@
             {
                 return CellsSerializer.cells[type].SetCellProp(new Fallable(x, y, type));
             }
-            return CellsSerializer.cells[type].SetCellProp(new Cell(x,y,type));
+            return CellsSerializer.cells[type].SetCellProp(new Cell(x, y, type));
         }
         public virtual void Update()
         {

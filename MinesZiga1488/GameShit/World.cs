@@ -1,6 +1,4 @@
-﻿using System.Globalization;
-
-namespace MinesServer.GameShit
+﻿namespace MinesServer.GameShit
 {
     public class World
     {
@@ -50,7 +48,7 @@ namespace MinesServer.GameShit
             {
                 for (int y = 0; y < height; y++)
                 {
-                    SetCell(x,y,Cell.CreateCell(x,y,35));
+                    SetCell(x, y, Cell.CreateCell(x, y, 35));
                 }
             }
         }
@@ -72,7 +70,7 @@ namespace MinesServer.GameShit
             {
                 return map.mapmesh[0, x + y * height];
             }
-            return map.mapmesh[1,x + y * height];
+            return map.mapmesh[1, x + y * height];
         }
         public bool ValidCoord(int x, int y) => (x >= 0 && y >= 0) && (x < width && y < height);
         public void UpdateChunkByCoords(int x, int y)

@@ -1,5 +1,8 @@
 ﻿using MinesServer.GameShit;
+using MinesServer.GameShit.GUI;
 using NetCoreServer;
+using System;
+using System.CodeDom.Compiler;
 using System.Text;
 
 namespace MinesServer.Server
@@ -8,13 +11,14 @@ namespace MinesServer.Server
     {
         MServer father;
         public Player player;
+        public Auth auth;
         public Session(TcpServer server) : base(server) { father = server as MServer; tyevents = new Dictionary<string, TYEventAction>(); ; te = new Dictionary<string, EventAction>(); InitEvents(); }
         public void InitEvents()
         {
             te.Add("AU", (p) =>
             {
-                Console.WriteLine("Au");
-                Console.WriteLine(Encoding.Default.GetString(p.data));
+                auth = new Auth();
+                auth.TryToAuth(p, sid, this);
             });
             te.Add("PO", (p) =>
             {
@@ -41,6 +45,7 @@ namespace MinesServer.Server
                     player.Move(ty.x, ty.y, dir > 9 ? dir - 10 : dir);
                 });
             });
+            tyevents.Add("GUI_", GUI);
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
@@ -48,6 +53,8 @@ namespace MinesServer.Server
         }
         protected override void OnDisconnected()
         {
+            using var db = new DataBase();
+            db.SaveChanges();
             if (player == null)
             {
                 return;
@@ -55,18 +62,90 @@ namespace MinesServer.Server
             father.players.Remove(player.Id);
 
         }
+        public void GUI(TYPacket ty)
+        {
+            Newtonsoft.Json.Linq.JObject jo = null;
+            try
+            {
+                jo = Newtonsoft.Json.Linq.JObject.Parse(Encoding.UTF8.GetString(ty.data));
+            }
+            catch (Newtonsoft.Json.JsonReaderException)
+            {
+                return;
+            }
+            if (jo == null)
+            {
+                return;
+            }
+            Console.WriteLine(jo["b"].ToString());
+            if ((auth != null && !auth.complited))
+            {
+                var button = jo["b"];
+                if (button.ToString() == "exit")
+                {
+                    auth.temp = null;
+                    auth.nick = "";
+                    auth.passwd = "";
+                    new Builder()
+                        .SetTitle("ВХОД")
+                        .AddTextLine("Ник")
+                        .AddIConsole()
+                        .AddIConsolePlace("")
+                        .AddButton("ОК", "%I%")
+                        .AddButton("НОВЫЙ АКК", "newakk")
+                        .Send(this);
+                    return;
+                }    
+                if (auth.createnew)
+                {
+                    if (auth.nick == "")
+                    {
+                        if (Auth.NickNotAvl(button.ToString()))
+                        {
+                            new Builder()
+                            .SetTitle("НОВЫЙ ИГРОК")
+                            .AddTextLine("Ник")
+                            .AddTextLine("Ник не доступен")
+                            .AddIConsole()
+                            .AddIConsolePlace("")
+                             .AddButton("ОК", "%I%")
+                        .Send(this);
+                            return;
+                        }
+                        auth.nick = button.ToString();
+                        auth.SetPasswdForNew(this);
+                    }
+                    else if(auth.passwd == "")
+                    {
+                        auth.passwd = button.ToString();
+                        auth.EndCreateAndInit(this);
+                    }
+                    return;
+                }
+                if (button.ToString().StartsWith("newakk"))
+                {
+                    auth.CreateNew(this);
+                }
+                else if(auth.nick == "")
+                {
+                    auth.TryToFindByNick(button.ToString(),this);
+                }
+                else if(auth.passwd == "" && auth.temp != null)
+                {
+                    auth.TryToAuthByPlayer(button.ToString(), this);
+                }
+                return;
+            }
+        }
         protected override void OnConnected()
         {
+            sid = Auth.GenerateSessionId();
             //load from bd
             Console.WriteLine($"{this.ToString()} connected");
-            player = new Player();
-            player.connection = this;
-            player.CreatePlayer();
-            father.players.Add(player.Id, this);
             Send("ST", "черный хуй в твоей жопе");
-            Send("AU", player.GenerateSessionId());
-            player.Init();
+            Send("AU", sid);
         }
+        public string sid { get; set; }
         public void Send(string eventType, byte[] data)
         {
             Send(new Packet("B", eventType, data));
@@ -78,7 +157,11 @@ namespace MinesServer.Server
         public void Send(Packet p)
         {
             //Console.WriteLine("[S->C] " + p.dataType + " " + p.eventType + " [" + string.Join(",", p.data) + "] " + Encoding.UTF8.GetString(p.data));
-            SendAsync(p.Compile);
+            try
+            {
+                SendAsync(p.Compile);
+            }
+            catch (Exception ex) { }
         }
         public void SendCell(int x, int y, byte cell)
         {
