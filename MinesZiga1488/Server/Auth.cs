@@ -19,7 +19,7 @@ namespace MinesServer.Server
             var data = Encoding.Default.GetString(p.data).Split('_');
             int res;
             Player player = null;
-            if (!int.TryParse(data[1], out res))
+            if (int.TryParse(data[1], out res))
             {
                 player = DataBase.GetPlayerClassFromBD(res);
             }
@@ -42,9 +42,14 @@ namespace MinesServer.Server
                         .Send(initiator);
                 return;
             }
-            player.connection = initiator;
-            initiator.player = player;
-            player.Init();
+            if (CalculateMD5Hash(player.hash + sid) == data[2])
+            {
+                player.connection = initiator;
+                initiator.player = player;
+                player.Init();
+                return;
+            }
+            initiator.Send("AH", "BAD");
         }
         public static bool NickNotAvl(string nick)
         {
@@ -135,11 +140,12 @@ namespace MinesServer.Server
         {
             if (temp.passwd == passwd)
             {
+                complited = true;
                 temp.connection = initiator;
                 initiator.player = temp;
                 initiator.Send("AH", temp.Id + "_" + temp.hash);
-                temp.Init();
-                complited = true;
+                initiator.player.Init();
+                return;
             }
             new Builder()
                .SetTitle("ВХОД")

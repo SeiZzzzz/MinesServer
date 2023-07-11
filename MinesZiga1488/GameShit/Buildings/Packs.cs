@@ -1,7 +1,8 @@
 ﻿namespace MinesServer.GameShit.Buildings
 {
-    public enum Packs
+    public enum Packs : int
     {
-        Teleport
+        None = -1,
+        Teleport = 0
     }
 }

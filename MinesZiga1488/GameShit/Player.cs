@@ -1,14 +1,17 @@
 ﻿using MinesServer.GameShit.Buildings;
+using MinesServer.GameShit.GUI;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Numerics;
+using System.Reflection.Metadata.Ecma335;
 
 namespace MinesServer.GameShit
 {
     public class Player
     {
+        public bool locked = false;
         public int Id { get; set; }
         public string name { get; set; }
         public long money { get; set; }
@@ -23,6 +26,7 @@ namespace MinesServer.GameShit
         public Inventory inventory { get; set; }
         public Health health { get; set; }
         public Stack<byte> geo = new Stack<byte>();
+        Queue<Line> console = new Queue<Line>();
         public DateTime Delay;
         public int dir { get; set; }
         public int x
@@ -45,9 +49,45 @@ namespace MinesServer.GameShit
         {
             get => (int)Math.Floor(pos.Y / 32);
         }
+        public Packs inside = Packs.None;
+        [NotMapped]
+        public object insidesmf
+        {
+            get
+            {
+                if (locked)
+                {
+                    return true;
+                }
+                return inside;
+            }
+            set
+            {
+                if (!(bool)value)
+                {
+                    locked = false;
+                    inside = Packs.None;
+                }
+            }
+        }
         public Player()
         {
             Delay = DateTime.Now;
+        }
+        private class Line
+        {
+            public string text { get; set; }
+        }
+        public void ShowConsole()
+        {
+            locked = true;
+            new Builder()
+                .AddIConsole()
+                .AddIConsolePlace("cmd")
+                .AddTextLines(console.Select(x => x.text).ToArray())
+                .AddButton("ВЫПОЛНИТЬ", "%I%")
+                .AddButton("ВЫЙТИ", "exit")
+                .Send(connection);
         }
         public bool CanAct { get { return Delay < DateTime.Now; } }
         public void AddDelay(double ms)
@@ -125,6 +165,7 @@ namespace MinesServer.GameShit
         }
         public void Init()
         {
+            connection.auth = null;
             using var db = new DataBase();
             crys = db.baskets.First(x => x.Id == Id);
             inventory = db.inventories.First(x => x.Id == Id);
@@ -143,7 +184,41 @@ namespace MinesServer.GameShit
             SendMoney();
             SendLvl();
             SendMap();
+            console.Enqueue(new Line { text = "@@> Добро пожаловать в консоль!" });
+            for (var i = 0; i < 4; i++)
+            {
+                AddConsoleLine();
+            }
 
+            AddConsoleLine("Если вы не понимаете, что происходит,");
+            AddConsoleLine("или вас попросили выполнить команду,");
+            AddConsoleLine("сосите хуй глотайте сперму");
+            for (var i = 0; i < 8; i++)
+            {
+                AddConsoleLine();
+            }
+
+        }
+        public void AddConsoleLine(string text)
+        {
+            console.Enqueue(new Line { text = ">" + text });
+            if (console.Count > 16)
+            {
+                console.Dequeue();
+                var l = console.First();
+                l.text = "@@" + l.text;
+            }
+        }
+
+        public void AddConsoleLine()
+        {
+            console.Enqueue(new Line { text = ">    " });
+            if (console.Count > 16)
+            {
+                console.Dequeue();
+                var l = console.Peek();
+                l.text = "@@" + l.text;
+            }
         }
         public void SendCrys()
         {

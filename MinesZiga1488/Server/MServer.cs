@@ -1,4 +1,5 @@
 ﻿using MinesServer.GameShit;
+using MinesServer.GameShit.GUI;
 using NetCoreServer;
 using System.Net;
 using System.Net.Sockets;
@@ -16,6 +17,7 @@ namespace MinesServer.Server
         {
             Instance = this;
             players = new Dictionary<int, Session>();
+            HorbDecoder.InitCommands();
             time = new ServerTime();
             new World(Default.cfg.WorldName, 32 * 10, 32 * 10);
             DataBase.Load();

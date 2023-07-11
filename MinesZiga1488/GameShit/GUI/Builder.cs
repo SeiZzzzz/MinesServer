@@ -53,6 +53,15 @@ namespace MinesServer.GameShit.GUI
             _horb.text += text + '\n';
             return this;
         }
+        public Builder AddTextLines(params string[] textLines)
+        {
+            foreach (var textLine in textLines)
+            {
+                AddTextLine(textLine);
+            }
+
+            return this;
+        }
         public Builder AddIConsole()
         {
             _horb.input_console = true;

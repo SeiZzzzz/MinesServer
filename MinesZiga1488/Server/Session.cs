@@ -46,6 +46,14 @@ namespace MinesServer.Server
                 });
             });
             tyevents.Add("GUI_", GUI);
+            tyevents.Add("Locl", (ty) =>
+            {
+                var msg = Encoding.Default.GetString(ty.data);
+                if (msg == "console")
+                {
+                    this.player.ShowConsole();
+                }
+            });
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
@@ -77,7 +85,6 @@ namespace MinesServer.Server
             {
                 return;
             }
-            Console.WriteLine(jo["b"].ToString());
             if ((auth != null && !auth.complited))
             {
                 var button = jo["b"];
@@ -86,6 +93,7 @@ namespace MinesServer.Server
                     auth.temp = null;
                     auth.nick = "";
                     auth.passwd = "";
+                    auth.createnew = false;
                     new Builder()
                         .SetTitle("ВХОД")
                         .AddTextLine("Ник")
@@ -119,6 +127,7 @@ namespace MinesServer.Server
                     {
                         auth.passwd = button.ToString();
                         auth.EndCreateAndInit(this);
+                        auth.createnew = false;
                     }
                     return;
                 }
@@ -136,6 +145,10 @@ namespace MinesServer.Server
                 }
                 return;
             }
+            father.time.AddAction(() =>
+            {
+                HorbDecoder.Decode(jo["b"].ToString(), player);
+            });
         }
         protected override void OnConnected()
         {
