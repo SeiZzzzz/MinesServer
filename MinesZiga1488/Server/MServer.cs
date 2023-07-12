@@ -1,6 +1,7 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.GameShit.GUI;
 using NetCoreServer;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Timers;
@@ -19,7 +20,7 @@ namespace MinesServer.Server
             players = new Dictionary<int, Session>();
             HorbDecoder.InitCommands();
             time = new ServerTime();
-            new World(Default.cfg.WorldName, 32 * 10, 32 * 10);
+            new World(Default.cfg.WorldName, 32 * 1000, 32 * 1000);
             DataBase.Load();
             timer = new System.Timers.Timer(1);
             timer.Elapsed += (object s, ElapsedEventArgs e) => { time.Update(); };

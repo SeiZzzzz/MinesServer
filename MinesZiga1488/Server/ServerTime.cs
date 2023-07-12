@@ -1,4 +1,7 @@
-﻿namespace MinesServer.Server
+﻿using Microsoft.Identity.Client;
+using MinesServer.GameShit;
+
+namespace MinesServer.Server
 {
     public class ServerTime
     {
@@ -14,8 +17,15 @@
         }
         public void Update()
         {
-            for (int i = 0; i < gameActions.Count; i++)
+            for (int j = 1; j <= MServer.Instance.players.Count; j++)
             {
+                if (MServer.Instance.players.Keys.Contains(j))
+                {
+                    MServer.Instance.players[j].UpdateMs();
+                }
+            }
+            for (int i = 0; i < gameActions.Count; i++)
+            { 
                 gameActions.Dequeue()();
             }
         }

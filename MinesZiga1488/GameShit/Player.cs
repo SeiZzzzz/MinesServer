@@ -94,6 +94,10 @@ namespace MinesServer.GameShit
         {
             Delay = DateTime.Now + TimeSpan.FromMilliseconds(ms);
         }
+        public void Bz(int x,int y)
+        {
+            var cell = World.W.GetCell(x, y);
+        }
         public void Move(int x, int y, int dir)
         {
             if (!CanAct || !World.W.ValidCoord(x, y))
@@ -104,11 +108,7 @@ namespace MinesServer.GameShit
             }
 
             var cell = World.W.GetCell(x, y);
-            if (cell is PackHeart)
-            {
-                Console.WriteLine("packhrt");
-            }
-            if (!cell.isEmpty)
+            if (!World.GetProp(cell).isEmpty)
             {
                 connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
                 AddDelay(0.01);
@@ -165,6 +165,7 @@ namespace MinesServer.GameShit
         }
         public void Init()
         {
+            MServer.Instance.players.Add(Id, connection);
             connection.auth = null;
             using var db = new DataBase();
             crys = db.baskets.First(x => x.Id == Id);

@@ -1,4 +1,6 @@
-﻿namespace MinesServer.GameShit
+﻿using System.Runtime.InteropServices;
+
+namespace MinesServer.GameShit
 {
     public class Cell
     {
@@ -6,29 +8,34 @@
         {
             this.x = x; this.y = y; this.type = type;
         }
-        public static Cell CreateCell(int x, int y, byte type)
+        public Cell(byte type)
         {
-            if (CellsSerializer.cells[type].isEmpty)
-            {
-                return CellsSerializer.cells[type].SetCellProp(new Road(x, y, type));
-            }
-            if (CellsSerializer.cells[type].isFallable)
-            {
-                return CellsSerializer.cells[type].SetCellProp(new Fallable(x, y, type));
-            }
-            return CellsSerializer.cells[type].SetCellProp(new Cell(x, y, type));
+            this.type = type;
+        }
+        public Cell()
+        {
+
         }
         public virtual void Update()
         {
 
         }
+        public bool is_destructible_by_block;
+        public bool can_place_boom;
+        public bool can_place_road;
+        public int fall_damage;
+        public bool is_destructible_byboom;
+        public bool is_destructible;
+        public bool isPickable;
         public bool isFallable;
         public bool isCry;
         public int durability;
         public int damage;
         public bool isEmpty;
         public byte type;
+        [NonSerialized]
         public int x;
+        [NonSerialized]
         public int y;
     }
 }

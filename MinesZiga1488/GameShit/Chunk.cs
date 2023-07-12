@@ -6,7 +6,7 @@ namespace MinesServer.GameShit
     {
         public Dictionary<int, Player> bots = new Dictionary<int, Player>();
         public (int, int) pos;
-        public Cell[] cells = new Cell[32 * 32];
+        public byte[] cells = new byte[32 * 32];
         public Chunk((int, int) pos) => this.pos = pos;
         public void AddBot(Player player)
         {
@@ -18,9 +18,9 @@ namespace MinesServer.GameShit
         public byte[] getCells()
         {
             var l = new List<byte>();
-            foreach (Cell c in cells)
+            foreach (byte c in cells)
             {
-                l.Add(c.type);
+                l.Add(c);
             }
             return l.ToArray();
         }
@@ -44,7 +44,7 @@ namespace MinesServer.GameShit
                 }
             }
         }
-        public void SendCellToBots(int x, int y, Cell cell)
+        public void SendCellToBots(int x, int y, byte cell)
         {
             var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
@@ -59,7 +59,7 @@ namespace MinesServer.GameShit
                         foreach (var id in ch.bots)
                         {
                             var player = MServer.Instance.players[id.Key];
-                            player.SendCell(x, y, cell.type);
+                            player.SendCell(x, y, cell);
                         }
                     }
                 }

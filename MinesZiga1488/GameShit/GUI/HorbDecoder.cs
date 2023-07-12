@@ -7,9 +7,15 @@ namespace MinesServer.GameShit.GUI
     {
         public static void InitCommands()
         {
-            commands.Add("myid", (p) =>
+            commands.Add("myid", (p,arg) =>
             {
                 p.AddConsoleLine(p.Id.ToString());
+            });
+            commands.Add("setnick", (p,arg) =>
+            {
+                p.name = arg.Split(' ')[1];
+                using var db = new DataBase();
+                db.SaveChanges();
             });
         }
         public static void Decode(string msg,Player p)
@@ -34,14 +40,22 @@ namespace MinesServer.GameShit.GUI
                 p.ShowConsole();
             }
         }
-        public delegate void Command(Player p);
+        public delegate void Command(Player p,string args);
         public static Dictionary<string,Command> commands = new Dictionary<string,Command>();
         public static void ConsoleCommand(string msg, Player p)
         {
             p.AddConsoleLine(msg);
+            if (msg.Contains(' '))
+            {
+                if (commands.Keys.Contains(msg.Split(' ')[0]))
+                {
+                    commands[msg.Split(' ')[0]](p, msg);
+                    return;
+                }
+            }
             if (commands.Keys.Contains(msg))
             {
-                commands[msg](p);
+                commands[msg](p,msg);
                 return;
             }
             p.AddConsoleLine("бля это че нахуй");

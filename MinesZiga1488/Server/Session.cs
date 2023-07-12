@@ -3,6 +3,8 @@ using MinesServer.GameShit.GUI;
 using NetCoreServer;
 using System;
 using System.CodeDom.Compiler;
+using System.Data;
+using System.Diagnostics;
 using System.Text;
 
 namespace MinesServer.Server
@@ -22,8 +24,15 @@ namespace MinesServer.Server
             });
             te.Add("PO", (p) =>
             {
-                var po = Encoding.Default.GetString(p.data).Split(':');
-                Send("PI", $"{0}:{0}:{int.Parse(po[0]) - 10}");
+                Task.Run(() =>
+                {
+                    Thread.Sleep(15);
+                    var msg = Encoding.Default.GetString(p.data).Split(':');
+                    starttime = starttime == 0 ? ((float)int.Parse(msg[1]) / 1000f) : starttime;
+                    var po = Encoding.Default.GetString(p.data).Split(':');
+                    Send("PI", $"{0}:{int.Parse(msg[1])}:{int.Parse(msg[1]) - (int)(starttime * 1000)}");
+                    starttime = 0;
+                });
             });
             InitTYEvents();
             te.Add("TY", (p) =>
@@ -34,6 +43,14 @@ namespace MinesServer.Server
                     tyevents[ty.eventType](ty);
                 }
             });
+        }
+        public float starttime = 0;
+        public void UpdateMs()
+        {
+            if (starttime != 0)
+            {
+                starttime+= 0.001f;
+            }
         }
         public void InitTYEvents()
         {
@@ -67,7 +84,10 @@ namespace MinesServer.Server
             {
                 return;
             }
-            father.players.Remove(player.Id);
+            if (father.players.Keys.Contains(player.Id))
+            {
+                father.players.Remove(player.Id);
+            }
 
         }
         public void GUI(TYPacket ty)

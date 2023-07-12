@@ -17,9 +17,17 @@
             this.height = height;
             this.name = name;
             map = new Map(width, height);
+            Console.WriteLine($"Creating World Preset{width} x {height}({chunksCountW} x {chunksCountH} chunks)");
             chunks = new Chunk[chunksCountW, chunksCountH];
+            Console.WriteLine("EmptyMapGeneration");
+            var x = DateTime.Now;
             CreateEmptyMap();
+            Console.WriteLine($"{(DateTime.Now - x).Microseconds} ms loading");
+            x = DateTime.Now;
+            Console.WriteLine("Creating chunkmesh");
             CreateChunks();
+            Console.WriteLine($"{(DateTime.Now - x).Microseconds} ms loading");
+            Console.WriteLine("LoadConfirmed");
         }
         public void CreateChunks()
         {
@@ -42,19 +50,40 @@
                 }
             }
         }
+        public void DestroyByBoom()
+        {
+
+        }
+        public void DestroyCellByBz(int x,int y)
+        {
+            var cell = GetCell(x, y);
+            if (cell != null && GetProp(cell).is_destructible && map.mapmesh[0, x + y * height] != 0)
+            {
+                map.mapmesh[1, x + y * height] = 0;
+            }
+            else if (cell != 0 && GetProp(cell).is_destructible)
+            {
+                map.mapmesh[0, x + y * height] = 32;
+                map.mapmesh[1, x + y * height] = 0;
+            }
+        }
         public void CreateEmptyMap()
         {
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
-                    SetCell(x, y, Cell.CreateCell(x, y, 35));
+                    SetCell(x, y, 35);
                 }
             }
         }
-        public void SetCell(int x, int y, Cell cell)
+        public static Cell GetProp(byte type)
         {
-            if (cell.isEmpty)
+            return CellsSerializer.cells[type];
+        }
+        public void SetCell(int x, int y, byte cell)
+        {
+            if (CellsSerializer.cells[cell].isEmpty)
             {
                 map.mapmesh[0, x + y * height] = cell;
             }
@@ -64,9 +93,9 @@
             }
             UpdateChunkByCoords(x, y);
         }
-        public Cell GetCell(int x, int y)
+        public byte GetCell(int x, int y)
         {
-            if (map.mapmesh[1, x + y * height] == null)
+            if (map.mapmesh[1, x + y * height] == 0)
             {
                 return map.mapmesh[0, x + y * height];
             }
