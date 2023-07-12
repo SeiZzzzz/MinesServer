@@ -1,7 +1,4 @@
-﻿using Microsoft.Identity.Client;
-using MinesServer.GameShit;
-
-namespace MinesServer.Server
+﻿namespace MinesServer.Server
 {
     public class ServerTime
     {
@@ -21,7 +18,7 @@ namespace MinesServer.Server
             {
                 var player = MServer.GetPlayer(j);
                 if (player != null)
-                { 
+                {
                     player.UpdateMs();
                     if (player.player != null)
                     {
@@ -34,7 +31,8 @@ namespace MinesServer.Server
                 try
                 {
                     gameActions.Dequeue()();
-                }catch(Exception ex)
+                }
+                catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                 }

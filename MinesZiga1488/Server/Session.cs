@@ -1,10 +1,6 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.GameShit.GUI;
 using NetCoreServer;
-using System;
-using System.CodeDom.Compiler;
-using System.Data;
-using System.Diagnostics;
 using System.Text;
 
 namespace MinesServer.Server
@@ -26,11 +22,11 @@ namespace MinesServer.Server
             {
                 Task.Run(() =>
                 {
-                    Thread.Sleep(15);
+                    Thread.Sleep(35);
                     var msg = Encoding.Default.GetString(p.data).Split(':');
                     starttime = starttime == 0 ? ((float)int.Parse(msg[1]) / 1000f) : starttime;
                     var po = Encoding.Default.GetString(p.data).Split(':');
-                    Send("PI", $"{0}:{int.Parse(msg[1])}:{int.Parse(msg[1]) - (int)(starttime * 1000)}");
+                    Send("PI", $"{int.Parse(msg[0]) + 1}:{int.Parse(msg[1]) + 1}:{20}");
                     starttime = 0;
                 });
             });
@@ -49,7 +45,7 @@ namespace MinesServer.Server
         {
             if (starttime != 0)
             {
-                starttime+= 0.001f;
+                starttime += 0.001f;
             }
         }
         public void InitTYEvents()
@@ -85,6 +81,11 @@ namespace MinesServer.Server
                         player.Bz(x, y);
                     }
                 });
+            tyevents.Add("TADG", (ty) =>
+            {
+                if (player != null)
+                    Send("BD", (player.autoDig = !player.autoDig) ? "1" : "0");
+            });
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
@@ -92,14 +93,14 @@ namespace MinesServer.Server
         }
         protected override void OnDisconnected()
         {
-            Console.WriteLine(player.name + " disconnected");
-            using var db = new DataBase();
-            db.players.Update(player);
-            db.SaveChanges();
             if (player == null)
             {
                 return;
             }
+            Console.WriteLine(player.name + " disconnected");
+            using var db = new DataBase();
+            db.players.Update(player);
+            db.SaveChanges();
             if (father.players.Keys.Contains(player.Id))
             {
                 father.players.Remove(player.Id);
@@ -140,9 +141,13 @@ namespace MinesServer.Server
                         .AddButton("НОВЫЙ АКК", "newakk")
                         .Send(this);
                     return;
-                }    
+                }
                 if (auth != null && auth.createnew)
                 {
+                    if (auth == null)
+                    {
+                        return;
+                    }
                     if (auth.nick == "")
                     {
                         if (Auth.NickNotAvl(button.ToString()))
@@ -160,7 +165,7 @@ namespace MinesServer.Server
                         auth.nick = button.ToString();
                         auth.SetPasswdForNew(this);
                     }
-                    else if(auth.passwd == "")
+                    else if (auth.passwd == "")
                     {
                         auth.passwd = button.ToString();
                         auth.EndCreateAndInit(this);
@@ -172,11 +177,11 @@ namespace MinesServer.Server
                 {
                     auth.CreateNew(this);
                 }
-                else if(auth.nick == "")
+                else if (auth.nick == "")
                 {
-                    auth.TryToFindByNick(button.ToString(),this);
+                    auth.TryToFindByNick(button.ToString(), this);
                 }
-                else if(auth.passwd == "" && auth.temp != null)
+                else if (auth.passwd == "" && auth.temp != null)
                 {
                     auth.TryToAuthByPlayer(button.ToString(), this);
                 }

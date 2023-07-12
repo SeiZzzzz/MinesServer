@@ -1,11 +1,8 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
 using MinesServer.Server;
-using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
 using System.Numerics;
-using System.Reflection.Metadata.Ecma335;
 
 namespace MinesServer.GameShit
 {
@@ -21,6 +18,7 @@ namespace MinesServer.GameShit
         public int tail { get; set; }
         public int skin { get; set; }
         public int clanid { get; set; }
+        public bool autoDig { get; set; }
         public Vector2 pos = Vector2.Zero;
         public Basket crys { get; set; }
         public Inventory inventory { get; set; }
@@ -103,7 +101,7 @@ namespace MinesServer.GameShit
         {
             Delay = DateTime.Now + TimeSpan.FromMilliseconds(ms);
         }
-        public void Bz(int x,int y)
+        public void Bz(int x, int y)
         {
             var cell = World.W.GetCell(x, y);
             World.W.SetCell(x, y, 35);
@@ -140,7 +138,8 @@ namespace MinesServer.GameShit
                 }
                 SendMap();
                 AddDelay(0.01);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }

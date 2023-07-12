@@ -7,18 +7,18 @@ namespace MinesServer.GameShit.GUI
     {
         public static void InitCommands()
         {
-            commands.Add("myid", (p,arg) =>
+            commands.Add("myid", (p, arg) =>
             {
                 p.AddConsoleLine(p.Id.ToString());
             });
-            commands.Add("setnick", (p,arg) =>
+            commands.Add("setnick", (p, arg) =>
             {
                 p.name = arg.Split(' ')[1];
                 using var db = new DataBase();
                 db.SaveChanges();
             });
         }
-        public static void Decode(string msg,Player p)
+        public static void Decode(string msg, Player p)
         {
             if (msg == "exit")
             {
@@ -27,7 +27,7 @@ namespace MinesServer.GameShit.GUI
             }
             else if (p.insidesmf is not bool)
             {
-                switch(p.insidesmf)
+                switch (p.insidesmf)
                 {
                     case Packs.Teleport:
                         Console.WriteLine("how tf");
@@ -40,8 +40,8 @@ namespace MinesServer.GameShit.GUI
                 p.ShowConsole();
             }
         }
-        public delegate void Command(Player p,string args);
-        public static Dictionary<string,Command> commands = new Dictionary<string,Command>();
+        public delegate void Command(Player p, string args);
+        public static Dictionary<string, Command> commands = new Dictionary<string, Command>();
         public static void ConsoleCommand(string msg, Player p)
         {
             p.AddConsoleLine(msg);
@@ -55,10 +55,10 @@ namespace MinesServer.GameShit.GUI
             }
             if (commands.Keys.Contains(msg))
             {
-                commands[msg](p,msg);
+                commands[msg](p, msg);
                 return;
             }
             p.AddConsoleLine("бля это че нахуй");
-        }    
+        }
     }
 }

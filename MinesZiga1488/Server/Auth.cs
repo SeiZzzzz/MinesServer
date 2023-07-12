@@ -1,8 +1,5 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.GameShit.GUI;
-using System.ComponentModel.DataAnnotations;
-using System.Data.Entity;
-using System.Numerics;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -29,17 +26,17 @@ namespace MinesServer.Server
                 initiator.Send("cf",
                 "{\"width\":" + 1 + ",\"height\":" + 1 +
                         ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
-                    initiator.Send("CF",
-                    "{\"width\":" + 1 + ",\"height\":" + 1 +
-                        ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
-                    new Builder()
-                        .SetTitle("ВХОД")
-                        .AddTextLine("Ник")
-                        .AddIConsole()
-                        .AddIConsolePlace("")
-                        .AddButton("ОК", "%I%")
-                        .AddButton("НОВЫЙ АКК", "newakk")
-                        .Send(initiator);
+                initiator.Send("CF",
+                "{\"width\":" + 1 + ",\"height\":" + 1 +
+                    ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
+                new Builder()
+                    .SetTitle("ВХОД")
+                    .AddTextLine("Ник")
+                    .AddIConsole()
+                    .AddIConsolePlace("")
+                    .AddButton("ОК", "%I%")
+                    .AddButton("НОВЫЙ АКК", "newakk")
+                    .Send(initiator);
                 return;
             }
             if (CalculateMD5Hash(player.hash + sid) == data[2])
@@ -95,13 +92,13 @@ namespace MinesServer.Server
             temp.name = nick;
             using var db = new DataBase();
             db.players.Add(temp);
-            db.SaveChanges(); 
+            db.SaveChanges();
             temp.connection = initiator;
             initiator.player = temp;
             initiator.Send("AH", temp.Id + "_" + temp.hash);
             temp.Init();
         }
-        public void TryToFindByNick(string name,Session initiator)
+        public void TryToFindByNick(string name, Session initiator)
         {
             using var db = new DataBase();
             Player player = db.players.FirstOrDefault(p => p.name == name);
@@ -136,7 +133,7 @@ namespace MinesServer.Server
                 .AddButton("НОВЫЙ АКК", "newakk")
                 .Send(initiator);
         }
-        public void TryToAuthByPlayer(string passwd,Session initiator)
+        public void TryToAuthByPlayer(string passwd, Session initiator)
         {
             if (temp.passwd == passwd)
             {

@@ -33,7 +33,7 @@ namespace MinesServer.GameShit
             Console.WriteLine($"{(DateTime.Now - x).Microseconds} ms loading");
             Console.WriteLine("LoadConfirmed");
             Console.WriteLine("Starting Generation");
-            gen = new Gen(width,height);
+            gen = new Gen(width, height);
             gen.StartGeneration();
             gen.GenerateSpawn(4);
             Console.WriteLine("Generation End");
@@ -63,7 +63,7 @@ namespace MinesServer.GameShit
         {
 
         }
-        public void DestroyCellByBz(int x,int y)
+        public void DestroyCellByBz(int x, int y)
         {
             var cell = GetCell(x, y);
             if (cell != null && GetProp(cell).is_destructible && map.mapmesh[0, x + y * height] != 0)
@@ -100,7 +100,7 @@ namespace MinesServer.GameShit
         }
         public void SetCell(int x, int y, byte cell)
         {
-            if (!ValidCoord(x,y))
+            if (!ValidCoord(x, y))
             {
                 return;
             }

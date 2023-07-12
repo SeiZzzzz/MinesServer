@@ -1,6 +1,4 @@
-﻿using System.Runtime.InteropServices;
-
-namespace MinesServer.GameShit
+﻿namespace MinesServer.GameShit
 {
     public class Cell
     {
