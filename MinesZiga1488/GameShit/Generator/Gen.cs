@@ -12,18 +12,28 @@ namespace MinesServer.GameShit.Generator
         public System.Timers.Timer t;
         public List<VulcanoHeart> hearts;
         public List<(int, int)> spawns;
+        public static float[] heatmap;
         public Gen(int width, int height)
         {
-            this.height = height;
-            this.width = width;
-            t = new System.Timers.Timer(15);
-            t.Elapsed += (e, a) => { Update(); };
-            t.Start();
+            Gen.height = height;
+            Gen.width = width;
             hearts = new List<VulcanoHeart>();
             spawns = new List<(int, int)>();
+            heatmap = new float[width * height];
+            Task.Run(() =>
+            {
+                var x = 0;
+                while (true)
+                {
+                    World.W.SetCell(x, 0, 36);
+                    x++;
+                    Update();
+                    Thread.Sleep(1);
+                }
+            });
         }
-        private int height;
-        private int width;
+        public static int height;
+        public static int width;
         public void GenerateSpawn(int count)
         {
             var r = new Random();
@@ -42,10 +52,25 @@ namespace MinesServer.GameShit.Generator
                 
             }
         }
+        public static float GetHeat(int x,int y)
+        {
+            if (!World.W.ValidCoord(x,y))
+            {
+                return 0;
+            }
+            return heatmap[x + y * height];
+        }
+        public static void UpdateHeat(int x, int y,float value)
+        {
+            if (World.W.ValidCoord(x,y))
+            {
+                heatmap[x + y * height] += value;
+            }
+        }
         public void StartGeneration()
         {
             var x = new Random();
-            var vcount = (width * height) / 2560;
+            var vcount = (width * height * 0.2 / World.W.chunksCountW * 0.01);
             for (int i = 0; i < vcount;i++)
             {
                 var vx = x.Next(width);

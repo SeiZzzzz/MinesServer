@@ -18,19 +18,20 @@ namespace MinesServer.GameShit
         }
         public void Update()
         {
-            for (uint y = 0; y < 32; y++)
+            for (int y = 0; y < 32; y++)
             {
-                for (uint x = 0; x < 32; x++)
+                for (int x = 0; x < 32; x++)
                 {
                     var chx = pos.Item1;
                     var chy = pos.Item2;
+                    var cellpos = ((chx * 32) + x, (chy * 32) + y);
                     if (World.W.chunks[chx, chy] != null)
                     {
-                        var cell = World.W.GetCell((int)((chx * 32) + x), (int)((chy * 32) + y));
+                        var cell = World.W.GetCell(cellpos.Item1, cellpos.Item2);
                         if (cells[x + y * 32] != cell)
                         {
                             cells[x + y * 32] = cell;
-                            SendCellToBots((int)((chx * 32) + x), (int)((chy * 32) + y), cell);
+                            SendCellToBots(cellpos.Item1, cellpos.Item2, cell);
                         }
                     }
                 }
@@ -53,7 +54,7 @@ namespace MinesServer.GameShit
                             var player = MServer.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                player.SendCell(x, y, 35);
+                                player.SendCell(x, y, cell);
                             }
                         }
                     }

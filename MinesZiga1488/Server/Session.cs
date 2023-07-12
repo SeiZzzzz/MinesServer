@@ -73,6 +73,18 @@ namespace MinesServer.Server
                     this.player.ShowConsole();
                 }
             });
+            tyevents.Add("Xdig", (ty) =>
+                {
+                    var tmp = Encoding.UTF8.GetString(ty.data).Trim();
+                    int.TryParse(tmp, out var dir);
+                    player.Move(ty.x, ty.y, dir);
+                    var x = (int)player.GetDirCord().X;
+                    var y = (int)player.GetDirCord().Y;
+                    if (World.W.ValidCoord(x, y))
+                    {
+                        player.Bz(x, y);
+                    }
+                });
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {

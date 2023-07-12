@@ -11,12 +11,21 @@ namespace MinesServer.GameShit.Generator
     {
         public VulcanoHeart(int x,int y) : base(x,y,31)
         {
-            World.W.SetCell(x + 1, y, 91);
+            cells = new List<VulcanoCell>();
+            cells.Add(new VulcanoCell(x + 1, y,this,1));
+            cells.Add(new VulcanoCell(x - 1, y, this,1));
+            cells.Add(new VulcanoCell(x, y + 1, this,1));
+            cells.Add(new VulcanoCell(x, y - 1, this,1));
+
         }
         public override void Update()
         {
-
+               for (int i = 0;i < cells.Count;i++)
+            {
+                cells[i].Update();
+            }
         }
+        public List<VulcanoCell> cells;
         
     }
 }

@@ -136,7 +136,7 @@ namespace MinesServer.GameShit
                 ch.Update();
             }
         }
-        private (int, int) GetChunkPosByCoords(int x, int y) => ((int)Math.Floor((decimal)x / 32), (int)Math.Floor((decimal)y / 32));
+        private (int, int) GetChunkPosByCoords(int x, int y) => ((int)Math.Floor((float)x / 32), (int)Math.Floor((float)y / 32));
         public Chunk GetChunk(int x, int y)
         {
             var pos = GetChunkPosByCoords(x, y);

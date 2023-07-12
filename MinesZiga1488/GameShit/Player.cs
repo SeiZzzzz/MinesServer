@@ -106,6 +106,13 @@ namespace MinesServer.GameShit
         public void Bz(int x,int y)
         {
             var cell = World.W.GetCell(x, y);
+            World.W.SetCell(x, y, 35);
+        }
+        public Vector2 GetDirCord()
+        {
+            var x = (uint)(pos.X + (dir == 3 ? 1 : dir == 1 ? -1 : 0));
+            var y = (uint)(pos.Y + (dir == 0 ? 1 : dir == 2 ? -1 : 0));
+            return new Vector2(x, y);
         }
         public void Move(int x, int y, int dir)
         {
@@ -313,7 +320,7 @@ namespace MinesServer.GameShit
             }
             if (lastchunk != (ChunkX, ChunkY) || needupdmap)
             {
-                lastchunk = lastchunk == null ? (ChunkX, ChunkY) : lastchunk;
+                MoveToChunk(ChunkX, ChunkY);
                 for (int x = -2; x <= 2; x++)
                 {
                     for (int y = -2; y <= 2; y++)
