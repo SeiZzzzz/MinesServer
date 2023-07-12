@@ -1,4 +1,6 @@
-﻿namespace MinesServer.GameShit
+﻿using MinesServer.GameShit.Generator;
+
+namespace MinesServer.GameShit
 {
     public class World
     {
@@ -10,6 +12,7 @@
         public int chunksCountH { get { return height / 32; } }
         public Chunk[,] chunks;
         public static World W;
+        public Gen gen;
         public World(string name, int width, int height)
         {
             W = this;
@@ -21,7 +24,7 @@
             chunks = new Chunk[chunksCountW, chunksCountH];
             Console.WriteLine("EmptyMapGeneration");
             var x = DateTime.Now;
-            CreateEmptyMap();
+            CreateEmptyMap(114);
             Console.WriteLine("");
             Console.WriteLine($"{(DateTime.Now - x).Seconds} s loading");
             x = DateTime.Now;
@@ -29,6 +32,11 @@
             CreateChunks();
             Console.WriteLine($"{(DateTime.Now - x).Microseconds} ms loading");
             Console.WriteLine("LoadConfirmed");
+            Console.WriteLine("Starting Generation");
+            gen = new Gen(width,height);
+            gen.StartGeneration();
+            gen.GenerateSpawn(4);
+            Console.WriteLine("Generation End");
         }
         public void CreateChunks()
         {
@@ -36,7 +44,7 @@
             {
                 for (int chy = 0; chy < chunksCountH; chy++)
                 {
-                    chunks[chx, chy] = new Chunk((chx, chx));
+                    chunks[chx, chy] = new Chunk((chx, chy));
                     for (int y = 0; y < 32; y++)
                     {
                         for (int x = 0; x < 32; x++)
@@ -68,7 +76,7 @@
                 map.mapmesh[1, x + y * height] = 0;
             }
         }
-        public void CreateEmptyMap()
+        public void CreateEmptyMap(byte cell)
         {
             int cells = 0;
             var j = DateTime.Now;
@@ -77,7 +85,7 @@
                 for (int y = 0; y < height; y++)
                 {
                     cells += 1;
-                    SetCell(x, y, 35);
+                    SetCell(x, y, cell);
                 }
                 if (DateTime.Now - j > TimeSpan.FromSeconds(2))
                 {
@@ -92,8 +100,13 @@
         }
         public void SetCell(int x, int y, byte cell)
         {
+            if (!ValidCoord(x,y))
+            {
+                return;
+            }
             if (CellsSerializer.cells[cell].isEmpty)
             {
+                map.mapmesh[1, x + y * height] = 0;
                 map.mapmesh[0, x + y * height] = cell;
             }
             else
@@ -104,6 +117,10 @@
         }
         public byte GetCell(int x, int y)
         {
+            if (!ValidCoord(x, y))
+            {
+                return 0;
+            }
             if (map.mapmesh[1, x + y * height] == 0)
             {
                 return map.mapmesh[0, x + y * height];

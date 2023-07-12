@@ -1,4 +1,5 @@
 ﻿using MinesServer.Server;
+using System.Drawing.Printing;
 
 namespace MinesServer.GameShit
 {
@@ -15,30 +16,21 @@ namespace MinesServer.GameShit
                 this.bots.Add(player.Id, player);
             }
         }
-        public byte[] getCells()
-        {
-            var l = new List<byte>();
-            foreach (byte c in cells)
-            {
-                l.Add(c);
-            }
-            return l.ToArray();
-        }
         public void Update()
         {
-            for (int y = 0; y < 32; y++)
+            for (uint y = 0; y < 32; y++)
             {
-                for (int x = 0; x < 32; x++)
+                for (uint x = 0; x < 32; x++)
                 {
                     var chx = pos.Item1;
                     var chy = pos.Item2;
                     if (World.W.chunks[chx, chy] != null)
                     {
-                        var cell = World.W.GetCell((int)((chx * 32) + x), (int)(((chy * 32) + y)));
+                        var cell = World.W.GetCell((int)((chx * 32) + x), (int)((chy * 32) + y));
                         if (cells[x + y * 32] != cell)
                         {
                             cells[x + y * 32] = cell;
-                            SendCellToBots(((chx * 32) + x), ((chy * 32) + y), cell);
+                            SendCellToBots((int)((chx * 32) + x), (int)((chy * 32) + y), cell);
                         }
                     }
                 }
@@ -61,7 +53,7 @@ namespace MinesServer.GameShit
                             var player = MServer.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                player.SendCell(x, y, cell);
+                                player.SendCell(x, y, 35);
                             }
                         }
                     }

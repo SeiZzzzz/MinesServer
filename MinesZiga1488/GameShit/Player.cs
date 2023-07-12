@@ -72,7 +72,7 @@ namespace MinesServer.GameShit
         }
         public void Update()
         {
-            if (DateTime.Now - lastPlayersend > TimeSpan.FromMilliseconds(100))
+            if (DateTime.Now - lastPlayersend > TimeSpan.FromMilliseconds(500))
             {
                 SendBots();
                 lastPlayersend = DateTime.Now;
@@ -193,6 +193,8 @@ namespace MinesServer.GameShit
             crys = db.baskets.First(x => x.Id == Id);
             inventory = db.inventories.First(x => x.Id == Id);
             health = db.healths.First(x => x.Id == Id);
+            y = 1;
+            x = World.W.gen.spawns[new Random().Next(World.W.gen.spawns.Count)].Item1;
             SendPing();
             SendWorldInfo();
             Send("sp", "125:57:200");
@@ -311,7 +313,6 @@ namespace MinesServer.GameShit
             }
             if (lastchunk != (ChunkX, ChunkY) || needupdmap)
             {
-                MoveToChunk(ChunkX, ChunkY);
                 lastchunk = lastchunk == null ? (ChunkX, ChunkY) : lastchunk;
                 for (int x = -2; x <= 2; x++)
                 {
@@ -325,7 +326,7 @@ namespace MinesServer.GameShit
                             if (ch != null)
                             {
                                 cx *= 32; cy *= 32;
-                                connection.SendCells(32, 32, cx, cy, ch.getCells());
+                                connection.SendCells(32, 32, cx, cy, ch.cells);
                             }
                         }
                     }
@@ -354,16 +355,18 @@ namespace MinesServer.GameShit
         }
         public void MoveToChunk(int x, int y)
         {
-            lastchunk = lastchunk == null ? (x, y) : lastchunk;
-            var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
-            var chtoadd = World.W.chunks[x, y];
-            if (World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2] != null)
+            if (lastchunk != null && World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2] != null)
             {
+                var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
                 if (chtoremove.bots.ContainsKey(this.Id))
                 {
                     chtoremove.bots.Remove(this.Id);
                 }
-
+            }
+            var chtoadd = World.W.chunks[x, y];
+            lastchunk = (x, y);
+            if (World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2] != null)
+            {
                 if (!chtoadd.bots.ContainsKey(this.Id))
                 {
                     chtoadd.AddBot(this);
