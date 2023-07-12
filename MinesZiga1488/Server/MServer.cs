@@ -20,12 +20,20 @@ namespace MinesServer.Server
             players = new Dictionary<int, Session>();
             HorbDecoder.InitCommands();
             time = new ServerTime();
-            new World(Default.cfg.WorldName, 32 * 1000, 32 * 1000);
+            new World(Default.cfg.WorldName, 32 * 100, 32 * 100);
             DataBase.Load();
-            timer = new System.Timers.Timer(1);
+            timer = new System.Timers.Timer(TimeSpan.FromTicks(1));
             timer.Elapsed += (object s, ElapsedEventArgs e) => { time.Update(); };
             timer.Start();
             OptionKeepAlive = true;
+        }
+        public static Session GetPlayer(int id)
+        {
+            if (Instance.players.Keys.Contains(id))
+            {
+                return Instance.players[id];
+            }
+            return null;
         }
         protected override TcpSession CreateSession()
         {

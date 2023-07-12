@@ -22,7 +22,8 @@
             Console.WriteLine("EmptyMapGeneration");
             var x = DateTime.Now;
             CreateEmptyMap();
-            Console.WriteLine($"{(DateTime.Now - x).Microseconds} ms loading");
+            Console.WriteLine("");
+            Console.WriteLine($"{(DateTime.Now - x).Seconds} s loading");
             x = DateTime.Now;
             Console.WriteLine("Creating chunkmesh");
             CreateChunks();
@@ -69,11 +70,19 @@
         }
         public void CreateEmptyMap()
         {
+            int cells = 0;
+            var j = DateTime.Now;
             for (int x = 0; x < width; x++)
             {
                 for (int y = 0; y < height; y++)
                 {
+                    cells += 1;
                     SetCell(x, y, 35);
+                }
+                if (DateTime.Now - j > TimeSpan.FromSeconds(2))
+                {
+                    Console.Write($"\r{cells}/{width * height}");
+                    j = DateTime.Now;
                 }
             }
         }

@@ -19,14 +19,25 @@ namespace MinesServer.Server
         {
             for (int j = 1; j <= MServer.Instance.players.Count; j++)
             {
-                if (MServer.Instance.players.Keys.Contains(j))
-                {
-                    MServer.Instance.players[j].UpdateMs();
+                var player = MServer.GetPlayer(j);
+                if (player != null)
+                { 
+                    player.UpdateMs();
+                    if (player.player != null)
+                    {
+                        player.player.Update();
+                    }
                 }
             }
             for (int i = 0; i < gameActions.Count; i++)
-            { 
-                gameActions.Dequeue()();
+            {
+                try
+                {
+                    gameActions.Dequeue()();
+                }catch(Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
             }
         }
     }

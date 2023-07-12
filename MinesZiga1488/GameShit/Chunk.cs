@@ -58,8 +58,11 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            var player = MServer.Instance.players[id.Key];
-                            player.SendCell(x, y, cell);
+                            var player = MServer.GetPlayer(id.Key);
+                            if (player != null)
+                            {
+                                player.SendCell(x, y, cell);
+                            }
                         }
                     }
                 }

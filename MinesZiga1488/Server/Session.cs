@@ -58,8 +58,10 @@ namespace MinesServer.Server
             {
                 father.time.AddAction(() =>
                 {
-                    int.TryParse(Encoding.UTF8.GetString(ty.data).Trim(), out var dir);
-                    player.Move(ty.x, ty.y, dir > 9 ? dir - 10 : dir);
+                    if (int.TryParse(Encoding.UTF8.GetString(ty.data).Trim(), out var dir))
+                    {
+                        player.Move(ty.x, ty.y, dir > 9 ? dir - 10 : dir);
+                    }
                 });
             });
             tyevents.Add("GUI_", GUI);
@@ -78,7 +80,9 @@ namespace MinesServer.Server
         }
         protected override void OnDisconnected()
         {
+            Console.WriteLine(player.name + " disconnected");
             using var db = new DataBase();
+            db.players.Update(player);
             db.SaveChanges();
             if (player == null)
             {
@@ -87,6 +91,7 @@ namespace MinesServer.Server
             if (father.players.Keys.Contains(player.Id))
             {
                 father.players.Remove(player.Id);
+                player.OnDisconnect();
             }
 
         }
@@ -124,7 +129,7 @@ namespace MinesServer.Server
                         .Send(this);
                     return;
                 }    
-                if (auth.createnew)
+                if (auth != null && auth.createnew)
                 {
                     if (auth.nick == "")
                     {

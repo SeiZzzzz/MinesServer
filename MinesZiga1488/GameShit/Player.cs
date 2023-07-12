@@ -70,6 +70,15 @@ namespace MinesServer.GameShit
                 }
             }
         }
+        public void Update()
+        {
+            if (DateTime.Now - lastPlayersend > TimeSpan.FromMilliseconds(100))
+            {
+                SendBots();
+                lastPlayersend = DateTime.Now;
+            }
+        }
+        public DateTime lastPlayersend = DateTime.Now;
         public Player()
         {
             Delay = DateTime.Now;
@@ -100,27 +109,34 @@ namespace MinesServer.GameShit
         }
         public void Move(int x, int y, int dir)
         {
-            if (!CanAct || !World.W.ValidCoord(x, y))
+            try
             {
-                AddDelay(0.1);
-                connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
-                return;
-            }
+                if (!CanAct || !World.W.ValidCoord(x, y))
+                {
+                    AddDelay(0.1);
+                    connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                    return;
+                }
 
-            var cell = World.W.GetCell(x, y);
-            if (!World.GetProp(cell).isEmpty)
-            {
-                connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                var cell = World.W.GetCell(x, y);
+                if (!World.GetProp(cell).isEmpty)
+                {
+                    connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                    AddDelay(0.01);
+                    return;
+                }
+                var newpos = new Vector2(x, y);
+                this.dir = dir;
+                if (Vector2.Distance(pos, newpos) < 1.2f)
+                {
+                    pos = newpos;
+                }
+                SendMap();
                 AddDelay(0.01);
-                return;
-            }
-            var newpos = new Vector2(x, y);
-            if (Vector2.Distance(pos, newpos) < 1.2f)
+            }catch(Exception ex)
             {
-                pos = newpos;
+                Console.WriteLine(ex);
             }
-            SendMap();
-            AddDelay(0.01);
         }
         public void CreatePlayer()
         {
@@ -165,6 +181,12 @@ namespace MinesServer.GameShit
         }
         public void Init()
         {
+            if (MServer.Instance.players.Keys.Contains(this.Id))
+            {
+                MServer.Instance.players.Remove(this.Id);
+                this.connection.Disconnect();
+                return;
+            }
             MServer.Instance.players.Add(Id, connection);
             connection.auth = null;
             using var db = new DataBase();
@@ -266,11 +288,14 @@ namespace MinesServer.GameShit
 
                         foreach (var id in ch.bots)
                         {
-                            var player = MServer.Instance.players[id.Key].player;
-
-                            connection.SendBot(player.Id, (uint)player.pos.X, (uint)player.pos.Y, player.dir,
-                                player.clanid, player.skin, player.tail);
-                            connection.SendNick(id.Key, player.name);
+                            var j = MServer.GetPlayer(id.Key);
+                            if (j != null)
+                            {
+                                var player = j.player;
+                                connection.SendBot(player.Id, (uint)player.pos.X, (uint)player.pos.Y, player.dir,
+                                    player.clanid, player.skin, player.tail);
+                                connection.SendNick(id.Key, player.name);
+                            }
                         }
                     }
                 }
@@ -318,6 +343,14 @@ namespace MinesServer.GameShit
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, 12)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+        public void OnDisconnect()
+        {
+            var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
+            if (chtoremove.bots.ContainsKey(this.Id))
+            {
+                chtoremove.bots.Remove(this.Id);
+            }
         }
         public void MoveToChunk(int x, int y)
         {
