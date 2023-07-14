@@ -65,7 +65,7 @@
         {
             var x = new Random();
             var vcount = (width * height * 0.2 / World.W.chunksCountW * 0.01);
-            for (int i = 0; i < vcount; i++)
+            for (int i = 1; i < vcount; i++)
             {
                 var vx = x.Next(width);
                 var vy = x.Next(height);
