@@ -3,16 +3,14 @@
     public class Gen
     {
         public System.Timers.Timer t;
-        public static List<VulcanoHeart> hearts;
         public List<(int, int)> spawns;
-        public static float[,] heatmap;
+        public (float, int, bool)[] map;
         public Gen(int width, int height)
         {
             Gen.height = height;
             Gen.width = width;
-            hearts = new List<VulcanoHeart>();
             spawns = new List<(int, int)>();
-            heatmap = new float[2, width * height];
+            map = new (float, int, bool)[width * height];
             Task.Run(() =>
             {
                 var x = 0;
@@ -45,40 +43,13 @@
 
             }
         }
-        public static float GetHeat(int x, int y)
-        {
-            if (!World.W.ValidCoord(x, y))
-            {
-                return 0;
-            }
-            return heatmap[1, x + y * height];
-        }
-        public static void UpdateHeat(int x, int y, float value, float vid)
-        {
-            if (World.W.ValidCoord(x, y))
-            {
-                heatmap[1, x + y * height] += value;
-                heatmap[0, x + y * height] = vid;
-            }
-        }
         public void StartGeneration()
         {
             var x = new Random();
-            var vcount = (width * height * 0.2 / World.W.chunksCountW * 0.01);
-            for (int i = 1; i < vcount; i++)
-            {
-                var vx = x.Next(width);
-                var vy = x.Next(height);
-                World.W.SetCell(vx, vy, 31);
-                hearts.Add(new VulcanoHeart(vx, vy, i));
-            }
+            var vcount = (width * height * 0.2 / World.W.chunksCountW * 0.01) * 10;
         }
         public void Update()
         {
-            for (int i = 0; i < hearts.Count; i++)
-            {
-                hearts[i].Update();
-            }
         }
     }
 }

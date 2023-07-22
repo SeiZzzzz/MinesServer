@@ -68,6 +68,15 @@ namespace MinesServer.Server
                 {
                     this.player.ShowConsole();
                 }
+                else if (msg.StartsWith(">") && msg.Length > 1)
+                {
+                    HorbDecoder.ConsoleCommand(msg.Substring(1), player);
+                    this.player.ShowConsole();
+                }
+                else if (!string.IsNullOrWhiteSpace(msg))
+                {
+                    this.player.SendLocalMsg(ty.data);
+                }
             });
             tyevents.Add("Xdig", (ty) =>
                 {
@@ -252,6 +261,17 @@ namespace MinesServer.Server
             System.Buffer.BlockCopy(BitConverter.GetBytes(y), 0, data, 8, 2);
             System.Buffer.BlockCopy(BitConverter.GetBytes(cid), 0, data, 10, 2);
             Send("HB", data);
+        }
+        public void SendLocalChat(int datal, int bid, int x, int y, byte[] msg)
+        {
+            var mess = new byte[9 + datal];
+            mess[0] = (byte)'C';
+            System.Buffer.BlockCopy(BitConverter.GetBytes(bid), 0, mess, 1, 2);
+            System.Buffer.BlockCopy(BitConverter.GetBytes(x), 0, mess, 3, 2);
+            System.Buffer.BlockCopy(BitConverter.GetBytes(y), 0, mess, 5, 2);
+            System.Buffer.BlockCopy(BitConverter.GetBytes(datal), 0, mess, 7, 2);
+            System.Buffer.BlockCopy(msg, 0, mess, 9, datal);
+            Send("HB", mess);
         }
         public void SendNick(int id, string nick)
         {

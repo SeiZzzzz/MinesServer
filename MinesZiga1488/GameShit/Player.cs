@@ -1,6 +1,7 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
 using MinesServer.Server;
+using NetCoreServer;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
 
@@ -338,6 +339,28 @@ namespace MinesServer.GameShit
                     }
                 }
                 needupdmap = false;
+            }
+        }
+        public void SendLocalMsg(byte[] msg)
+        {
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
+            for (var xxx = -2; xxx <= 2; xxx++)
+            {
+                for (var yyy = -2; yyy <= 2; yyy++)
+                {
+                    var x = ChunkX + xxx;
+                    var y = ChunkY + yyy;
+                    if (valid(x,y))
+                    {
+                        var ch = World.W.chunks[x, y];
+                        foreach (var id in ch.bots)
+                        {
+                            var player = MServer.GetPlayer(id.Key);
+                            player.SendLocalChat(msg.Length, Id, this.x, this.y,
+                                msg);
+                        }
+                    }
+                }
             }
         }
         public void Send(string t, string c)
