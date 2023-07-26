@@ -1,4 +1,6 @@
-﻿using MinesServer.GameShit.Generator;
+﻿using Microsoft.Identity.Client;
+using MinesServer.GameShit.Generator;
+using System.ComponentModel.Design;
 
 namespace MinesServer.GameShit
 {
@@ -135,6 +137,30 @@ namespace MinesServer.GameShit
             {
                 ch.Update();
             }
+        }
+        public List<CrysType> CrysTypeByDepth(int d)
+        {
+            if (d > 10000)
+            {
+                return new List<CrysType>() { CrysType.XCyan,CrysType.XRed,CrysType.XViolet,CrysType.XGreen,CrysType.White,CrysType.XBlue };
+            }
+            else if (d > 8000)
+            {
+                return new List<CrysType>() { CrysType.Cyan, CrysType.XCyan, CrysType.White };
+            }
+            else if (d > 6000)
+            {
+                return new List<CrysType>() { CrysType.Violet, CrysType.White,CrysType.XViolet };
+            }
+            else if (d > 4000)
+            {
+                return new List<CrysType>() { CrysType.Blue, CrysType.Red,CrysType.XRed };
+            }
+            else if (d > 2000)
+            {
+                return new List<CrysType>() { CrysType.XGreen,CrysType.Blue,CrysType.Red };
+            }
+            return new List<CrysType>() {CrysType.Green,CrysType.XGreen };
         }
         private (int, int) GetChunkPosByCoords(int x, int y) => ((int)Math.Floor((float)x / 32), (int)Math.Floor((float)y / 32));
         public Chunk GetChunk(int x, int y)

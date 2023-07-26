@@ -376,10 +376,13 @@ namespace MinesServer.GameShit
         }
         public void OnDisconnect()
         {
-            var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
-            if (chtoremove.bots.ContainsKey(this.Id))
+            if (lastchunk.HasValue)
             {
-                chtoremove.bots.Remove(this.Id);
+                var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
+                if (chtoremove.bots.ContainsKey(this.Id))
+                {
+                    chtoremove.bots.Remove(this.Id);
+                }
             }
         }
         public void MoveToChunk(int x, int y)
