@@ -23,6 +23,7 @@ namespace MinesServer.Server
                 Task.Run(() =>
                 {
                     Thread.Sleep(35);
+                    player.SendOnline();
                     var msg = Encoding.Default.GetString(p.data).Split(':');
                     starttime = starttime == 0 ? ((float)int.Parse(msg[1]) / 1000f) : starttime;
                     var po = Encoding.Default.GetString(p.data).Split(':');
@@ -36,9 +37,16 @@ namespace MinesServer.Server
                 var ty = new TYPacket(p.data);
                 if (tyevents.Keys.Contains(ty.eventType))
                 {
-                    tyevents[ty.eventType](ty);
+                    father.time.AddAction(() =>
+                    {
+                        tyevents[ty.eventType](ty);
+                    });
                 }
             });
+        }
+        public int online
+        {
+            get => father.players.Count;
         }
         public float starttime = 0;
         public void UpdateMs()
@@ -52,13 +60,10 @@ namespace MinesServer.Server
         {
             tyevents.Add("Xmov", (ty) =>
             {
-                father.time.AddAction(() =>
+                if (int.TryParse(Encoding.UTF8.GetString(ty.data).Trim(), out var dir))
                 {
-                    if (int.TryParse(Encoding.UTF8.GetString(ty.data).Trim(), out var dir))
-                    {
-                        player.Move(ty.x, ty.y, dir > 9 ? dir - 10 : dir);
-                    }
-                });
+                    player.Move(ty.x, ty.y, dir > 9 ? dir - 10 : dir);
+                }
             });
             tyevents.Add("GUI_", GUI);
             tyevents.Add("Locl", (ty) =>
@@ -94,6 +99,28 @@ namespace MinesServer.Server
             {
                 if (player != null)
                     Send("BD", (player.autoDig = !player.autoDig) ? "1" : "0");
+            });
+            tyevents.Add("INCL", (ty) =>
+            {
+                var tmp = Encoding.UTF8.GetString(ty.data).Trim();
+                int.TryParse(tmp, out var type);
+                if (type == -1)
+                {
+                    player.inventory.Choose(-1);
+                    Send("IN", "close:0:0:");
+                    player.SendInventory();
+                }
+                else
+                {
+                    player.inventory.Choose(type);
+                    player.SendInventory();
+                }
+            });
+            tyevents.Add("INUS", (ty) =>
+            {
+                var x = (int)(this.player.pos.X + (this.player.dir == 3 ? 1 : this.player.dir == 1 ? -1 : 0));
+                var y = (int)(this.player.pos.Y + (this.player.dir == 0 ? 1 : this.player.dir == 2 ? -1 : 0));
+                player.inventory.Use(x, y);
             });
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)

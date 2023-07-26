@@ -24,10 +24,10 @@ namespace MinesServer.Server
             {
                 initiator.Send("PI", "0:0:0");
                 initiator.Send("cf",
-                "{\"width\":" + 1 + ",\"height\":" + 1 +
+                "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
                         ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
                 initiator.Send("CF",
-                "{\"width\":" + 1 + ",\"height\":" + 1 +
+                "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
                     ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
                 new Builder()
                     .SetTitle("ВХОД")
@@ -118,10 +118,10 @@ namespace MinesServer.Server
             initiator.Send("OK", "Игрок не найден");
             initiator.Send("PI", "0:0:0");
             initiator.Send("cf",
-            "{\"width\":" + 1 + ",\"height\":" + 1 +
-                    ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
+                "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
+                        ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
             initiator.Send("CF",
-            "{\"width\":" + 1 + ",\"height\":" + 1 +
+            "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
                 ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
             new Builder()
                 .SetTitle("ВХОД")

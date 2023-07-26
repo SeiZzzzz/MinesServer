@@ -29,6 +29,13 @@ namespace MinesServer
         private static void Loop()
         {
             commands.Add("restart", () => { server.Stop(); Console.WriteLine("kinda restart"); server.Start(); });
+            commands.Add("players", () => {
+                Console.WriteLine($"online {server.players.Count}");
+                for (int i = 0; i < server.players.Count;i++)
+                {
+                    Console.WriteLine($"id: {server.players.ElementAt(i).Value.player.Id}\n name :[{server.players.ElementAt(i).Value.player.name}]");
+                }
+            });
             for (; ; )
             {
                 var l = Console.ReadLine();

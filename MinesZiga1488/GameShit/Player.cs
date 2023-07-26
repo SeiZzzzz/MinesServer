@@ -1,4 +1,5 @@
-﻿using MinesServer.GameShit.Buildings;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
 using MinesServer.Server;
 using NetCoreServer;
@@ -137,6 +138,10 @@ namespace MinesServer.GameShit
                 {
                     pos = newpos;
                 }
+                else
+                {
+                    connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                }
                 SendMap();
                 AddDelay(0.01);
             }
@@ -156,12 +161,15 @@ namespace MinesServer.GameShit
             health.MaxHP = 100;
             health.HP = 100;
             inventory = new Inventory();
+            inventory.items = new int[49];
             crys = new Basket(this);
             pos = new Vector2(0, 0);
             dir = 0;
             clanid = 0;
             skin = 0;
             tail = 0;
+            using var db = new DataBase();
+            db.SaveChanges();
         }
         public void SendMoney()
         {
@@ -216,6 +224,7 @@ namespace MinesServer.GameShit
             SendMoney();
             SendLvl();
             SendMap();
+            SendInventory();
             console.Enqueue(new Line { text = "@@> Добро пожаловать в консоль!" });
             for (var i = 0; i < 4; i++)
             {
@@ -256,6 +265,10 @@ namespace MinesServer.GameShit
         {
             Send("@B", crys.GetCry);
         }
+        public void SendInventory()
+        {
+            connection.Send("IN", inventory.InvToSend());
+        }
         public void SendWorldInfo()
         {
             Send("cf",
@@ -281,6 +294,10 @@ namespace MinesServer.GameShit
         {
             var i = 0;
             Send("LV", i.ToString());
+        }
+        public void SendOnline()
+        {
+            this.Send("ON", connection.online + ":0");
         }
         public void SendBots()
         {

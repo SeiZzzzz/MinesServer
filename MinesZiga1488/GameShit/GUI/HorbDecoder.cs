@@ -7,15 +7,27 @@ namespace MinesServer.GameShit.GUI
     {
         public static void InitCommands()
         {
+            commands.Add("setitem", (p, arg) =>
+            {
+                if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1],out var i) && int.TryParse(arg.Split(" ")[2], out var c))
+                {
+                    p.inventory.SetItem(i, c);
+                    p.AddConsoleLine("ok");
+                    p.SendInventory();
+                }
+            });
             commands.Add("myid", (p, arg) =>
             {
                 p.AddConsoleLine(p.Id.ToString());
             });
             commands.Add("setnick", (p, arg) =>
             {
-                p.name = arg.Split(' ')[1];
-                using var db = new DataBase();
-                db.SaveChanges();
+                if (arg.Split(' ').Length > 0)
+                {
+                    p.name = arg.Split(' ')[1];
+                    using var db = new DataBase();
+                    db.SaveChanges();
+                }
             });
         }
         public static void Decode(string msg, Player p)
