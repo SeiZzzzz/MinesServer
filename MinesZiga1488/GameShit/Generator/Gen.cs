@@ -57,7 +57,8 @@
         public void StartGeneration()
         {
             var r = new Random();
-            var vcount = 1 + (width * height * 0.2 / World.W.chunksCountW * 0.01) * 10;
+            var vcount = 1 + ((width * height * 0.2 / World.W.chunksCountW * 0.01) * r.NextDouble()) * 10;
+            Console.WriteLine(vcount);
             for (int i = 1; i < vcount;i++)
             {
                 var x = r.Next(width);

@@ -108,7 +108,6 @@ namespace MinesServer.Server
                 {
                     player.inventory.Choose(-1);
                     Send("IN", "close:0:0:");
-                    player.SendInventory();
                 }
                 else
                 {

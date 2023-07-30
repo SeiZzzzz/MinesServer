@@ -97,7 +97,7 @@ namespace MinesServer.GameShit.Generator
                         var ny = y + py;
                         if (World.W.ValidCoord(nx,ny))
                         {
-                            if(Gen.THIS.map[nx + ny * Gen.height].Item2 != 0 && Gen.THIS.map[nx + ny * Gen.height].Item2 == father.id && (nx != x && ny != y) && Gen.THIS.map[nx + ny * Gen.height].Item1 >= 1f || Gen.THIS.map[nx + ny * Gen.height].Item2 == -1)
+                            if(Gen.THIS.map[nx + ny * Gen.height].Item2 == -1 || Gen.THIS.map[nx + ny * Gen.height].Item2 != 0 && Gen.THIS.map[nx + ny * Gen.height].Item2 == father.id && (nx != x && ny != y))
                             {
                                 c++;
                                 continue;
