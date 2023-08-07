@@ -3,8 +3,9 @@ using MinesServer.GameShit.GUI;
 using NetCoreServer;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Timers;
-
+using System.Windows.Forms;
 namespace MinesServer.Server
 {
     public class MServer : TcpServer
@@ -19,13 +20,14 @@ namespace MinesServer.Server
             players = new Dictionary<int, Session>();
             HorbDecoder.InitCommands();
             time = new ServerTime();
-            new World(Default.cfg.WorldName, 32 * 100, 32 * 100);
+            new World(Default.cfg.WorldName, 32 * 10, 32 * 10);
             DataBase.Load();
             timer = new System.Timers.Timer(TimeSpan.FromTicks(1));
             timer.Elapsed += (object s, ElapsedEventArgs e) => { time.Update(); };
             timer.Start();
             OptionKeepAlive = true;
         }
+        
         public static Session GetPlayer(int id)
         {
             if (Instance.players.Keys.Contains(id))

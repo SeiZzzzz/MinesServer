@@ -6,6 +6,21 @@ using System.Threading.Tasks;
 
 namespace MinesServer.GameShit.Generator
 {
+    public static class Ext
+    {
+        public static void Remove<T>(this Queue<T> queue, T itemToRemove) where T : class
+        {
+            var list = queue.ToList();
+            queue.Clear();
+            foreach (var item in list)
+            {
+                if (item == itemToRemove)
+                    continue;
+
+                queue.Enqueue(item);
+            }
+        }
+    }
     public class VulcCell
     {
         public VulcCell(int _x, int _y, Heart _father, float startheat = 0.2f)
@@ -26,7 +41,7 @@ namespace MinesServer.GameShit.Generator
                     {
                         continue;
                     }
-                    if (Gen.THIS.map[nx + ny * Gen.height].Item1 > (r.Next(20,50) * 0.01f) && Gen.THIS.map[nx + ny * Gen.height].Item2 == 0 && r.Next(0,100) < nearbyally())
+                    if (Gen.THIS.map[nx + ny * Gen.height].Item1 > (r.Next(20,50) * 0.01f) && Gen.THIS.map[nx + ny * Gen.height].Item2 == 0 && r.Next(0,100) < nearbyally(x,y))
                     {
                         father.update.Enqueue(new VulcCell(nx, ny, father, Gen.THIS.map[nx + ny * Gen.height].Item1));
                     }
@@ -34,9 +49,9 @@ namespace MinesServer.GameShit.Generator
                 }
             }
         }
-        public int nearbyally()
+        public void Diffusion()
         {
-            var c = 0;
+            var r = new Random();
             for (int px = -1; px <= 1; px++)
             {
                 for (int py = -1; py <= 1; py++)
@@ -47,7 +62,54 @@ namespace MinesServer.GameShit.Generator
                     {
                         continue;
                     }
+                    if (Gen.THIS.map[nx + ny * Gen.height].Item2 != 0 && Gen.THIS.map[nx + ny * Gen.height].Item2 != father.id && nearbyally(nx,ny) > nearbyenemy(nx,ny) && r.Next(0,100) > 60)
+                    {
+                        var vulc = Gen.THIS.vulcs[Gen.THIS.map[nx + ny * Gen.height].Item2 - 1];
+                        Ext.Remove(vulc.update, vulc.update.FirstOrDefault(c => c.x == nx && c.y == ny));
+                        father.update.Enqueue(new VulcCell(nx, ny, father, Gen.THIS.map[nx + ny * Gen.height].Item1));
+                        if (World.GetProp(World.W.GetCell(nx, ny)).is_destructible)
+                        {
+                            World.W.SetCell(nx, ny, 90);
+                        }
+                    }
+                }
+            }
+        }
+        public int nearbyally(int cx,int cy)
+        {
+            var c = 0;
+            for (int px = -1; px <= 1; px++)
+            {
+                for (int py = -1; py <= 1; py++)
+                {
+                    var nx = cx + px;
+                    var ny = cy + py;
+                    if (!World.W.ValidCoord(nx, ny) || (nx == cx && ny == cy) || Gen.THIS.map[nx + ny * Gen.height].Item2 == -1)
+                    {
+                        continue;
+                    }
                     if (Gen.THIS.map[nx + ny * Gen.height].Item2 == father.id && Gen.THIS.map[nx + ny * Gen.height].Item1 > 0.2f)
+                    {
+                        c++;
+                    }
+                }
+            }
+            return c;
+        }
+        public int nearbyenemy(int cx, int cy)
+        {
+            var c = 0;
+            for (int px = -1; px <= 1; px++)
+            {
+                for (int py = -1; py <= 1; py++)
+                {
+                    var nx = cx + px;
+                    var ny = cy + py;
+                    if (!World.W.ValidCoord(nx, ny) || (nx == cx && ny == cy) || Gen.THIS.map[nx + ny * Gen.height].Item2 == -1)
+                    {
+                        continue;
+                    }
+                    if (Gen.THIS.map[nx + ny * Gen.height].Item2 != 0 && Gen.THIS.map[nx + ny * Gen.height].Item2 != father.id && Gen.THIS.map[nx + ny * Gen.height].Item1 > 0.2f)
                     {
                         c++;
                     }
@@ -97,7 +159,12 @@ namespace MinesServer.GameShit.Generator
                         var ny = y + py;
                         if (World.W.ValidCoord(nx,ny))
                         {
-                            if(Gen.THIS.map[nx + ny * Gen.height].Item2 == -1 || Gen.THIS.map[nx + ny * Gen.height].Item2 != 0 && Gen.THIS.map[nx + ny * Gen.height].Item2 == father.id && (nx != x && ny != y))
+                            if(Gen.THIS.map[nx + ny * Gen.height].Item2 != 0 && Gen.THIS.map[nx + ny * Gen.height].Item2 == father.id && (nx != x && ny != y))
+                            {
+                                c++;
+                                continue;
+                            }
+                            else if (Gen.THIS.map[nx + ny * Gen.height].Item2 == -1)
                             {
                                 c++;
                                 continue;
@@ -107,7 +174,7 @@ namespace MinesServer.GameShit.Generator
                         c++;
                     }
                 }
-                return c == 8;
+                return c >= 8;
             }
         }
         public int x;public int y;public Heart father;

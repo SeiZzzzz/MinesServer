@@ -24,19 +24,22 @@ namespace MinesServer.GameShit.Generator
         }
         public void Update()
         {
-            if (update.Count == 0)
+            if (update.Count == 0 && !cry)
             {
-                Console.WriteLine("sec");
+                Console.WriteLine("cr");
+                Crystalizing();
+                cry = true;
             }    
             for (int i = 0;i < update.Count;i++)
             {
                 var c = update.Dequeue();
-                sectorcells.Add(new Point(c.x,c.y));
+                sectorcells.Add(new SectorCell(c.x,c.y));
                 if (Gen.THIS.map[c.x + c.y * Gen.height].Item2 == -1)
                 {
                     continue;
                 }
                 c.Heat();
+                c.Diffusion();
                 if (c.CanBeWall && new Random().Next(0,100) > 50)
                 {
                     if (World.GetProp(World.W.GetCell(c.x, c.y)).is_destructible)
@@ -44,20 +47,39 @@ namespace MinesServer.GameShit.Generator
                         World.W.SetCell(c.x, c.y, 117);
                     }
                     Gen.THIS.map[c.x + c.y * Gen.height] = (0, -1, false);
-                    var cc = sectorcells.FirstOrDefault(p => p.X == c.x && p.Y == c.x);
-                    if (cc != default(Point))
+                    var cc = sectorcells.FirstOrDefault(p => p.x == c.x && p.y == c.x);
+                    if (cc != default)
                     {
                         sectorcells.Remove(cc);
                     }
                     continue;
                 }
-                if (!c.Closed && Gen.THIS.map[c.x + c.y * Gen.height].Item2 != -1)
+                if (Gen.THIS.map[c.x + c.y * Gen.height].Item2 == -1)
+                {
+                    continue;
+                }
+                if (!c.Closed)
                 {
                     update.Enqueue(c);
                 }
             }
         }
-        public List<Point> sectorcells = new List<Point>();
+        public void Crystalizing()
+        {
+            var r = new Random();
+            foreach(var c in sectorcells)
+            {
+                var d = World.W.CrysTypeByDepth(c.y);
+
+                if (World.GetProp(World.W.GetCell(c.x, c.y)).is_destructible)
+                {
+                    Console.WriteLine((byte)d[r.Next(0, d.Count)]);
+                    World.W.SetCell(c.x, c.y, (byte)d[r.Next(0,d.Count)]);
+                }
+            }
+        }
+        public bool cry = false;
+        public List<SectorCell> sectorcells = new List<SectorCell>();
         private (int, int)[] dirs = {(1,0),(0,1),(-1,0),(0,-1) };
         public Queue<VulcCell> update = new Queue<VulcCell>();
         public int id; public int x; public int y;
