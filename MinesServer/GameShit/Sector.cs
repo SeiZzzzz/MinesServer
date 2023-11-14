@@ -8,7 +8,7 @@ namespace MinesServer.GameShit
 {
     public class Sector
     {
-        public Sector(int id)
+        public Sector()
         {
 
         }

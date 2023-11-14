@@ -1,7 +1,14 @@
-﻿using MinesServer.GameShit;
+﻿using Microsoft.Identity.Client;
+using Microsoft.VisualBasic.Devices;
+using Microsoft.Win32.SafeHandles;
+using MinesServer.GameShit;
 using MinesServer.Server;
 using Newtonsoft.Json;
+using System.CodeDom;
 using System.Drawing.Drawing2D;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Windows.Forms;
 
 namespace MinesServer
 {
@@ -13,9 +20,9 @@ namespace MinesServer
         public static void Main(string[] args)
         {
             CellsSerializer.Load();
-            var t = new Thread(ShowUp);
-            t.SetApartmentState(ApartmentState.STA);
-            t.Start();
+            //var t = new Thread(ShowUp);
+            //t.SetApartmentState(ApartmentState.STA);
+            //t.Start();
             var configPath = "config.json";
             if (File.Exists(configPath))
             {
@@ -66,43 +73,35 @@ namespace MinesServer
             {
                 Location = new Point(0, 0)
             };
-            pb.MouseWheel += (e, x) => {
-                if (x.Delta > 0)
-                {
-                    size++;
-                }
-                if (x.Delta < 0)
-                {
-                    if (size > 1)
-                    {
-                        size--;
-                    }
-                }
-                pb.Image = ZoomImg(orgimage, (new Size(size, size)));
-            };
-            pb.SizeMode = PictureBoxSizeMode.AutoSize;
-            mf.Width = 500;
-            mf.Height = 500;
-            mf.Controls.Add(pb);
             var dialog = new OpenFileDialog();
             dialog.Title = "Open Image";
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 var PictureBox1 = new PictureBox();
                 orgimage = new Bitmap(Image.FromFile(dialog.FileName));
-                pb.Image = ZoomImg(orgimage, (new Size(size, size)));
+                pb.Image = orgimage;
             }
+            float zoom = 1;
+            var i = new Bitmap(orgimage);
+            var imageRect = new RectangleF(Point.Empty, i.Size);
+            pb.Paint += (e, m) =>
+            {
+               
+            };
+            var step = 0.05f;
+            pb.MouseWheel += (e, mouse) =>
+            {
+               
+            };
+            pb.SizeMode = PictureBoxSizeMode.AutoSize;
+            mf.Width = 500;
+            mf.Height = 500;
+            mf.Controls.Add(pb);
+            
             Application.Run(mf);
         }
         public static int size = 1;
         public static Image orgimage;
-        private static Image ZoomImg(Image img, Size size)
-        {
-            Bitmap bm = new Bitmap(img, Convert.ToInt32(img.Width * size.Width), Convert.ToInt32(img.Height * size.Height));
-            Graphics g = Graphics.FromImage(img);
-            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-            return bm;
-        }
         public static MServer server { get; set; }
     }
 }

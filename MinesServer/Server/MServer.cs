@@ -20,7 +20,7 @@ namespace MinesServer.Server
             players = new Dictionary<int, Session>();
             HorbDecoder.InitCommands();
             time = new ServerTime();
-            new World(Default.cfg.WorldName, 32 * 10, 32 * 10);
+            new World(Default.cfg.WorldName, 32 * 312, 32 * 312);
             DataBase.Load();
             timer = new System.Timers.Timer(TimeSpan.FromTicks(1));
             timer.Elapsed += (object s, ElapsedEventArgs e) => { time.Update(); };

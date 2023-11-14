@@ -28,11 +28,11 @@ namespace MinesServer.GameShit
             var x = DateTime.Now;
             CreateEmptyMap(114);
             Console.WriteLine("");
-            Console.WriteLine($"{(DateTime.Now - x).Seconds} s loading");
+            Console.WriteLine($"{DateTime.Now - x} s loading");
             x = DateTime.Now;
             Console.WriteLine("Creating chunkmesh");
             CreateChunks();
-            Console.WriteLine($"{(DateTime.Now - x).Microseconds} ms loading");
+            Console.WriteLine($"{DateTime.Now - x} ms loading");
             Console.WriteLine("LoadConfirmed");
             Console.WriteLine("Starting Generation");
             gen = new Gen(width, height);
@@ -95,6 +95,8 @@ namespace MinesServer.GameShit
                     j = DateTime.Now;
                 }
             }
+            Console.Write($"\r{cells}/{width * height}");
+            Console.WriteLine("");
         }
         public static Cell GetProp(byte type)
         {
