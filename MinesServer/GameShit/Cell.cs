@@ -18,6 +18,7 @@
         {
 
         }
+        public bool isPackPart;
         public bool is_destructible_by_block;
         public bool can_place_boom;
         public bool can_place_road;

@@ -9,6 +9,7 @@ namespace MinesServer.Server
         public DbSet<Health> healths { get; set; }
         public DbSet<Inventory> inventories { get; set; }
         public DbSet<Basket> baskets { get; set; }
+        //public DbSet<string> skills { get; set; }
         public DataBase()
         {
             Database.EnsureCreated();

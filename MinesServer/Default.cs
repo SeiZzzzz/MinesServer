@@ -104,4 +104,8 @@ namespace MinesServer
         public static Image orgimage;
         public static MServer server { get; set; }
     }
+    public static class E
+    {
+        
+    }
 }

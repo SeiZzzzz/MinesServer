@@ -105,20 +105,26 @@ namespace MinesServer.GameShit
         }
         public string itemstobd { get; set; }
         [NotMapped]
+        private int[] iret = null;
+        [NotMapped]
         public int[] items
         {
             get
             {
-                var splited = itemstobd.Split(";");
-                var i = new int[49];
-                if (splited.Length > 0)
+                if (iret == null)
                 {
-                    for (var it = 0; it < splited.Length; it++)
+                    var splited = itemstobd.Split(";");
+                    var i = new int[49];
+                    if (splited.Length > 0)
                     {
-                        i[it] = int.Parse(splited[it]);
+                        for (var it = 0; it < splited.Length; it++)
+                        {
+                            i[it] = int.Parse(splited[it]);
+                        }
                     }
+                    iret = i;
                 }
-                return i;
+                return iret;
             }
             set
             {

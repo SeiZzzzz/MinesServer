@@ -373,8 +373,11 @@ namespace MinesServer.GameShit
                         foreach (var id in ch.bots)
                         {
                             var player = MServer.GetPlayer(id.Key);
-                            player.SendLocalChat(msg.Length, Id, this.x, this.y,
-                                msg);
+                            if (player != null)
+                            {
+                                player.SendLocalChat(msg.Length, Id, this.x, this.y,
+                                    msg);
+                            }
                         }
                     }
                 }

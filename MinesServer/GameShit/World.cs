@@ -22,23 +22,33 @@ namespace MinesServer.GameShit
             this.height = height;
             this.name = name;
             map = new Map(width, height);
-            Console.WriteLine($"Creating World Preset{width} x {height}({chunksCountW} x {chunksCountH} chunks)");
-            chunks = new Chunk[chunksCountW, chunksCountH];
-            Console.WriteLine("EmptyMapGeneration");
-            var x = DateTime.Now;
-            CreateEmptyMap(114);
-            Console.WriteLine("");
-            Console.WriteLine($"{DateTime.Now - x} s loading");
-            x = DateTime.Now;
-            Console.WriteLine("Creating chunkmesh");
-            CreateChunks();
-            Console.WriteLine($"{DateTime.Now - x} ms loading");
-            Console.WriteLine("LoadConfirmed");
-            Console.WriteLine("Starting Generation");
             gen = new Gen(width, height);
-            gen.StartGeneration();
+            var x = DateTime.Now;
+            if (!map.LoadMap())
+            {
+                Console.WriteLine($"Creating World Preset{width} x {height}({chunksCountW} x {chunksCountH} chunks)");
+                chunks = new Chunk[chunksCountW, chunksCountH];
+                Console.WriteLine("EmptyMapGeneration");
+                x = DateTime.Now;
+                CreateEmptyMap(114);
+                gen.StartGeneration();
+                Console.WriteLine("Generation End");
+                Console.WriteLine("");
+                Console.WriteLine($"{DateTime.Now - x} loaded");
+                x = DateTime.Now;
+                Console.WriteLine("Creating chunkmesh");
+                CreateChunks();
+                Console.WriteLine($"{DateTime.Now - x} loaded");
+                map.SaveMap();
+            }
+            chunks = new Chunk[chunksCountW, chunksCountH];
+            Console.WriteLine("Creating chunkmesh");
+            x = DateTime.Now;
+            CreateChunks();
+            Console.WriteLine($"{DateTime.Now - x} loaded");
+            Console.WriteLine("LoadConfirmed");
+            Console.WriteLine("Started");
             gen.GenerateSpawn(4);
-            Console.WriteLine("Generation End");
         }
         public void CreateChunks()
         {
@@ -68,14 +78,14 @@ namespace MinesServer.GameShit
         public void DestroyCellByBz(int x, int y)
         {
             var cell = GetCell(x, y);
-            if (cell != null && GetProp(cell).is_destructible && map.mapmesh[0, x + y * height] != 0)
+            if (cell != null && GetProp(cell).is_destructible && map.mapmesh[0][x + y * height] != 0)
             {
-                map.mapmesh[1, x + y * height] = 0;
+                map.mapmesh[1][x + y * height] = 0;
             }
             else if (cell != 0 && GetProp(cell).is_destructible)
             {
-                map.mapmesh[0, x + y * height] = 32;
-                map.mapmesh[1, x + y * height] = 0;
+                map.mapmesh[0][x + y * height] = 32;
+                map.mapmesh[1][x + y * height] = 0;
             }
         }
         public void CreateEmptyMap(byte cell)
@@ -110,12 +120,12 @@ namespace MinesServer.GameShit
             }
             if (CellsSerializer.cells[cell].isEmpty)
             {
-                map.mapmesh[1, x + y * height] = 0;
-                map.mapmesh[0, x + y * height] = cell;
+                map.mapmesh[1][ x + y * height] = 0;
+                map.mapmesh[0][ x + y * height] = cell;
             }
             else
             {
-                map.mapmesh[1, x + y * height] = cell;
+                map.mapmesh[1][x + y * height] = cell;
             }
             UpdateChunkByCoords(x, y);
         }
@@ -125,11 +135,15 @@ namespace MinesServer.GameShit
             {
                 return 0;
             }
-            if (map.mapmesh[1, x + y * height] == 0)
+            if (map.mapmesh[1][ x + y * height] == 0)
             {
-                return map.mapmesh[0, x + y * height];
+                if (map.mapmesh[0][x + y * height] == 0)
+                {
+                    map.mapmesh[0][x + y * height] = 32;
+                }
+                return map.mapmesh[0][ x + y * height];
             }
-            return map.mapmesh[1, x + y * height];
+            return map.mapmesh[1][ x + y * height];
         }
         public bool ValidCoord(int x, int y) => (x >= 0 && y >= 0) && (x < width && y < height);
         public void UpdateChunkByCoords(int x, int y)
@@ -139,30 +153,6 @@ namespace MinesServer.GameShit
             {
                 ch.Update();
             }
-        }
-        public List<CrysType> CrysTypeByDepth(int d)
-        {
-            if (d > 10000)
-            {
-                return new List<CrysType>() { CrysType.XCyan,CrysType.XRed,CrysType.XViolet,CrysType.XGreen,CrysType.White,CrysType.XBlue };
-            }
-            else if (d > 8000)
-            {
-                return new List<CrysType>() { CrysType.Cyan, CrysType.XCyan, CrysType.White };
-            }
-            else if (d > 6000)
-            {
-                return new List<CrysType>() { CrysType.Violet, CrysType.White,CrysType.XViolet };
-            }
-            else if (d > 4000)
-            {
-                return new List<CrysType>() { CrysType.Blue, CrysType.Red,CrysType.XRed };
-            }
-            else if (d > 2000)
-            {
-                return new List<CrysType>() { CrysType.XGreen,CrysType.Blue,CrysType.Red };
-            }
-            return new List<CrysType>() {CrysType.Green,CrysType.XGreen };
         }
         private (int, int) GetChunkPosByCoords(int x, int y) => ((int)Math.Floor((float)x / 32), (int)Math.Floor((float)y / 32));
         public Chunk GetChunk(int x, int y)

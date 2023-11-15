@@ -6,7 +6,15 @@ using System.Threading.Tasks;
 
 namespace MinesServer.GameShit.Skills
 {
-    public static class SkillLinker
+    public class SkillsUtils
     {
+        public void Serialize()
+        {
+            
+        }
+        public void Deserialize()
+        {
+
+        }
     }
 }

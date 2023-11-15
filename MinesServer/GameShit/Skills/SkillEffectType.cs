@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace MinesServer.GameShit.Skills
 {
-    public enum SkillType
+    public enum SkillEffectType
     {
     }
 }
