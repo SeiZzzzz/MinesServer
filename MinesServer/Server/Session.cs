@@ -87,7 +87,6 @@ namespace MinesServer.Server
                 {
                     var tmp = Encoding.UTF8.GetString(ty.data).Trim();
                     int.TryParse(tmp, out var dir);
-                    player.Move(ty.x, ty.y, dir);
                     var x = (int)player.GetDirCord().X;
                     var y = (int)player.GetDirCord().Y;
                     if (World.W.ValidCoord(x, y))

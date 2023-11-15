@@ -1,6 +1,4 @@
-﻿using System.Drawing;
-
-namespace MinesServer.GameShit.Generator
+﻿namespace MinesServer.GameShit.Generator
 {
     public class Gen
     {
@@ -43,6 +41,24 @@ namespace MinesServer.GameShit.Generator
             sec.AddW(25, 1, RcherNZ.AccidentalNoise.InterpolationType.Linear, .7f);
             sec.End();
             var map = sec.map;
+            var rc = 0;
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    var t = map[x + y * height].value == 2 ? (byte)CellType.NiggerRock : map[x + y * height].value == 1 ? (byte)CellType.RedRock : (byte)0;
+                    if (t != 0)
+                    {
+                        World.W.map.WithoutCheckSet(x, y, t);
+                    }
+                    else
+                    {
+                        World.W.map.WithoutCheckSetRoad(x, y, 32);
+                    }
+                    rc++;
+                }
+                Console.Write($"\r{rc}/{map.Length} saving rocks");
+            }
             var s = sec.DetectSectors();
             for (int i = 0; i < s.Count; i++)
             {
@@ -60,30 +76,20 @@ namespace MinesServer.GameShit.Generator
                 {
                     inside.CreateFillForCells(s[i], true, s[i].GenerateInsides());
                 }
+                Console.WriteLine("saving sector " + s[i].seccells.Count);
                 foreach (var c in s[i].seccells)
                 {
-                    map[c.pos.Item1 + c.pos.Item2 * sec.size.Item2].type = c.type;
+                    var ty = c.type == CellType.Empty ? (byte)0 : (byte)c.type;
+                    if (ty != 0)
+                    {
+                        World.W.map.WithoutCheckSet(c.pos.Item1, c.pos.Item2, ty);
+                    }
+                    else
+                    {
+                        World.W.map.WithoutCheckSetRoad(c.pos.Item1, c.pos.Item2, 32);
+                    }
                 }
             }
-            Console.WriteLine("final map");
-            var co = 0;
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    
-                    World.W.map.mapmesh[1][x + y * height] = map[x + y * height].type == CellType.Empty ? (byte)0 : (byte)map[x + y * height].type;
-                    co++;
-                }
-                Console.Write($"\r{co}/{map.Length}");
-            }
-            Console.WriteLine("");
-                var xx = 0;
-                while (xx < width)
-                {
-                    World.W.SetCell(xx, 0, (byte)CellType.FedRoad);
-                    xx++;
-                }
             Console.WriteLine("END END");
         }
         public void Update()

@@ -15,7 +15,11 @@ namespace MinesServer.GameShit
                 this.bots.Add(player.Id, player);
             }
         }
-        public void Update()
+        public void Load()
+        {
+            cells = World.W.map.LoadFrom((pos.Item1 * 32), (pos.Item2 * 32), 32, 32);
+        }
+        public void SendAround()
         {
             for (int y = 0; y < 32; y++)
             {
@@ -26,17 +30,14 @@ namespace MinesServer.GameShit
                     var cellpos = ((chx * 32) + x, (chy * 32) + y);
                     if (World.W.chunks[chx, chy] != null)
                     {
-                        var cell = World.W.GetCell(cellpos.Item1, cellpos.Item2);
-                        if (cells[x + y * 32] != cell)
-                        {
-                            cells[x + y * 32] = cell;
-                            SendCellToBots(cellpos.Item1, cellpos.Item2, cell);
-                        }
+                        SendCellToBots(cellpos.Item1, cellpos.Item2, cells[x + y * 32]);
                     }
                 }
             }
+            cells = null;
         }
-        public void SendCellToBots(int x, int y, byte cell)
+
+        private void SendCellToBots(int x, int y, byte cell)
         {
             var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)

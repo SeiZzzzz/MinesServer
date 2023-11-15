@@ -3,9 +3,7 @@ using MinesServer.GameShit.GUI;
 using NetCoreServer;
 using System.Net;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Timers;
-using System.Windows.Forms;
 namespace MinesServer.Server
 {
     public class MServer : TcpServer
@@ -27,7 +25,7 @@ namespace MinesServer.Server
             timer.Start();
             OptionKeepAlive = true;
         }
-        
+
         public static Session GetPlayer(int id)
         {
             if (Instance.players.Keys.Contains(id))

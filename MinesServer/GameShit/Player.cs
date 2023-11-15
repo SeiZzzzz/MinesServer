@@ -1,8 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using MinesServer.GameShit.Buildings;
+﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
 using MinesServer.Server;
-using NetCoreServer;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
 
@@ -107,6 +105,7 @@ namespace MinesServer.GameShit
         {
             var cell = World.W.GetCell(x, y);
             World.W.SetCell(x, y, 35);
+            Console.WriteLine(cell);
         }
         public Vector2 GetDirCord()
         {
@@ -120,7 +119,7 @@ namespace MinesServer.GameShit
             {
                 if (!CanAct || !World.W.ValidCoord(x, y))
                 {
-                    AddDelay(0.1);
+                    AddDelay(0.01);
                     connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
                     return;
                 }
@@ -347,6 +346,7 @@ namespace MinesServer.GameShit
                         if (valid(cx, cy))
                         {
                             var ch = World.W.chunks[cx, cy];
+                            ch.Load();
                             if (ch != null)
                             {
                                 cx *= 32; cy *= 32;
@@ -367,7 +367,7 @@ namespace MinesServer.GameShit
                 {
                     var x = ChunkX + xxx;
                     var y = ChunkY + yyy;
-                    if (valid(x,y))
+                    if (valid(x, y))
                     {
                         var ch = World.W.chunks[x, y];
                         foreach (var id in ch.bots)

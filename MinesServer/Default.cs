@@ -1,19 +1,13 @@
-﻿using Microsoft.Identity.Client;
-using Microsoft.VisualBasic.Devices;
-using Microsoft.Win32.SafeHandles;
-using MinesServer.GameShit;
+﻿using MinesServer.GameShit;
 using MinesServer.Server;
 using Newtonsoft.Json;
-using System.CodeDom;
-using System.Drawing.Drawing2D;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Windows.Forms;
 
 namespace MinesServer
 {
+    // <image src="a.jpg"/>
     public static class Default
     {
+
         public static Form mf = new Form();
         public static int port = 8090;
         private static Dictionary<string, Action> commands = new Dictionary<string, Action>();
@@ -41,9 +35,10 @@ namespace MinesServer
         private static void Loop()
         {
             commands.Add("restart", () => { server.Stop(); Console.WriteLine("kinda restart"); server.Start(); });
-            commands.Add("players", () => {
+            commands.Add("players", () =>
+            {
                 Console.WriteLine($"online {server.players.Count}");
-                for (int i = 0; i < server.players.Count;i++)
+                for (int i = 0; i < server.players.Count; i++)
                 {
                     Console.WriteLine($"id: {server.players.ElementAt(i).Value.player.Id}\n name :[{server.players.ElementAt(i).Value.player.name}]");
                 }
@@ -86,18 +81,18 @@ namespace MinesServer
             var imageRect = new RectangleF(Point.Empty, i.Size);
             pb.Paint += (e, m) =>
             {
-               
+
             };
             var step = 0.05f;
             pb.MouseWheel += (e, mouse) =>
             {
-               
+
             };
             pb.SizeMode = PictureBoxSizeMode.AutoSize;
             mf.Width = 500;
             mf.Height = 500;
             mf.Controls.Add(pb);
-            
+
             Application.Run(mf);
         }
         public static int size = 1;
@@ -106,6 +101,6 @@ namespace MinesServer
     }
     public static class E
     {
-        
+
     }
 }

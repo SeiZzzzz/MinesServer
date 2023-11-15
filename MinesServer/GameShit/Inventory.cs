@@ -1,6 +1,5 @@
-﻿using Microsoft.Identity.Client;
+﻿using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
-using MinesServer.Server;
 namespace MinesServer.GameShit
 {
     public class Inventory
@@ -11,7 +10,7 @@ namespace MinesServer.GameShit
             typeditems = new Dictionary<int, ItemUsage>
             {
                 {
-                    0,(x, y) => 
+                    0,(x, y) =>
                     {
 
                     }
@@ -23,32 +22,32 @@ namespace MinesServer.GameShit
                     }
                 },
                 {
-                    2,(x, y) => 
+                    2,(x, y) =>
                     {
 
                     }
                 },
                 {
-                    3,(x, y) => 
+                    3,(x, y) =>
                     {
 
                     }
                 },
                 {
-                    4,(x, y) => 
+                    4,(x, y) =>
                     {
 
                     }
                 },
                 {
-                    5,(x, y) => 
+                    5,(x, y) =>
                     {
 
                     }
                 }
             };
         }
-        public void SetItem(int id,int col)
+        public void SetItem(int id, int col)
         {
             var x = items;
             x[id] = col;
@@ -59,7 +58,7 @@ namespace MinesServer.GameShit
         private string getinv()
         {
             var t = "";
-            for (int i = 0;i < items.Length;i++)
+            for (int i = 0; i < items.Length; i++)
             {
                 if (items[i] > 0)
                 {
@@ -80,7 +79,7 @@ namespace MinesServer.GameShit
         {
 
         }
-        public Dictionary<int,ItemUsage> typeditems;
+        public Dictionary<int, ItemUsage> typeditems;
         public delegate void ItemUsage(int x, int y);
         public void Choose(int id)
         {
@@ -93,7 +92,7 @@ namespace MinesServer.GameShit
             get
             {
                 var l = 0;
-                for(int i = 0;i < items.Length;i++)
+                for (int i = 0; i < items.Length; i++)
                 {
                     if (items[i] > 0)
                     {

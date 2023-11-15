@@ -9,7 +9,7 @@ namespace MinesServer.GameShit.GUI
         {
             commands.Add("setitem", (p, arg) =>
             {
-                if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1],out var i) && int.TryParse(arg.Split(" ")[2], out var c))
+                if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1], out var i) && int.TryParse(arg.Split(" ")[2], out var c))
                 {
                     p.inventory.SetItem(i, c);
                     p.AddConsoleLine("ok");
