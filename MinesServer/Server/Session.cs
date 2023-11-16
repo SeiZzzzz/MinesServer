@@ -86,12 +86,15 @@ namespace MinesServer.Server
             tyevents.Add("Xdig", (ty) =>
                 {
                     var tmp = Encoding.UTF8.GetString(ty.data).Trim();
-                    int.TryParse(tmp, out var dir);
-                    var x = (int)player.GetDirCord().X;
-                    var y = (int)player.GetDirCord().Y;
-                    if (World.W.ValidCoord(x, y))
+                    if (int.TryParse(tmp, out var dir))
                     {
-                        player.Bz(x, y);
+                        player.dir = dir;
+                        var x = (int)player.GetDirCord().X;
+                        var y = (int)player.GetDirCord().Y;
+                        if (World.W.ValidCoord(x, y))
+                        {
+                            player.Bz(x, y);
+                        }
                     }
                 });
             tyevents.Add("TADG", (ty) =>

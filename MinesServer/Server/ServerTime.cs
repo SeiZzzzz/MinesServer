@@ -1,4 +1,7 @@
-﻿namespace MinesServer.Server
+﻿using MinesServer.GameShit;
+using System.Runtime.CompilerServices;
+
+namespace MinesServer.Server
 {
     public class ServerTime
     {
@@ -12,8 +15,33 @@
         {
             gameActions.Enqueue(action);
         }
+        public void Start()
+        {
+            Task.Run(()=>
+            {
+                var tps = 64;
+                var lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                while (true)
+                {
+                    int ticksToProcess = (int)((DateTimeOffset.Now.ToUnixTimeMilliseconds() - lasttick) / 1000f * tps);
+                    if (ticksToProcess > 0)
+                    {
+                        if (ticksToProcess > 1)
+                        {
+                            Console.WriteLine("overload");
+                        }
+                        while (ticksToProcess-- > 0) Update();
+                        lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+                    }
+                }
+            });
+        }
         public void Update()
         {
+            if (World.W.map == null)
+            {
+                return;
+            }
             for (int j = 1; j <= MServer.Instance.players.Count; j++)
             {
                 var player = MServer.GetPlayer(j);
@@ -35,6 +63,13 @@
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
+                }
+            }
+            for (int x = 0; x < World.W.chunksCountW; x++)
+            {
+                for (int y = 0; y < World.W.chunksCountH; y++)
+                {
+                    World.W.chunks[x, y].Update();
                 }
             }
         }

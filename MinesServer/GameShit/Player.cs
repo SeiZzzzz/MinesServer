@@ -96,7 +96,7 @@ namespace MinesServer.GameShit
                 .AddButton("ВЫЙТИ", "exit")
                 .Send(connection);
         }
-        public bool CanAct { get { return Delay < DateTime.Now; } }
+        public bool CanAct { get { return Delay <= DateTime.Now; } }
         public void AddDelay(double ms)
         {
             Delay = DateTime.Now + TimeSpan.FromMilliseconds(ms);
@@ -105,7 +105,6 @@ namespace MinesServer.GameShit
         {
             var cell = World.W.GetCell(x, y);
             World.W.SetCell(x, y, 35);
-            Console.WriteLine(cell);
         }
         public Vector2 GetDirCord()
         {
@@ -119,7 +118,6 @@ namespace MinesServer.GameShit
             {
                 if (!CanAct || !World.W.ValidCoord(x, y))
                 {
-                    AddDelay(0.01);
                     connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
                     return;
                 }
@@ -128,7 +126,6 @@ namespace MinesServer.GameShit
                 if (!World.GetProp(cell).isEmpty)
                 {
                     connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
-                    AddDelay(0.01);
                     return;
                 }
                 var newpos = new Vector2(x, y);
@@ -142,7 +139,7 @@ namespace MinesServer.GameShit
                     connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
                 }
                 SendMap();
-                AddDelay(0.01);
+                AddDelay(0.000001);
             }
             catch (Exception ex)
             {

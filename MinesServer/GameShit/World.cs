@@ -118,8 +118,7 @@ namespace MinesServer.GameShit
             var ch = GetChunk(x, y);
             if (ch != null)
             {
-                ch.Load();
-                ch.SendAround();
+                ch.Update();
             }
         }
         public Chunk GetChunk(int x, int y)

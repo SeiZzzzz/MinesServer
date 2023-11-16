@@ -32,13 +32,18 @@
                 }
 
             }
+            var a = new byte[width];
+            for(int x = 0; x < width;x++)
+            {
+                World.W.map.SetCell(x, 0, 36);
+            }
         }
         public void StartGeneration()
         {
             Console.WriteLine("Generating sectors");
             var sec = new Sectors((width, height));
             sec.GenerateENoise(15, 1, RcherNZ.AccidentalNoise.InterpolationType.Cubic);
-            sec.AddW(25, 1, RcherNZ.AccidentalNoise.InterpolationType.Linear, .7f);
+            sec.AddW(25, 1, RcherNZ.AccidentalNoise.InterpolationType.Linear, .55f);
             sec.End();
             var map = sec.map;
             var rc = 0;
