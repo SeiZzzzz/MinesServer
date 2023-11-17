@@ -33,7 +33,7 @@
 
             }
             var a = new byte[width];
-            for(int x = 0; x < width;x++)
+            for (int x = 0; x < width; x++)
             {
                 World.W.map.SetCell(x, 0, 36);
             }

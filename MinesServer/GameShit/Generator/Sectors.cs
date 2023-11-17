@@ -207,7 +207,7 @@ namespace MinesServer.GameShit.Generator
         public void AddW(double freq = 25, double lac = 1, InterpolationType t = InterpolationType.Cubic, float res = .45f)
         {
             var temp = map;
-            GenerateENoise(freq, lac, t,res);
+            GenerateENoise(freq, lac, t, res);
             for (int x = 0; x < size.Item1; x++)
             {
                 for (int y = 0; y < size.Item2; y++)

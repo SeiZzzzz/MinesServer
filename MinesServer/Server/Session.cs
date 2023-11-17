@@ -143,6 +143,7 @@ namespace MinesServer.Server
                 father.players.Remove(player.Id);
                 player.OnDisconnect();
             }
+            player = null;
 
         }
         public void GUI(TYPacket ty)

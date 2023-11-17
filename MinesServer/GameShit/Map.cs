@@ -1,6 +1,6 @@
-﻿using Microsoft.Identity.Client;
-using Syroot.BinaryData;
-using System.IO;
+﻿using System.IO;
+using System.Runtime.InteropServices;
+using RT.Util.Streams;
 
 namespace MinesServer.GameShit
 {
@@ -12,14 +12,65 @@ namespace MinesServer.GameShit
             this.MapHeight = mapHeight;
             path = World.W.name + ".mapb";
             rpath = World.W.name + "_roads.mapb";
+            dpath = World.W.name + "_durability.mapb";
             if (!File.Exists(path))
             {
                 MapExists = false;
             }
             stream = new BinaryStream(File.Open(path, FileMode.OpenOrCreate));
             rstream = new BinaryStream(File.Open(rpath, FileMode.OpenOrCreate));
+            dstream = new BinaryStream(File.Open(dpath, FileMode.OpenOrCreate));
         }
         public bool MapExists = true;
+        public void SetDurability(int x,int y,int d)
+        {
+            if (World.W.ValidCoord(x, y))
+            {
+                dstream.Position = x + y * this.MapHeight;
+                if (dstream.IsEndOfStream())
+                {
+                    dstream.WriteInt(GetProp(GetCell(x, y)).durability);
+                }
+                else
+                {
+                    dstream.WriteInt(d);     
+                }
+            }
+        }
+        public int GetDurability(int x, int y)
+        {
+            if (World.W.ValidCoord(x, y))
+            {
+                dstream.Position = x + y * this.MapHeight;
+                if (dstream.IsEndOfStream())
+                {
+                    var dur = GetProp(GetCell(x, y)).durability;
+                    dstream.WriteInt(dur);
+                    return dur;
+                }
+                else
+                {
+                    try
+                    {
+                        dstream.Position = x + y * this.MapHeight;
+                        var dur = dstream.ReadInt();
+                        if (dur > 0)
+                        {
+                            return dur;
+                        }
+                        else
+                        {
+                            dur = GetProp(GetCell(x, y)).durability;
+                            dstream.Position = x + y * this.MapHeight;
+                            dstream.WriteInt(dur);
+                        }
+                        return dur;
+                    }
+                    catch (Exception ex) { return 1; }
+                }
+            }
+            return 0;
+        }
         public void SetCell(int x, int y, byte type)
         {
             if (GetProp(type).isEmpty)
@@ -28,6 +79,8 @@ namespace MinesServer.GameShit
                 WithoutCheckSetRoad(x, y, type);
                 return;
             }
+            dstream.Position = x + y * this.MapHeight;
+            dstream.WriteInt(GetProp(GetCell(x, y)).durability);
             WithoutCheckSet(x, y, 0);
         }
         public byte GetCell(int x, int y)
@@ -37,36 +90,48 @@ namespace MinesServer.GameShit
             {
                 b = cell;
             }
-            if (b == 0 && TryGet1ByteRoads(x, y,out var rcell))
+            if (b == 0 && TryGet1ByteRoads(x, y, out var rcell))
             {
                 b = rcell;
             }
             return b;
         }
-        private bool TryGet1ByteWorld(int x,int y, out byte cell)
+        public byte GetRoad(int x, int y)
+        {
+            byte b = 32;
+            if (TryGet1ByteRoads(x, y, out var rcell))
+            {
+                b = rcell;
+            }
+            return b;
+        }
+        private bool TryGet1ByteWorld(int x, int y, out byte cell)
         {
             WSGto(x, y);
             try
             {
-                cell = stream.Read1Byte();
+                cell = stream.ReadByte();
                 return true;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex);
-                cell = 0; 
-                return false; }
+                cell = 32;
+                return false;
+            }
         }
         private bool TryGet1ByteRoads(int x, int y, out byte cell)
         {
             RSGto(x, y);
             try
             {
-                cell = rstream.Read1Byte();
+                cell = rstream.ReadByte();
                 return true;
             }
-            catch (Exception ex) { cell = 32;SetCell(x,y,32) ; return true; }
+            catch (Exception ex) { cell = 32; SetCell(x, y, 32); return true; }
         }
-        private void WSGto(int x, int y) => stream.BaseStream.Position = x + y * this.MapHeight;
-        private void RSGto(int x, int y) => rstream.BaseStream.Position = x + y * this.MapHeight;
+        private void WSGto(int x, int y) => stream.Position = x + y * this.MapHeight;
+        private void RSGto(int x, int y) => rstream.Position = x + y * this.MapHeight;
         public byte[] LoadFrom(int x, int y, int width, int height)
         {
             var chunk = new byte[width * height];
@@ -75,7 +140,7 @@ namespace MinesServer.GameShit
                 for (int cy = 0; cy < height; cy++)
                 {
                     byte b = 0;
-                    if (TryGet1ByteWorld(x + cx,y + cy,out var result))
+                    if (TryGet1ByteWorld(x + cx, y + cy, out var result))
                     {
                         b = result;
                     }
@@ -88,7 +153,7 @@ namespace MinesServer.GameShit
             }
             return chunk;
         }
-        public void WithoutCheckSet(int x,int y,byte type)
+        public void WithoutCheckSet(int x, int y, byte type)
         {
             WSGto(x, y);
             stream.WriteByte(type);
@@ -113,21 +178,17 @@ namespace MinesServer.GameShit
                     c++;
                     if (GetProp(array[tx + ty * height]).isEmpty)
                     {
-                        WSGto(x + tx, y + ty);
-                        stream.WriteByte(0);
-                        RSGto(x + tx, y + ty);
-                        rstream.WriteByte(array[tx + ty * height]);
+                        WithoutCheckSet(x + tx, y + ty, 0);
+                        WithoutCheckSetRoad(x + tx, y + ty, array[tx + ty * height]);
                     }
                     else
                     {
-                        WSGto(x + tx, y + ty);
-                        stream.WriteByte(array[tx + ty * height]);
-                        if (!rstream.EndOfStream)
+                        WithoutCheckSet(x + tx, y + ty, array[tx + ty * height]);
+                        if (!rstream.IsEndOfStream())
                         {
                             continue;
                         }
-                        RSGto(x + tx, y + ty);
-                        rstream.WriteByte(32);
+                        WithoutCheckSetRoad(x + tx, y + ty, 32);
                     }
                 }
                 Console.Write($"\r{c}/{array.Length}");
@@ -136,10 +197,19 @@ namespace MinesServer.GameShit
         }
         private BinaryStream stream;
         private BinaryStream rstream;
+        private BinaryStream dstream;
         public readonly string path;
         public readonly string rpath;
+        public readonly string dpath;
         public readonly int MapWidth;
         public readonly int MapHeight;
+    }
+    public static class ext
+    {
+        public static bool IsEndOfStream(this BinaryStream stream)
+        {
+            return stream.Position >= stream.Length;
+        }
     }
 
 

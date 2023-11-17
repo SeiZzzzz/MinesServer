@@ -1,5 +1,4 @@
 ﻿using MinesServer.GameShit;
-using System.Runtime.CompilerServices;
 
 namespace MinesServer.Server
 {
@@ -17,7 +16,7 @@ namespace MinesServer.Server
         }
         public void Start()
         {
-            Task.Run(()=>
+            Task.Run(() =>
             {
                 var tps = 64;
                 var lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();

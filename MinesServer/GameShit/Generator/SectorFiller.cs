@@ -105,9 +105,17 @@ namespace MinesServer.GameShit.Generator
                     {
                         c.type = ft;
                     }
+                    if (alive(s.seccells.Count) > rand.Next(1, 101))
+                    {
+                        //c.type = randalive
+                    }
                 }
             }
             Console.WriteLine("");
+        }
+        public static int alive(int x)
+        {
+            return 40 + (((85 - 40) * (x - 50000)) / (5000 - 50000));
         }
     }
 

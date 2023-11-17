@@ -3,7 +3,6 @@ using MinesServer.GameShit.GUI;
 using NetCoreServer;
 using System.Net;
 using System.Net.Sockets;
-using System.Timers;
 namespace MinesServer.Server
 {
     public class MServer : TcpServer
@@ -18,7 +17,7 @@ namespace MinesServer.Server
             players = new Dictionary<int, Session>();
             HorbDecoder.InitCommands();
             time = new ServerTime();
-            new World(Default.cfg.WorldName, 32 * 312, 32 * 312);
+            new World(Default.cfg.WorldName, 32 * 10, 32 * 10);
             DataBase.Load();
             time.Start();
             OptionKeepAlive = true;

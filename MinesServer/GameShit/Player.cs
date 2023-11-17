@@ -1,6 +1,8 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
+using MinesServer.GameShit.Skills;
 using MinesServer.Server;
+using NetCoreServer;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
 
@@ -23,6 +25,7 @@ namespace MinesServer.GameShit
         public Basket crys { get; set; }
         public Inventory inventory { get; set; }
         public Health health { get; set; }
+        public PlayerSkills skillslist { get; set; }
         public Stack<byte> geo = new Stack<byte>();
         Queue<Line> console = new Queue<Line>();
         public DateTime Delay;
@@ -104,7 +107,30 @@ namespace MinesServer.GameShit
         public void Bz(int x, int y)
         {
             var cell = World.W.GetCell(x, y);
-            World.W.SetCell(x, y, 35);
+            var d = World.W.map.GetDurability(x, y);
+            var hitdmg = 1;
+            foreach(var c in skillslist.skills)
+            {
+                if (c != null && c.UseSkill(c.effecttype,this))
+                {
+                    if (c.name == "d")
+                    {
+                        hitdmg *= (int)((float)c.GetEffect() / 100f);
+                        Console.WriteLine(hitdmg);
+                    }
+                    c.Up();
+                }
+            }
+            Console.WriteLine(d);
+            if ((d - hitdmg) <= 0)
+            {
+                World.W.map.SetDurability(x, y, 0);
+                World.W.Destroy(x, y);
+            }
+            else if (d >= 0)
+            {
+                World.W.map.SetDurability(x, y, d - hitdmg);
+            }
         }
         public Vector2 GetDirCord()
         {
@@ -159,6 +185,8 @@ namespace MinesServer.GameShit
             inventory = new Inventory();
             inventory.items = new int[49];
             crys = new Basket(this);
+            skillslist = new PlayerSkills();
+            AddBasicSkills();
             pos = new Vector2(0, 0);
             dir = 0;
             clanid = 0;
@@ -190,6 +218,12 @@ namespace MinesServer.GameShit
                 return Newtonsoft.Json.JsonConvert.SerializeObject(this);
             }
         }
+        private void AddBasicSkills()
+        {
+            skillslist.InstallSkill("m", 0);
+            skillslist.InstallSkill("d", 1);
+            skillslist.InstallSkill("M", 2);
+        }
         public void Init()
         {
             if (MServer.Instance.players.Keys.Contains(this.Id))
@@ -200,10 +234,14 @@ namespace MinesServer.GameShit
             }
             MServer.Instance.players.Add(Id, connection);
             connection.auth = null;
-            using var db = new DataBase();
-            crys = db.baskets.First(x => x.Id == Id);
-            inventory = db.inventories.First(x => x.Id == Id);
-            health = db.healths.First(x => x.Id == Id);
+            using (var db = new DataBase())
+            {
+                crys = db.baskets.First(x => x.Id == Id);
+                inventory = db.inventories.First(x => x.Id == Id);
+                health = db.healths.First(x => x.Id == Id);
+                skillslist = db.skills.First(x => x.Id == Id);
+                skillslist.LoadSkills();
+            }
             y = 1;
             x = World.W.gen.spawns[new Random().Next(World.W.gen.spawns.Count)].Item1;
             SendPing();
@@ -343,6 +381,7 @@ namespace MinesServer.GameShit
                         if (valid(cx, cy))
                         {
                             var ch = World.W.chunks[cx, cy];
+                            ch.active = true;
                             ch.Load();
                             if (ch != null)
                             {

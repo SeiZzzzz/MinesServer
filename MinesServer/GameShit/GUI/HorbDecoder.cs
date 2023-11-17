@@ -20,6 +20,17 @@ namespace MinesServer.GameShit.GUI
             {
                 p.AddConsoleLine(p.Id.ToString());
             });
+            commands.Add("getallmap", (p, arg) =>
+            {
+                for (int x = 0; x < World.W.chunksCountW; x++)
+                {
+                    for (int y = 0; y < World.W.chunksCountH; y++)
+                    {
+                        World.W.chunks[x, y].Load();
+                        p.connection.SendCells(32, 32, x * 32, y * 32, World.W.chunks[x, y].cells);
+                    }
+                }
+            });
             commands.Add("setnick", (p, arg) =>
             {
                 if (arg.Split(' ').Length > 0)

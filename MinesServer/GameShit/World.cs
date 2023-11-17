@@ -57,18 +57,21 @@ namespace MinesServer.GameShit
         {
 
         }
-        public void DestroyCellByBz(int x, int y)
-        {/*
-            var cell = GetCell(x, y);
-            if (cell != null && GetProp(cell).is_destructible && map.mapmesh[0][x + y * height] != 0)
+        public void Destroy(int x,int y)
+        {
+            if (!ValidCoord(x, y))
             {
-                map.mapmesh[1][x + y * height] = 0;
+                return;
             }
-            else if (cell != 0 && GetProp(cell).is_destructible)
-            {
-                map.mapmesh[0][x + y * height] = 32;
-                map.mapmesh[1][x + y * height] = 0;
-            }*/
+                var c = map.GetRoad(x, y);
+                if (c != 0)
+                {
+                    map.SetCell(x, y, c);
+                }
+                else
+                {
+                    map.SetCell(x, y, 32);
+                }
         }
         public void CreateEmptyMap(byte cell)
         {
