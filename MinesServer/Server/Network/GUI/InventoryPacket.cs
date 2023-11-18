@@ -15,7 +15,7 @@ namespace MinesServer.Network.GUI
 
         public int Length => EventType.Length + 1 + data.Length;
 
-        private static PacketDecoder GetDecoder(string packetName) => packetName switch
+        private static PacketDecoder? GetDecoder(string packetName) => packetName switch
         {
             InventoryShowPacket.packetName => x => InventoryShowPacket.Decode(x),
             InventoryFullPacket.packetName => x => InventoryFullPacket.Decode(x),
@@ -28,14 +28,24 @@ namespace MinesServer.Network.GUI
         {
             var ind = decodeFrom.IndexOf((byte)':');
             var eventType = Encoding.UTF8.GetString(decodeFrom[..ind]);
-            return new(GetDecoder(eventType)(decodeFrom[(ind + 1)..]));
+            var decoder = GetDecoder(eventType) ?? throw new InvalidPayloadException($"Invalid event type: {eventType}");
+            return new(decoder(decodeFrom[(ind + 1)..]));
         }
 
         public int Encode(Span<byte> output)
         {
+            if (GetDecoder(EventType) is null) throw new InvalidPayloadException($"Invalid event type: {EventType}");
             Span<byte> span = stackalloc byte[data.Length];
             data.Encode(span);
             return Encoding.UTF8.GetBytes($"{EventType}:{Encoding.UTF8.GetString(span)}", output);
         }
+
+        public static InventoryPacket Choose(string hint, bool[,] grid, int dx, int dy, int distance) => new(new InventoryChoosePacket(hint, grid, dx, dy, distance));
+        
+        public static InventoryPacket Close() => new(new InventoryClosePacket());
+        
+        public static InventoryPacket Full(Dictionary<int, int> grid, int selected) => new(new InventoryFullPacket(grid, selected));
+
+        public static InventoryPacket Show(Dictionary<int, int> grid, int selected, int all) => new(new InventoryShowPacket(grid, selected, all));
     }
 }

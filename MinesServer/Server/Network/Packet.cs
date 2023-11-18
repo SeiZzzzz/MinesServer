@@ -10,7 +10,6 @@ using MinesServer.Network.GUI;
 using MinesServer.Network.Movement;
 using MinesServer.Network.Programmator;
 using MinesServer.Network.Tutorial;
-using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 
 namespace MinesServer.Network
@@ -29,58 +28,58 @@ namespace MinesServer.Network
 
         public string EventType => data.PacketName;
 
-        private static PacketDecoder GetDecoder(string packetName) => packetName switch
+        private static PacketDecoder? GetDecoder(string packetName) => packetName switch
         {
-            TYPacket.packetName => x => TYPacket.Decode(x),
-            AUPacket.packetName => x => AUPacket.Decode(x),
-            AEPacket.packetName => x => AEPacket.Decode(x),
-            AHPacket.packetName => x => AHPacket.Decode(x),
-            BotInfoPacket.packetName => x => BotInfoPacket.Decode(x),
-            TPPacket.packetName => x => TPPacket.Decode(x),
-            SmoothTPPacket.packetName => x => SmoothTPPacket.Decode(x),
-            BasketPacket.packetName => x => BasketPacket.Decode(x),
-            GuPacket.packetName => x => GuPacket.Decode(x),
-            LivePacket.packetName => x => LivePacket.Decode(x),
-            SpeedPacket.packetName => x => SpeedPacket.Decode(x),
-            NickListPacket.packetName => x => NickListPacket.Decode(x),
-            OnlinePacket.packetName => x => OnlinePacket.Decode(x),
-            LevelPacket.packetName => x => LevelPacket.Decode(x),
-            MoneyPacket.packetName => x => MoneyPacket.Decode(x),
-            OKPacket.packetName => x => OKPacket.Decode(x),
-            AutoDiggPacket.packetName => x => AutoDiggPacket.Decode(x),
-            GeoPacket.packetName => x => GeoPacket.Decode(x),
-            SettingsPacket.packetName => x => SettingsPacket.Decode(x),
-            WorldInfoPacket.packetName => x => WorldInfoPacket.Decode(x),
-            PongPacket.packetName => x => PongPacket.Decode(x),
-            SkillsPacket.packetName => x => SkillsPacket.Decode(x),
-            OpenURLPacket.packetName => x => OpenURLPacket.Decode(x),
-            ClanShowPacket.packetName => x => ClanShowPacket.Decode(x),
-            ClanHidePacket.packetName => x => ClanHidePacket.Decode(x),
-            AgressionPacket.packetName => x => AgressionPacket.Decode(x),
-            BanHammerPacket.packetName => x => BanHammerPacket.Decode(x),
-            MissionProgressPacket.packetName => x => MissionProgressPacket.Decode(x),
-            BibikaPacket.packetName => x => BibikaPacket.Decode(x),
-            RespPacket.packetName => x => RespPacket.Decode(x),
-            NaviArrowPacket.packetName => x => NaviArrowPacket.Decode(x),
-            DailyRewardPacket.packetName => x => DailyRewardPacket.Decode(x),
-            ChatNotificationPacket.packetName => x => ChatNotificationPacket.Decode(x),
-            ChatColorPacket.packetName => x => ChatColorPacket.Decode(x),
-            StatusPacket.packetName => x => StatusPacket.Decode(x),
-            ReconnectPacket.packetName => x => ReconnectPacket.Decode(x),
-            PurchasePacket.packetName => x => PurchasePacket.Decode(x),
-            StatePanelPacket.packetName => x => StatePanelPacket.Decode(x),
-            BadCellsPacket.packetName => x => BadCellsPacket.Decode(x),
-            ProgrammatorPacket.packetName => x => ProgrammatorPacket.Decode(x),
-            ChatMessagesPacket.packetName => x => ChatMessagesPacket.Decode(x),
-            MissionPanelPacket.packetName => x => MissionPanelPacket.Decode(x),
-            CurrentChatPacket.packetName => x => CurrentChatPacket.Decode(x),
-            ModulesPacket.packetName => x => ModulesPacket.Decode(x),
-            ChatListPacket.packetName => x => ChatListPacket.Decode(x),
-            OpenProgrammatorPacket.packetName => x => OpenProgrammatorPacket.Decode(x),
-            GUIPacket.packetName => x => GUIPacket.Decode(x),
-            PingPacket.packetName => x => PingPacket.Decode(x),
-            HBPacket.packetName => x => HBPacket.Decode(x),
-            InventoryPacket.packetName => x => InventoryPacket.Decode(x),
+            TYPacket.packetName => x => TYPacket.Decode(x), // TY
+            AUPacket.packetName => x => AUPacket.Decode(x), // AU
+            AEPacket.packetName => x => AEPacket.Decode(x), // AE
+            AHPacket.packetName => x => AHPacket.Decode(x), // AH
+            BotInfoPacket.packetName => x => BotInfoPacket.Decode(x), // BI
+            TPPacket.packetName => x => TPPacket.Decode(x), // @T
+            SmoothTPPacket.packetName => x => SmoothTPPacket.Decode(x), // @t
+            BasketPacket.packetName => x => BasketPacket.Decode(x), // @B
+            GuPacket.packetName => x => GuPacket.Decode(x), // Gu
+            LivePacket.packetName => x => LivePacket.Decode(x), // @L
+            SpeedPacket.packetName => x => SpeedPacket.Decode(x), // sp
+            NickListPacket.packetName => x => NickListPacket.Decode(x), // NL
+            OnlinePacket.packetName => x => OnlinePacket.Decode(x), // ON
+            LevelPacket.packetName => x => LevelPacket.Decode(x), // LV
+            MoneyPacket.packetName => x => MoneyPacket.Decode(x), // P$
+            OKPacket.packetName => x => OKPacket.Decode(x), // OK
+            AutoDiggPacket.packetName => x => AutoDiggPacket.Decode(x), // BD
+            GeoPacket.packetName => x => GeoPacket.Decode(x), // GE
+            SettingsPacket.packetName => x => SettingsPacket.Decode(x), // #S
+            WorldInfoPacket.packetName => x => WorldInfoPacket.Decode(x), // cf
+            PongPacket.packetName => x => PongPacket.Decode(x), // PO
+            SkillsPacket.packetName => x => SkillsPacket.Decode(x), // @S
+            OpenURLPacket.packetName => x => OpenURLPacket.Decode(x), // GR
+            ClanShowPacket.packetName => x => ClanShowPacket.Decode(x), // cS
+            ClanHidePacket.packetName => x => ClanHidePacket.Decode(x), // cH
+            AgressionPacket.packetName => x => AgressionPacket.Decode(x), // BA
+            BanHammerPacket.packetName => x => BanHammerPacket.Decode(x), // SU
+            MissionProgressPacket.packetName => x => MissionProgressPacket.Decode(x), // MP
+            BibikaPacket.packetName => x => BibikaPacket.Decode(x), // BB
+            RespPacket.packetName => x => RespPacket.Decode(x), // @R
+            NaviArrowPacket.packetName => x => NaviArrowPacket.Decode(x), // GO
+            DailyRewardPacket.packetName => x => DailyRewardPacket.Decode(x), // DR
+            ChatNotificationPacket.packetName => x => ChatNotificationPacket.Decode(x), // mN
+            ChatColorPacket.packetName => x => ChatColorPacket.Decode(x), // mC
+            StatusPacket.packetName => x => StatusPacket.Decode(x), // ST
+            ReconnectPacket.packetName => x => ReconnectPacket.Decode(x), // RC
+            PurchasePacket.packetName => x => PurchasePacket.Decode(x), // $$
+            StatePanelPacket.packetName => x => StatePanelPacket.Decode(x), // SP
+            BadCellsPacket.packetName => x => BadCellsPacket.Decode(x), // BC
+            ProgrammatorPacket.packetName => x => ProgrammatorPacket.Decode(x), // @P
+            ChatMessagesPacket.packetName => x => ChatMessagesPacket.Decode(x), // mU
+            MissionPanelPacket.packetName => x => MissionPanelPacket.Decode(x), // MM
+            CurrentChatPacket.packetName => x => CurrentChatPacket.Decode(x), // mO
+            ModulesPacket.packetName => x => ModulesPacket.Decode(x), // PM
+            ChatListPacket.packetName => x => ChatListPacket.Decode(x), // mL
+            OpenProgrammatorPacket.packetName => x => OpenProgrammatorPacket.Decode(x), // #P
+            GUIPacket.packetName => x => GUIPacket.Decode(x), // GU
+            PingPacket.packetName => x => PingPacket.Decode(x), // PI
+            HBPacket.packetName => x => HBPacket.Decode(x), // HB
+            InventoryPacket.packetName => x => InventoryPacket.Decode(x), // IN
             _ => null
         };
         
@@ -95,7 +94,7 @@ namespace MinesServer.Network
             if (EventType.Length != eventTypeLength) throw new InvalidPayloadException($"Invalid event type length: Expected {eventTypeLength} but got {EventType.Length}");
             if (GetDecoder(EventType) is null) throw new InvalidPayloadException($"Invalid event type: {EventType}");
             var length = Length;
-            MemoryMarshal.Write(output, ref length);
+            MemoryMarshal.Write(output, in length);
             var bytesWritten = lengthLength;
             var caret = 0;
             bytesWritten += Encoding.UTF8.GetBytes(dataType, output[(caret += lengthLength)..]);

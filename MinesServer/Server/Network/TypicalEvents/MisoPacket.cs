@@ -3,16 +3,17 @@ using System.Linq;
 
 namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct MissPacket : IDataPart<MissPacket>
+    public readonly struct MisoPacket : IDataPart<MisoPacket>
     {
-        public const string packetName = "Miss";
+        public const string packetName = "Miso";
 
         public string PacketName => packetName;
 
         public int Length => 1;
 
-        public static MissPacket Decode(ReadOnlySpan<byte> decodeFrom)
+        public static MisoPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
+            if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'0' })) throw new InvalidPayloadException("Invalid payload");
             return new();
         }
 

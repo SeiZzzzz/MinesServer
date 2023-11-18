@@ -116,22 +116,27 @@ namespace MinesServer.GameShit
         public void Bz(int x, int y)
         {
             var cell = World.W.GetCell(x, y);
+            /*if (!World.GetProp(cell).is_destructible)
+            {
+                return;
+            }*/
             var d = World.W.map.GetDurability(x, y);
             var hitdmg = 1f;
-            foreach(var c in skillslist.skills)
-            {
-                if (c != null && c.UseSkill(c.effecttype,this))
-                {
-                    if (c.name == "d")
-                    {
-                        hitdmg *= c.GetEffect() / 100f;
-                        Console.WriteLine(c.GetExp());
-                    }
-                    c.Up();
-                }
-            }
+
+            //тычка по кри фиксированно отнимает 1?
             if ((d - hitdmg) <= 0)
             {
+                foreach (var c in skillslist.skills)
+                {
+                    if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
+                    {
+                        if (c.name == "d")
+                        {
+                            hitdmg *= c.GetEffect() / 100f;
+                        }
+                        c.Up();
+                    }
+                }
                 World.W.map.SetDurability(x, y, 0);
                 World.W.Destroy(x, y);
             }
@@ -148,6 +153,20 @@ namespace MinesServer.GameShit
         }
         public void Move(int x, int y, int dir)
         {
+            foreach (var c in skillslist.skills)
+            {
+                if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
+                {
+                    if (c.name == "M")
+                    {
+                        if (c.isUpReady())
+                        {
+                            //ресенд мувхендлера с зависимостью
+                            c.Up();
+                        }
+                    }
+                }
+            }
             try
             {
                 if (!CanAct || !World.W.ValidCoord(x, y))
@@ -203,21 +222,9 @@ namespace MinesServer.GameShit
             using var db = new DataBase();
             db.SaveChanges();
         }
-        public void SendMoney()
-        {
-            if (this.money < 0)
-            {
-                this.money = long.MaxValue;
-            }
-            if (this.creds < 0)
-            {
-                this.creds = long.MaxValue;
-            }
-            new MoneyPacket(this.money, this.creds);
-            this.connection.SendU(new MoneyPacket(this.money, this.creds));
-        }
         private void AddBasicSkills()
         {
+            //базовые скиллы
             skillslist.InstallSkill("m", 0);
             skillslist.InstallSkill("d", 1);
             skillslist.InstallSkill("M", 2);
@@ -292,6 +299,20 @@ namespace MinesServer.GameShit
                 l.text = "@@" + l.text;
             }
         }
+        #region senders
+        public void SendMoney()
+        {
+            if (this.money < 0)
+            {
+                this.money = long.MaxValue;
+            }
+            if (this.creds < 0)
+            {
+                this.creds = long.MaxValue;
+            }
+            new MoneyPacket(this.money, this.creds);
+            this.connection.SendU(new MoneyPacket(this.money, this.creds));
+        }
         public void SendAutoDigg()
         {
             connection.SendU(new AutoDiggPacket(autoDig));
@@ -353,7 +374,7 @@ namespace MinesServer.GameShit
                             if (j != null)
                             {
                                 var player = j.player;
-                                packets.Add(new HBPacket([new HBBotPacket(Id, (int)pos.X, (int)pos.Y, dir, 0, clanid, 0)]));
+                                packets.Add(new HBBotPacket(Id, (int)pos.X, (int)pos.Y, dir, 0, clanid, 0));
                             }
                         }
                     }
@@ -388,14 +409,14 @@ namespace MinesServer.GameShit
                             {
                                 
                                 cx *= 32; cy *= 32;
-                                packets.Add(new HBPacket([new HBMapPacket(cx, cy, 32, 32, ch.cells)]));
+                                packets.Add(new HBMapPacket(cx, cy, 32, 32, ch.cells));
                                 foreach (var id in ch.bots)
                                 {
                                     var j = MServer.GetPlayer(id.Key);
                                     if (j != null)
                                     {
                                         var player = j.player;
-                                        packets.Add(new HBPacket([new HBBotPacket(Id, (int)pos.X, (int)pos.Y, dir, 0, clanid, 0)]));
+                                        packets.Add(new HBBotPacket(Id, (int)pos.X, (int)pos.Y, dir, 0, clanid, 0));
                                     }
                                 }
                             }
@@ -430,6 +451,7 @@ namespace MinesServer.GameShit
                 }
             }
         }
+        #endregion
         public string GenerateHash()
         {
             var random = new Random();

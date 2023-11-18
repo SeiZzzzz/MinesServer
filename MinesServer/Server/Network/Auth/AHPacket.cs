@@ -8,7 +8,7 @@ namespace MinesServer.Network.Auth
     {
         public readonly bool isBad;
         public readonly int? user_id;
-        public readonly string user_hash;
+        public readonly string? user_hash;
 
         public const string packetName = "AH";
 
@@ -23,7 +23,7 @@ namespace MinesServer.Network.Auth
             this.user_hash = user_hash;
         }
 
-        public int Length => isBad ? 3 : 1 + user_id.Value.Digits() + user_hash!.Length;
+        public int Length => isBad ? 3 : 1 + user_id!.Value.Digits() + user_hash!.Length;
 
         public static AHPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -38,7 +38,7 @@ namespace MinesServer.Network.Auth
         {
             if (isBad)
             {
-                Span<byte> span = stackalloc byte[3] { (byte)'B', (byte)'A', (byte)'D' };
+                Span<byte> span = [(byte)'B', (byte)'A', (byte)'D'];
                 span.CopyTo(output);
                 return span.Length;
             }

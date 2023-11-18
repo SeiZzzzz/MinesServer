@@ -4,7 +4,7 @@ namespace MinesServer.GameShit
 {
     public class Chunk
     {
-        public Dictionary<int, Player> bots = new Dictionary<int, Player>();
+        public Dictionary<int, Player> bots = new();
         public (int, int) pos;
         public byte[] cells = new byte[32 * 32];
         public bool active = false;
@@ -20,6 +20,19 @@ namespace MinesServer.GameShit
             }
             cells = null;
         }
+        private void UpdateCells()
+        {
+            for(int x = 0; x < 32;x++)
+            {
+                for (int y = 0; y < 32; y++)
+                {
+                    if (World.GetProp(cells[x + y * 32]).isAlive)
+                    {
+                        //upd
+                    }
+                }
+            }
+        }
         public void AddBot(Player player)
         {
             if (this != null)
@@ -29,7 +42,7 @@ namespace MinesServer.GameShit
         }
         public bool shouldbeloaded()
         {
-            return active && (ShouldBeLoadedBots() /*|| smf*/);
+            return active && (ShouldBeLoadedBots() || ContainsAlive);
         }
         public void Load() => cells = cells == null ? World.W.map.LoadFrom((pos.Item1 * 32), (pos.Item2 * 32), 32, 32) : cells;
         private bool ShouldBeLoadedBots()

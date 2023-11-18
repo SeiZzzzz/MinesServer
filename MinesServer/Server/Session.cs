@@ -44,7 +44,6 @@ namespace MinesServer.Server
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
             var p = Packet.Decode(buffer);
-            Console.WriteLine("[S<-C] "+p.dataType+" "+p.EventType);
             switch (p.data)
             {
                 case AUPacket au: AU(au); break;

@@ -32,7 +32,7 @@ namespace MinesServer.GameShit.GUI
                     for (int y = 0; y < World.W.chunksCountH; y++)
                     {
                         World.W.chunks[x, y].Load();
-                        l.Add(new HBPacket([new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].cells)]));
+                        l.Add(new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].cells));
                     }
                 }
                 p.connection.SendB(new HBPacket(l.ToArray()));

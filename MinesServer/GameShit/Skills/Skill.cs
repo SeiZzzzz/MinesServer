@@ -1,4 +1,6 @@
-﻿namespace MinesServer.GameShit.Skills
+﻿using MinesServer.Network.GUI;
+
+namespace MinesServer.GameShit.Skills
 {
     public class Skill 
     {
@@ -35,19 +37,22 @@
                 exp -= GetExp();
             }
         }
-        public void AddExp()
+        public void AddExp(Player p)
         {
+            Dictionary<string, int> v = new();
             exp += 1;
+            v.Add(this.name, (int)((exp * 100f) / GetExp()));
+            p.connection.SendU(new SkillsPacket(v));
         }
         public bool UseSkill(SkillEffectType e,Player p)
         {
             if (e == effecttype)
             {
-                AddExp();
+                AddExp(p);
                 p.skillslist.Save();
-                return true;
+                return true; 
             }
-            return true;
+            return false; 
         }
         public bool isUpReady()
         {

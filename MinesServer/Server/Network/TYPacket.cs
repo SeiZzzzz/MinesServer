@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using MinesServer.Network.Tutorial;
 using MinesServer.Network.TypicalEvents;
 
 namespace MinesServer.Network
@@ -24,7 +23,7 @@ namespace MinesServer.Network
 
         public string EventType => data.PacketName;
 
-        private static PacketDecoder GetDecoder(string packetName) => packetName switch
+        private static PacketDecoder? GetDecoder(string packetName) => packetName switch
         {
             XmovPacket.packetName => x => XmovPacket.Decode(x),
             XdigPacket.packetName => x => XdigPacket.Decode(x),
@@ -71,8 +70,7 @@ namespace MinesServer.Network
         {
             var caret = eventTypeLength;
             var eventType = Encoding.UTF8.GetString(input[..caret]);
-            var decoder = GetDecoder(eventType);
-            if (decoder is null) throw new InvalidPayloadException($"Invalid event type: {eventType}");
+            var decoder = GetDecoder(eventType) ?? throw new InvalidPayloadException($"Invalid event type: {eventType}");
             var eventTime = MemoryMarshal.Read<uint>(input[caret..(caret += eventTimeLength)]);
             var x = MemoryMarshal.Read<uint>(input[caret..(caret += eventLocationLength)]);
             var y = MemoryMarshal.Read<uint>(input[caret..(caret += eventLocationLength)]);
@@ -94,13 +92,13 @@ namespace MinesServer.Network
             var caret = eventTypeLength;
             var bytesWritten = Encoding.UTF8.GetBytes(EventType, output);
             var et = eventTime;
-            MemoryMarshal.Write(output[caret..(caret += eventTimeLength)], ref et);
+            MemoryMarshal.Write(output[caret..(caret += eventTimeLength)], in et);
             bytesWritten += eventTimeLength;
             var tmpx = x;
-            MemoryMarshal.Write(output[caret..(caret += eventLocationLength)], ref tmpx);
+            MemoryMarshal.Write(output[caret..(caret += eventLocationLength)], in tmpx);
             bytesWritten += eventLocationLength;
             var tmpy = y;
-            MemoryMarshal.Write(output[caret..(caret += eventLocationLength)], ref tmpy);
+            MemoryMarshal.Write(output[caret..(caret += eventLocationLength)], in tmpy);
             bytesWritten += eventLocationLength;
             bytesWritten += data.Encode(output[caret..(caret + data.Length)]);
             return bytesWritten;

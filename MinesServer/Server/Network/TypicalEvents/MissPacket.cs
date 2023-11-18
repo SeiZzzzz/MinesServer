@@ -3,23 +3,23 @@ using System.Linq;
 
 namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct MisoPacket : IDataPart<MisoPacket>
+    public readonly record struct MissPacket(bool isEnabled) : IDataPart<MissPacket>
     {
-        public const string packetName = "Miso";
+        public const string packetName = "Miss";
 
         public string PacketName => packetName;
 
         public int Length => 1;
 
-        public static MisoPacket Decode(ReadOnlySpan<byte> decodeFrom)
+        public static MissPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
-            if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'0' })) throw new InvalidPayloadException("Invalid payload");
-            return new();
+            if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'0' }) && !decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'1' })) throw new InvalidPayloadException("Payload does not match any of the expected values");
+            return new(decodeFrom[0] == (byte)'1');
         }
 
         public int Encode(Span<byte> output)
         {
-            Span<byte> span = stackalloc byte[1] { (byte)'0' };
+            Span<byte> span = isEnabled ? stackalloc byte[1] { (byte)'1' } : stackalloc byte[1] { (byte)'0' };
             span.CopyTo(output);
             return span.Length;
         }

@@ -9,7 +9,7 @@ namespace MinesServer.Network.HubEvents
 
         public string PacketName => packetName;
 
-        public int Length => 1037;
+        public int Length => sizeof(byte) * 2 + sizeof(ushort) * 2 + cells.Length;
 
         public static HBMapPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -22,14 +22,15 @@ namespace MinesServer.Network.HubEvents
 
         public int Encode(Span<byte> output)
         {
+            if (width * height != cells.Length) throw new InvalidPayloadException("Chunk size does not match the cells array size");
             output[0] = Convert.ToByte(width);
             output[1] = Convert.ToByte(height);
             var bytesWritten = 2;
-            var tmpx = Convert.ToUInt16(x);
-            var tmpy = Convert.ToUInt16(y);
-            MemoryMarshal.Write(output[2..], ref tmpx);
+            var tmpx = Convert.ToUInt16(Convert.ToInt32(x));
+            var tmpy = Convert.ToUInt16(Convert.ToInt32(y));
+            MemoryMarshal.Write(output[2..], in tmpx);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[4..], ref tmpy);
+            MemoryMarshal.Write(output[4..], in tmpy);
             bytesWritten += sizeof(ushort);
             var span = cells.AsSpan();
             span.CopyTo(output[6..]);

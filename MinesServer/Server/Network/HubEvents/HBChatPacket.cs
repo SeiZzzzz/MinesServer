@@ -29,13 +29,13 @@ namespace MinesServer.Network.HubEvents
             var tmpy = Convert.ToUInt16(y);
             var bytesWritten = Encoding.UTF8.GetBytes(message, output[8..]);
             var tmplen = Convert.ToUInt16(bytesWritten);
-            MemoryMarshal.Write(output, ref tmpbid);
+            MemoryMarshal.Write(output, in tmpbid);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[2..], ref tmpx);
+            MemoryMarshal.Write(output[2..], in tmpx);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[4..], ref tmpy);
+            MemoryMarshal.Write(output[4..], in tmpy);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[6..], ref tmplen);
+            MemoryMarshal.Write(output[6..], in tmplen);
             bytesWritten += sizeof(ushort);
             return bytesWritten;
         }

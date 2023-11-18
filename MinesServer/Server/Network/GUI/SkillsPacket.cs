@@ -13,10 +13,10 @@ namespace MinesServer.Network.GUI
 
         public string PacketName => packetName;
 
-        public int Length => skills.Count - 1 + skills.Sum(x => x.Key.Length + 1 + x.Value.Digits());
+        public int Length => skills.Count - 1 + skills.Sum(x => x.Key.Length + 1 + x.Value.Digits() + 1);
 
         public static SkillsPacket Decode(ReadOnlySpan<byte> decodeFrom) => new(Encoding.UTF8.GetString(decodeFrom).Split('#').Select(x => x.Split(':')).ToDictionary(x => x[0], x => int.Parse(x[1])));
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(string.Join("#", skills.Select(x => x.Key + ":" + x.Value)), output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(string.Join("", skills.Select(x => x.Key + ":" + x.Value + "#")), output);
     }
 }

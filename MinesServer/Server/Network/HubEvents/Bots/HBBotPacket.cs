@@ -30,16 +30,16 @@ namespace MinesServer.Network.HubEvents.Bots
             output[2] = Convert.ToByte(tail);
             var bytesWritten = 3;
             var tmpid = Convert.ToUInt16(id);
-            MemoryMarshal.Write(output[3..], ref tmpid);
+            MemoryMarshal.Write(output[3..], in tmpid);
             bytesWritten += sizeof(ushort);
             var tmpx = Convert.ToUInt16(x);
-            MemoryMarshal.Write(output[5..], ref tmpx);
+            MemoryMarshal.Write(output[5..], in tmpx);
             bytesWritten += sizeof(ushort);
             var tmpy = Convert.ToUInt16(y);
-            MemoryMarshal.Write(output[7..], ref tmpy);
+            MemoryMarshal.Write(output[7..], in tmpy);
             bytesWritten += sizeof(ushort);
             var tmpcid = Convert.ToUInt16(cid);
-            MemoryMarshal.Write(output[9..], ref tmpcid);
+            MemoryMarshal.Write(output[9..], in tmpcid);
             bytesWritten += sizeof(ushort);
             return bytesWritten;
         }

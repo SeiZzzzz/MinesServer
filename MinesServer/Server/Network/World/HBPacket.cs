@@ -19,7 +19,7 @@ namespace MinesServer.Network.World
 
         public string PacketName => packetName;
 
-        private static PacketDecoder GetDecoder(string packetName) => packetName switch
+        private static PacketDecoder? GetDecoder(string packetName) => packetName switch
         {
             HBBotsPacket.packetName => x => HBBotsPacket.Decode(x),
             HBChatPacket.packetName => x => HBChatPacket.Decode(x),
@@ -51,7 +51,12 @@ namespace MinesServer.Network.World
             return new(result.ToArray());
         }
 
-        public HBPacket(IDataPartBase[] data) => this.data = data;
+        public HBPacket(IDataPartBase[] data)
+        {
+            var invalidPacket = data.FirstOrDefault(x => GetDecoder(x.PacketName) is null);
+            if (invalidPacket is not null) throw new InvalidPayloadException($"Invalid event type: {invalidPacket.PacketName}");
+            this.data = data;
+        }
 
         public int Encode(Span<byte> output)
         {
@@ -60,7 +65,6 @@ namespace MinesServer.Network.World
             {
                 caret += Encoding.UTF8.GetBytes(entry.PacketName, output[caret..]);
                 var length = entry.Encode(output[caret..]);
-                Console.WriteLine(length);
                 caret += length;
             }
             return caret;

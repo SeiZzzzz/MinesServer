@@ -19,7 +19,7 @@ namespace MinesServer.Network.Auth
         public readonly AuthType type;
         public readonly string uniq;
         public readonly int? user_id;
-        public readonly string token;
+        public readonly string? token;
 
         public const string packetName = "AU";
 
@@ -51,9 +51,9 @@ namespace MinesServer.Network.Auth
         public int Length => uniq.Length + type switch
         {
             AuthType.NoAuth => 8,
-            AuthType.Vk => 4 + token.Length,
-            AuthType.Debug => 7 + token.Length,
-            AuthType.Regular => user_id.Value.Digits() + 2 + token.Length,
+            AuthType.Vk => 4 + token!.Length,
+            AuthType.Debug => 7 + token!.Length,
+            AuthType.Regular => user_id!.Value.Digits() + 2 + token!.Length,
             AuthType.ServerSide => 0,
             _ => 0
         };
