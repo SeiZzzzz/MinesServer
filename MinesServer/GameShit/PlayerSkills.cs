@@ -41,113 +41,114 @@ namespace MinesServer.GameShit
         {
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 100f + x * 10,
-                    expfunc = (int x) => 1f,
+                    lastexp = 25,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 100f + x * 10,
+                    expfunc = (int x,Skill b) => b.lastexp + ((int)(b.lastexp * 10) / 100),
                     name = "d", // dick
                     effecttype = SkillEffectType.OnDig
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "L", // стройка
                     effecttype = SkillEffectType.OnBld
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "F", // охлад
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "M", // движение,
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "t", // по дорогам
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "p", // упаковка
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "l", // хп
                     effecttype = SkillEffectType.OnHurt
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "b", // упаковка синь
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "c", // упаковка голь
                     effecttype = SkillEffectType.OnMove
                 },
                  new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "g", // упаковка зель
                     effecttype = SkillEffectType.OnMove
                 },
                   new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "r", // упаковка крась
                     effecttype = SkillEffectType.OnMove
                 },
                     new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "v", // упаковка фиоль
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "w", // упаковка бель
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 1f,
+                    expfunc = (int x,Skill b) => 1f,
                     name = "m", // доба
                     effecttype = SkillEffectType.OnDig
                 }

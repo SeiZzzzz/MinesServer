@@ -3,22 +3,22 @@
     public class Skill 
     {
         public int lvl = 1;
-        public int exp = 0;
+        public float exp = 0;
         public string name;
         public float GetEffect()
         {
             effectfunc ??= PlayerSkills.skillz.First(i => i.name == name).effectfunc;
-            return effectfunc(lvl);
+            return effectfunc(lvl,this);
         }
         public float GetExp()
         {
             expfunc ??= PlayerSkills.skillz.First(i => i.name == name).expfunc;
-            return expfunc(lvl);
+            return expfunc(lvl, this);
         }
         public float GetCost()
         {
             costfunc ??= PlayerSkills.skillz.First(i => i.name == name).costfunc;
-            return costfunc(lvl);
+            return costfunc(lvl, this);
         }
         public Skill Clone()
         {
@@ -28,8 +28,11 @@
         {
             if (isUpReady())
             {
+                lastexp = GetExp();
+                lasteff = GetEffect();
+                lastcost = GetCost();
                 lvl += 1;
-                exp = 0;
+                exp -= GetExp();
             }
         }
         public void AddExp()
@@ -54,13 +57,16 @@
         {
             return PlayerSkills.skillz.First(i => i.name == name).effecttype;
         }
+        public float lastexp;
+        public float lasteff;
+        public float lastcost;
         [NonSerialized]
         public SkillEffectType effecttype;
         [NonSerialized]
-        public Func<int, float> expfunc;
+        public Func<int,Skill, float> expfunc;
         [NonSerialized]
-        public Func<int, float> effectfunc;
+        public Func<int, Skill, float> effectfunc;
         [NonSerialized]
-        public Func<int, float> costfunc;
+        public Func<int, Skill, float> costfunc;
     }
 }

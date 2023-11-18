@@ -22,38 +22,42 @@ namespace MinesServer.GameShit
             dstream = new BinaryStream(File.Open(dpath, FileMode.OpenOrCreate));
         }
         public bool MapExists = true;
-        public void SetDurability(int x,int y,int d)
+        public void SetDurability(int x,int y,float d)
         {
             if (World.W.ValidCoord(x, y))
             {
-                dstream.Position = x + y * this.MapHeight;
+                DurSet(x, y);
                 if (dstream.IsEndOfStream())
                 {
-                    dstream.WriteInt(GetProp(GetCell(x, y)).durability);
+                    dstream.WriteFloat(GetProp(GetCell(x, y)).durability);
                 }
                 else
                 {
-                    dstream.WriteInt(d);     
+                    dstream.WriteFloat(d);     
                 }
             }
         }
-        public int GetDurability(int x, int y)
+        public void DurSet(int x,int y)
+        {
+            dstream.Position = x * MapHeight * 4 + y * 4;
+        }
+        public float GetDurability(int x, int y)
         {
             if (World.W.ValidCoord(x, y))
             {
-                dstream.Position = x + y * this.MapHeight;
+                DurSet(x,y);
                 if (dstream.IsEndOfStream())
                 {
                     var dur = GetProp(GetCell(x, y)).durability;
-                    dstream.WriteInt(dur);
+                    dstream.WriteFloat(dur);
                     return dur;
                 }
                 else
                 {
                     try
                     {
-                        dstream.Position = x + y * this.MapHeight;
-                        var dur = dstream.ReadInt();
+                        DurSet(x, y);
+                        var dur = dstream.ReadFloat();
                         if (dur > 0)
                         {
                             return dur;
@@ -61,8 +65,8 @@ namespace MinesServer.GameShit
                         else
                         {
                             dur = GetProp(GetCell(x, y)).durability;
-                            dstream.Position = x + y * this.MapHeight;
-                            dstream.WriteInt(dur);
+                            DurSet(x, y);
+                            dstream.WriteFloat(dur);
                         }
                         return dur;
                     }
@@ -79,8 +83,8 @@ namespace MinesServer.GameShit
                 WithoutCheckSetRoad(x, y, type);
                 return;
             }
-            dstream.Position = x + y * this.MapHeight;
-            dstream.WriteInt(GetProp(GetCell(x, y)).durability);
+            DurSet(x, y);
+            dstream.WriteFloat(GetProp(GetCell(x, y)).durability);
             WithoutCheckSet(x, y, 0);
         }
         public byte GetCell(int x, int y)

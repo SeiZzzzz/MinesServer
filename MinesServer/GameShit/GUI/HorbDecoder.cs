@@ -1,4 +1,8 @@
 ﻿using MinesServer.GameShit.Buildings;
+using MinesServer.Network;
+using MinesServer.Network.GUI;
+using MinesServer.Network.HubEvents;
+using MinesServer.Network.World;
 using MinesServer.Server;
 
 namespace MinesServer.GameShit.GUI
@@ -22,14 +26,16 @@ namespace MinesServer.GameShit.GUI
             });
             commands.Add("getallmap", (p, arg) =>
             {
+                List<IDataPartBase> l = new();
                 for (int x = 0; x < World.W.chunksCountW; x++)
                 {
                     for (int y = 0; y < World.W.chunksCountH; y++)
                     {
                         World.W.chunks[x, y].Load();
-                        p.connection.SendCells(32, 32, x * 32, y * 32, World.W.chunks[x, y].cells);
+                        l.Add(new HBPacket([new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].cells)]));
                     }
                 }
+                p.connection.SendB(new HBPacket(l.ToArray()));
             });
             commands.Add("setnick", (p, arg) =>
             {
@@ -45,7 +51,7 @@ namespace MinesServer.GameShit.GUI
         {
             if (msg == "exit")
             {
-                p.connection.Send("Gu", "");
+                p.connection.SendU(new GuPacket());
                 p.insidesmf = false;
             }
             else if (p.insidesmf is not bool)

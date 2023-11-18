@@ -1,9 +1,13 @@
-﻿namespace MinesServer.GameShit
+﻿using MinesServer.Network.GUI;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace MinesServer.GameShit
 {
     public class Basket
     {
         public int Id { get; set; }
-        private Player player;
+        [NotMapped]
+        public Player player;
         public Basket(Player player) => this.player = player;
         public Basket()
         {
@@ -25,7 +29,7 @@
             {
                 cry[index] = long.MaxValue;
             }
-            player.connection.Send("@B", GetCry);
+            SendBasket();
         }
         public void Boxcrys(long[] crys)
         {
@@ -34,11 +38,7 @@
                 cry[i] += crys[i];
             }
 
-            player.connection.Send("@B", GetCry);
-        }
-        public void UpdateBasket()
-        {
-            player.connection.Send("@B", GetCry);
+            SendBasket();
         }
         public void ClearCrys()
         {
@@ -47,7 +47,7 @@
                 this.cry[i] = 0;
             }
 
-            player.connection.Send("@B", GetCry);
+            SendBasket();
         }
         public bool RemoveCrys(int index, long val)
         {
@@ -59,12 +59,20 @@
             if ((this.cry[index] - val) >= 0)
             {
                 this.cry[index] -= val;
-                player.connection.Send("@B", GetCry);
+                SendBasket();
                 return true;
             }
 
-            player.connection.Send("@B", GetCry);
+            SendBasket();
             return false;
+        }
+        private int Buildcap()
+        {
+            return 1;
+        }
+        public void SendBasket()
+        {
+            player.connection.SendU(new BasketPacket(cry[0], cry[1], cry[2], cry[3], cry[4], cry[5], Buildcap()));
         }
         public int cap = 0;
         public long AllCry => this.cry.Select((t, i) => cry[i]).Sum();

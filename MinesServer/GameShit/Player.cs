@@ -1,10 +1,19 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.Skills;
+using MinesServer.Network.World;
+using MinesServer.Network;
 using MinesServer.Server;
 using NetCoreServer;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
+using MinesServer.Network.HubEvents;
+using MinesServer.Network.HubEvents.Bots;
+using System.Security.Cryptography;
+using MinesServer.Network.BotInfo;
+using MinesServer.Network.GUI;
+using MinesServer.Network.ConnectionStatus;
+using MinesServer.Network.Movement;
 
 namespace MinesServer.GameShit
 {
@@ -75,7 +84,7 @@ namespace MinesServer.GameShit
         {
             if (DateTime.Now - lastPlayersend > TimeSpan.FromMilliseconds(500))
             {
-                SendBots();
+                ReSendBots();
                 lastPlayersend = DateTime.Now;
             }
         }
@@ -108,20 +117,19 @@ namespace MinesServer.GameShit
         {
             var cell = World.W.GetCell(x, y);
             var d = World.W.map.GetDurability(x, y);
-            var hitdmg = 1;
+            var hitdmg = 1f;
             foreach(var c in skillslist.skills)
             {
                 if (c != null && c.UseSkill(c.effecttype,this))
                 {
                     if (c.name == "d")
                     {
-                        hitdmg *= (int)((float)c.GetEffect() / 100f);
-                        Console.WriteLine(hitdmg);
+                        hitdmg *= c.GetEffect() / 100f;
+                        Console.WriteLine(c.GetExp());
                     }
                     c.Up();
                 }
             }
-            Console.WriteLine(d);
             if ((d - hitdmg) <= 0)
             {
                 World.W.map.SetDurability(x, y, 0);
@@ -144,14 +152,14 @@ namespace MinesServer.GameShit
             {
                 if (!CanAct || !World.W.ValidCoord(x, y))
                 {
-                    connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                    tp(this.x, this.y);
                     return;
                 }
 
                 var cell = World.W.GetCell(x, y);
                 if (!World.GetProp(cell).isEmpty)
                 {
-                    connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                    tp(this.x, this.y);
                     return;
                 }
                 var newpos = new Vector2(x, y);
@@ -162,7 +170,7 @@ namespace MinesServer.GameShit
                 }
                 else
                 {
-                    connection.Send("@T", $"{this.pos.X}:{this.pos.Y}");
+                    tp(this.x, this.y);
                 }
                 SendMap();
                 AddDelay(0.000001);
@@ -197,7 +205,6 @@ namespace MinesServer.GameShit
         }
         public void SendMoney()
         {
-
             if (this.money < 0)
             {
                 this.money = long.MaxValue;
@@ -206,17 +213,8 @@ namespace MinesServer.GameShit
             {
                 this.creds = long.MaxValue;
             }
-            this.connection.Send("P$", new V { money = this.money, creds = this.creds }.ToString());
-        }
-        public struct V
-        {
-            public long money;
-            public long creds;
-
-            public override string ToString()
-            {
-                return Newtonsoft.Json.JsonConvert.SerializeObject(this);
-            }
+            new MoneyPacket(this.money, this.creds);
+            this.connection.SendU(new MoneyPacket(this.money, this.creds));
         }
         private void AddBasicSkills()
         {
@@ -237,6 +235,7 @@ namespace MinesServer.GameShit
             using (var db = new DataBase())
             {
                 crys = db.baskets.First(x => x.Id == Id);
+                crys.player = this;
                 inventory = db.inventories.First(x => x.Id == Id);
                 health = db.healths.First(x => x.Id == Id);
                 skillslist = db.skills.First(x => x.Id == Id);
@@ -244,15 +243,13 @@ namespace MinesServer.GameShit
             }
             y = 1;
             x = World.W.gen.spawns[new Random().Next(World.W.gen.spawns.Count)].Item1;
-            SendPing();
-            SendWorldInfo();
-            Send("sp", "125:57:200");
-            Send("BA", "0");
-            Send("BD", "0");
-            Send("GE", " ");
-            Send("@T", $"{x}:{y}");
+            connection.SendPing();
+            connection.SendWorldInfo();
+            SendAutoDigg();
+            SendGeo();
+            tp(x, y);
             SendBInfo();
-            Send("sp", "25:20:100000");
+            SendSpeed();
             SendCrys();
             SendHp();
             SendMoney();
@@ -295,46 +292,50 @@ namespace MinesServer.GameShit
                 l.text = "@@" + l.text;
             }
         }
+        public void SendAutoDigg()
+        {
+            connection.SendU(new AutoDiggPacket(autoDig));
+        }
+        public void tp(int x,int y)
+        {
+            connection.SendU(new TPPacket(x, y));
+        }
+        public void SendGeo()
+        {
+            connection.SendU(new GeoPacket(""));
+        }
         public void SendCrys()
         {
-            Send("@B", crys.GetCry);
+            crys.SendBasket();
+        }
+        public void SendSpeed()
+        {
+            connection.SendU(new SpeedPacket(25,20,100000));
         }
         public void SendInventory()
         {
-            connection.Send("IN", inventory.InvToSend());
-        }
-        public void SendWorldInfo()
-        {
-            Send("cf",
-            "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
-                ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
-            Send("CF",
-            "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
-                ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
-        }
-        public void SendPing()
-        {
-            Send("PI", "0:0:0");
+            connection.SendU(inventory.InvToSend());
         }
         public void SendHp()
         {
-            Send("@L", health.HP + ":" + health.MaxHP);
+            connection.SendU(new LivePacket(health.HP, health.MaxHP));
         }
         public void SendBInfo()
         {
-            Send("BI", "{\"x\":" + pos.X + ",\"y\":" + pos.Y + ",\"id\":" + Id + ",\"name\":\"" + name + "\"}");
+            connection.SendU(new BotInfoPacket(name,(int)pos.X,(int)pos.Y,Id));
         }
         public void SendLvl()
         {
             var i = 0;
-            Send("LV", i.ToString());
+            connection.SendU(new LevelPacket(i));
         }
         public void SendOnline()
         {
-            this.Send("ON", connection.online + ":0");
+            connection.SendU(new OnlinePacket(connection.online, 0));
         }
-        public void SendBots()
+        public void ReSendBots()
         {
+            List<IDataPartBase> packets = new();
             var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
             {
@@ -352,14 +353,13 @@ namespace MinesServer.GameShit
                             if (j != null)
                             {
                                 var player = j.player;
-                                connection.SendBot(player.Id, (uint)player.pos.X, (uint)player.pos.Y, player.dir,
-                                    player.clanid, player.skin, player.tail);
-                                connection.SendNick(id.Key, player.name);
+                                packets.Add(new HBPacket([new HBBotPacket(Id, (int)pos.X, (int)pos.Y, dir, 0, clanid, 0)]));
                             }
                         }
                     }
                 }
             }
+            connection.SendB(new HBPacket(packets.ToArray()));
         }
         public bool needupdmap = true;
         public void SendMap()
@@ -372,6 +372,7 @@ namespace MinesServer.GameShit
             if (lastchunk != (ChunkX, ChunkY) || needupdmap)
             {
                 MoveToChunk(ChunkX, ChunkY);
+                List<IDataPartBase> packets = new();
                 for (int x = -2; x <= 2; x++)
                 {
                     for (int y = -2; y <= 2; y++)
@@ -385,16 +386,27 @@ namespace MinesServer.GameShit
                             ch.Load();
                             if (ch != null)
                             {
+                                
                                 cx *= 32; cy *= 32;
-                                connection.SendCells(32, 32, cx, cy, ch.cells);
+                                packets.Add(new HBPacket([new HBMapPacket(cx, cy, 32, 32, ch.cells)]));
+                                foreach (var id in ch.bots)
+                                {
+                                    var j = MServer.GetPlayer(id.Key);
+                                    if (j != null)
+                                    {
+                                        var player = j.player;
+                                        packets.Add(new HBPacket([new HBBotPacket(Id, (int)pos.X, (int)pos.Y, dir, 0, clanid, 0)]));
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                connection.SendB(new HBPacket(packets.ToArray()));
                 needupdmap = false;
             }
         }
-        public void SendLocalMsg(byte[] msg)
+        public void SendLocalMsg(string msg)
         {
             var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
@@ -411,17 +423,12 @@ namespace MinesServer.GameShit
                             var player = MServer.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                player.SendLocalChat(msg.Length, Id, this.x, this.y,
-                                    msg);
+                                player.SendLocalChat(msg);
                             }
                         }
                     }
                 }
             }
-        }
-        public void Send(string t, string c)
-        {
-            this.connection.Send(t, c);
         }
         public string GenerateHash()
         {

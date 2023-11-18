@@ -1,4 +1,5 @@
-﻿using MinesServer.Server;
+﻿using MinesServer.Network.GUI;
+using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace MinesServer.GameShit
 {
@@ -55,25 +56,22 @@ namespace MinesServer.GameShit
             using var db = new DataBase();
             db.SaveChanges();
         }
-        private string getinv()
+        private Dictionary<int,int> getinv()
         {
+            var dick = new Dictionary<int, int>();
             var t = "";
             for (int i = 0; i < items.Length; i++)
             {
                 if (items[i] > 0)
                 {
-                    t += $"{i}#{items[i]}#";
+                    dick[i] = items[i];
                 }
             }
-            if (t == "")
-            {
-                return "";
-            }
-            return t.Substring(0, t.Length - 1);
+            return dick;
         }
-        public string InvToSend()
+        public InventoryPacket InvToSend()
         {
-            return $"show:{Lenght}:{selected}:{getinv()}";
+                return new InventoryPacket(new InventoryShowPacket(getinv(), selected, Lenght));
         }
         public void Use(int x, int y)
         {

@@ -31,6 +31,12 @@ namespace MinesServer.Server
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
         }
+        public static void Save()
+        {
+            using var db = new DataBase();
+            db.SaveChanges();
+            db.Dispose();
+        }
         public static void Load()
         {
             using var db = new DataBase();
@@ -42,6 +48,7 @@ namespace MinesServer.Server
             {
                 Default.WriteError(ex.ToString());
             }
+            db.Dispose();
         }
     }
 }

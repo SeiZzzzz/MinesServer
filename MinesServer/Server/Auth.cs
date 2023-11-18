@@ -1,5 +1,9 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.GameShit.GUI;
+using MinesServer.Network;
+using MinesServer.Network.Auth;
+using MinesServer.Network.GUI;
+using MinesServer.Network.World;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -11,24 +15,19 @@ namespace MinesServer.Server
         public string nick = "";
         public string passwd = "";
         public bool createnew = false;
-        public void TryToAuth(Packet p, string sid, Session initiator)
+        public void TryToAuth(AUPacket p, string sid, Session initiator)
         {
-            var data = Encoding.Default.GetString(p.data).Split('_');
+            Console.WriteLine("auth?");
             int res;
             Player player = null;
-            if (int.TryParse(data[1], out res))
+            if (p.user_id.HasValue)
             {
-                player = DataBase.GetPlayerClassFromBD(res);
+                player = DataBase.GetPlayerClassFromBD(p.user_id.Value);
             }
             if (player == null)
             {
-                initiator.Send("PI", "0:0:0");
-                initiator.Send("cf",
-                "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
-                        ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
-                initiator.Send("CF",
-                "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
-                    ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
+                initiator.SendPing();
+                initiator.SendU(new WorldInfoPacket(World.W.name, 1, 1, 0, "COCK", "http://pi.door/", "ok"));
                 new Builder()
                     .SetTitle("ВХОД")
                     .AddTextLine("Ник")
@@ -39,14 +38,14 @@ namespace MinesServer.Server
                     .Send(initiator);
                 return;
             }
-            if (CalculateMD5Hash(player.hash + sid) == data[2])
+            if (CalculateMD5Hash(player.hash + sid) == p.token)
             {
                 player.connection = initiator;
                 initiator.player = player;
                 player.Init();
                 return;
             }
-            initiator.Send("AH", "BAD");
+            initiator.SendU(new AHPacket());
         }
         public static bool NickNotAvl(string nick)
         {
@@ -95,7 +94,7 @@ namespace MinesServer.Server
             db.SaveChanges();
             temp.connection = initiator;
             initiator.player = temp;
-            initiator.Send("AH", temp.Id + "_" + temp.hash);
+            initiator.SendU(new AHPacket(temp.Id,temp.hash));
             temp.Init();
         }
         public void TryToFindByNick(string name, Session initiator)
@@ -115,14 +114,9 @@ namespace MinesServer.Server
               .Send(initiator);
                 return;
             }
-            initiator.Send("OK", "Игрок не найден");
-            initiator.Send("PI", "0:0:0");
-            initiator.Send("cf",
-                "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
-                        ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
-            initiator.Send("CF",
-            "{\"width\":" + World.W.width + ",\"height\":" + World.W.height +
-                ",\"name\":\"" + World.W.name + "\",\"v\":3410,\"version\":\"COCK\",\"update_url\":\"http://pi.door/\",\"update_desc\":\"ok\"}");
+            initiator.SendU(new OKPacket("auth", "Игрок не найден"));
+            initiator.SendPing();
+            initiator.SendWorldInfo();
             new Builder()
                 .SetTitle("ВХОД")
                 .AddTextLine("Ник")
@@ -140,7 +134,7 @@ namespace MinesServer.Server
                 complited = true;
                 temp.connection = initiator;
                 initiator.player = temp;
-                initiator.Send("AH", temp.Id + "_" + temp.hash);
+                initiator.SendU(new AHPacket(temp.Id, temp.hash));
                 initiator.player.Init();
                 return;
             }
