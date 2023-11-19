@@ -56,7 +56,7 @@ namespace MinesServer.GameShit
             using var db = new DataBase();
             db.SaveChanges();
         }
-        private Dictionary<int,int> getinv()
+        private Dictionary<int, int> getinv()
         {
             var dick = new Dictionary<int, int>();
             var t = "";
@@ -71,7 +71,7 @@ namespace MinesServer.GameShit
         }
         public InventoryPacket InvToSend()
         {
-                return new InventoryPacket(new InventoryShowPacket(getinv(), selected, Lenght));
+            return new InventoryPacket(new InventoryShowPacket(getinv(), selected, Lenght));
         }
         public void Use(int x, int y)
         {

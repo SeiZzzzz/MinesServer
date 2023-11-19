@@ -1,7 +1,6 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.Server;
 using Newtonsoft.Json;
-using RT.Util.Streams;
 
 namespace MinesServer
 {
@@ -9,7 +8,7 @@ namespace MinesServer
     public static class Default
     {
 
-        public static Form mf = new Form();
+        /*public static Form mf = new Form();*/
         public static int port = 8090;
         private static Dictionary<string, Action> commands = new Dictionary<string, Action>();
         public static void Main(string[] args)
@@ -63,6 +62,7 @@ namespace MinesServer
             var method = trace.GetFrame(1).GetMethod().Name;
             Console.WriteLine($"{method} caused error {ex}");
         }
+        /*
         public static void ShowUp()
         {
             PictureBox pb = new PictureBox()
@@ -95,9 +95,9 @@ namespace MinesServer
             mf.Controls.Add(pb);
 
             Application.Run(mf);
-        }
+        }*/
         public static int size = 1;
-        public static Image orgimage;
+        /*public static Image orgimage;*/
         public static MServer server { get; set; }
     }
     public static class E

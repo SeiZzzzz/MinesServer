@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MinesServer.Network.TypicalEvents
+﻿namespace MinesServer.Network.TypicalEvents
 {
     public readonly struct PROGPacket : IDataPart<PROGPacket>
     {

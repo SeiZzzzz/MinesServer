@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MinesServer.Network.Chat
+﻿namespace MinesServer.Network.Chat
 {
     [Obsolete("This packet is no longer supported by the client.")]
     public readonly record struct BanHammerPacket(bool isEnabled) : IDataPart<BanHammerPacket>

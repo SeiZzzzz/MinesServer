@@ -1,6 +1,4 @@
-﻿using System.IO;
-using System.Runtime.InteropServices;
-using RT.Util.Streams;
+﻿using RT.Util.Streams;
 
 namespace MinesServer.GameShit
 {
@@ -22,7 +20,7 @@ namespace MinesServer.GameShit
             dstream = new BinaryStream(File.Open(dpath, FileMode.OpenOrCreate));
         }
         public bool MapExists = true;
-        public void SetDurability(int x,int y,float d)
+        public void SetDurability(int x, int y, float d)
         {
             if (World.W.ValidCoord(x, y))
             {
@@ -33,11 +31,11 @@ namespace MinesServer.GameShit
                 }
                 else
                 {
-                    dstream.WriteFloat(d);     
+                    dstream.WriteFloat(d);
                 }
             }
         }
-        public void DurSet(int x,int y)
+        public void DurSet(int x, int y)
         {
             dstream.Position = x * MapHeight * 4 + y * 4;
         }
@@ -45,7 +43,7 @@ namespace MinesServer.GameShit
         {
             if (World.W.ValidCoord(x, y))
             {
-                DurSet(x,y);
+                DurSet(x, y);
                 if (dstream.IsEndOfStream())
                 {
                     var dur = GetProp(GetCell(x, y)).durability;

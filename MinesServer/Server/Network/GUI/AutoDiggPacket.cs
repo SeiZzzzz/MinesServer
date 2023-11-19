@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MinesServer.Network.GUI
+﻿namespace MinesServer.Network.GUI
 {
     public readonly record struct AutoDiggPacket(bool isEnabled) : IDataPart<AutoDiggPacket>
     {

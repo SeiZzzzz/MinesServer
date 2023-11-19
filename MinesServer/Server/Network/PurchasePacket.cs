@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text;
-
-namespace MinesServer.Network
+﻿namespace MinesServer.Network
 {
     [Obsolete("This packet is no longer supported by the client.")]
     public readonly struct PurchasePacket : IDataPart<PurchasePacket>

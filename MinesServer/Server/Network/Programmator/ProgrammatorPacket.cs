@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MinesServer.Network.Programmator
+﻿namespace MinesServer.Network.Programmator
 {
     public readonly record struct ProgrammatorPacket(bool isEnabled) : IDataPart<ProgrammatorPacket>
     {

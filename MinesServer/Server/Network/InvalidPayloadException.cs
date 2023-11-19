@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MinesServer.Network
+﻿namespace MinesServer.Network
 {
     public class InvalidPayloadException : Exception
     {

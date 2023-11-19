@@ -1,25 +1,28 @@
-﻿using MinesServer.GameShit.Buildings;
+﻿using MinesServer.Enums;
+using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
+using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.Skills;
-using MinesServer.Network.World;
 using MinesServer.Network;
-using MinesServer.Server;
-using NetCoreServer;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Numerics;
-using MinesServer.Network.HubEvents;
-using MinesServer.Network.HubEvents.Bots;
-using System.Security.Cryptography;
 using MinesServer.Network.BotInfo;
 using MinesServer.Network.GUI;
-using MinesServer.Network.ConnectionStatus;
+using MinesServer.Network.HubEvents;
+using MinesServer.Network.HubEvents.Bots;
+using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.Movement;
+using MinesServer.Network.TypicalEvents;
+using MinesServer.Network.World;
+using MinesServer.Server;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Core.Metadata.Edm;
+using System.Numerics;
 
 namespace MinesServer.GameShit
 {
     public class Player
     {
-        public bool locked = false;
+        public Player() => Delay = DateTime.Now;
+        public DateTime lastPlayersend = DateTime.Now;
         public int Id { get; set; }
         public string name { get; set; }
         public long money { get; set; }
@@ -36,8 +39,13 @@ namespace MinesServer.GameShit
         public Health health { get; set; }
         public PlayerSkills skillslist { get; set; }
         public Stack<byte> geo = new Stack<byte>();
-        Queue<Line> console = new Queue<Line>();
+        public Queue<Line> console = new Queue<Line>();
+        [NotMapped]
+        public Window win;
+        [NotMapped]
+        private float cb;
         public DateTime Delay;
+        public bool CanAct { get { return Delay <= DateTime.Now; } }
         public int dir { get; set; }
         public int x
         {
@@ -65,7 +73,7 @@ namespace MinesServer.GameShit
         {
             get
             {
-                if (locked)
+                if (win != null)
                 {
                     return true;
                 }
@@ -75,7 +83,6 @@ namespace MinesServer.GameShit
             {
                 if (!(bool)value)
                 {
-                    locked = false;
                     inside = Packs.None;
                 }
             }
@@ -88,53 +95,92 @@ namespace MinesServer.GameShit
                 lastPlayersend = DateTime.Now;
             }
         }
-        public DateTime lastPlayersend = DateTime.Now;
-        public Player()
-        {
-            Delay = DateTime.Now;
-        }
-        private class Line
-        {
-            public string text { get; set; }
-        }
-        public void ShowConsole()
-        {
-            locked = true;
-            new Builder()
-                .AddIConsole()
-                .AddIConsolePlace("cmd")
-                .AddTextLines(console.Select(x => x.text).ToArray())
-                .AddButton("ВЫПОЛНИТЬ", "%I%")
-                .AddButton("ВЫЙТИ", "exit")
-                .Send(connection);
-        }
-        public bool CanAct { get { return Delay <= DateTime.Now; } }
-        public void AddDelay(double ms)
+        public void AddDelay(double ms) //delay on action
         {
             Delay = DateTime.Now + TimeSpan.FromMilliseconds(ms);
         }
+        private int ParseCryType(CellType cell)
+        {
+            return cell switch
+            {
+                CellType.XGreen or CellType.Green => 0,
+                CellType.XBlue or CellType.Blue => 1,
+                CellType.XRed or CellType.Red => 2,
+                CellType.XViolet or CellType.Violet => 3,
+                CellType.White => 4,
+                CellType.XCyan or CellType.Cyan => 5,
+                _ => 0
+            };
+        }
+        private void Mine(byte cell, int x, int y)
+        {
+            float dob = 1 + (float)Math.Truncate(cb);
+            dob *= (CellType)cell switch
+            {
+                CellType.XGreen => 4,
+                CellType.XBlue => 3,
+                CellType.XRed => 2,
+                CellType.XViolet => 2,
+                CellType.XCyan => 2,
+                _ => 1
+            };
+            cb -= (float)Math.Truncate(cb);
+            long odob = (long)Math.Truncate(dob);
+            var type = ParseCryType((CellType)cell);
+            foreach (var c in skillslist.skills)
+            {
+                if (c != null && c.UseSkill(SkillEffectType.OnDigCrys, this))
+                {
+                    if (c.name == "m")
+                    {
+                        dob += c.GetEffect();
+                        c.AddExp(this, (float)Math.Truncate(dob));
+                    }
+                    c.Up(this);
+                }
+            }
+            cb += dob - odob;
+            crys.AddCrys(type, odob);
+            SendDFToBots(2, x, y, (int)odob, type);
+        }
         public void Bz(int x, int y)
         {
+            SendDFToBots(0, x, y, this.dir);
             var cell = World.W.GetCell(x, y);
-            /*if (!World.GetProp(cell).is_destructible)
+            /*
+            if (!World.GetProp(cell).is_destructible)
             {
                 return;
             }*/
             var d = World.W.map.GetDurability(x, y);
-            var hitdmg = 1f;
-
-            //тычка по кри фиксированно отнимает 1?
+            var hitdmg = 0.2f;
+            if (World.GetProp(cell).isCry)
+            {
+                hitdmg = 1f;
+                Mine(cell,x,y);
+            }
+            else
+            {
+                foreach (var c in skillslist.skills)
+                {
+                    if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
+                    {
+                        hitdmg = c.name switch
+                        {
+                            "d" => hitdmg * (c.GetEffect() / 100f),
+                            _ => 1f
+                        };
+                    }
+                }
+            }
             if ((d - hitdmg) <= 0)
             {
                 foreach (var c in skillslist.skills)
                 {
                     if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
                     {
-                        if (c.name == "d")
-                        {
-                            hitdmg *= c.GetEffect() / 100f;
-                        }
-                        c.Up();
+                        c.AddExp(this);
+                        c.Up(this);
                     }
                 }
                 World.W.map.SetDurability(x, y, 0);
@@ -144,12 +190,6 @@ namespace MinesServer.GameShit
             {
                 World.W.map.SetDurability(x, y, d - hitdmg);
             }
-        }
-        public Vector2 GetDirCord()
-        {
-            var x = (uint)(pos.X + (dir == 3 ? 1 : dir == 1 ? -1 : 0));
-            var y = (uint)(pos.Y + (dir == 0 ? 1 : dir == 2 ? -1 : 0));
-            return new Vector2(x, y);
         }
         public void Move(int x, int y, int dir)
         {
@@ -162,8 +202,9 @@ namespace MinesServer.GameShit
                         if (c.isUpReady())
                         {
                             //ресенд мувхендлера с зависимостью
-                            c.Up();
+                            c.Up(this);
                         }
+                        c.AddExp(this);
                     }
                 }
             }
@@ -207,13 +248,12 @@ namespace MinesServer.GameShit
             hash = GenerateHash();
             passwd = "";
             health = new Health();
-            health.MaxHP = 100;
-            health.HP = 100;
             inventory = new Inventory();
             inventory.items = new int[49];
             crys = new Basket(this);
             skillslist = new PlayerSkills();
             AddBasicSkills();
+            health.LoadHealth(this);
             pos = new Vector2(0, 0);
             dir = 0;
             clanid = 0;
@@ -225,9 +265,9 @@ namespace MinesServer.GameShit
         private void AddBasicSkills()
         {
             //базовые скиллы
-            skillslist.InstallSkill("m", 0);
-            skillslist.InstallSkill("d", 1);
-            skillslist.InstallSkill("M", 2);
+            skillslist.InstallSkill(SkillType.MineGeneral.GetCode(), 0);
+            skillslist.InstallSkill(SkillType.Digging.GetCode(), 1);
+            skillslist.InstallSkill(SkillType.Movement.GetCode(), 2);
         }
         public void Init()
         {
@@ -247,6 +287,7 @@ namespace MinesServer.GameShit
                 health = db.healths.First(x => x.Id == Id);
                 skillslist = db.skills.First(x => x.Id == Id);
                 skillslist.LoadSkills();
+                health.LoadHealth(this);
             }
             y = 1;
             x = World.W.gen.spawns[new Random().Next(World.W.gen.spawns.Count)].Item1;
@@ -258,7 +299,7 @@ namespace MinesServer.GameShit
             SendBInfo();
             SendSpeed();
             SendCrys();
-            SendHp();
+            health.SendHp();
             SendMoney();
             SendLvl();
             SendMap();
@@ -266,40 +307,23 @@ namespace MinesServer.GameShit
             console.Enqueue(new Line { text = "@@> Добро пожаловать в консоль!" });
             for (var i = 0; i < 4; i++)
             {
-                AddConsoleLine();
+                MConsole.AddConsoleLine(this);
             }
 
-            AddConsoleLine("Если вы не понимаете, что происходит,");
-            AddConsoleLine("или вас попросили выполнить команду,");
-            AddConsoleLine("сосите хуй глотайте сперму");
+            MConsole.AddConsoleLine(this, "Если вы не понимаете, что происходит,");
+            MConsole.AddConsoleLine(this,"или вас попросили выполнить команду,");
+            MConsole.AddConsoleLine(this,"сосите хуй глотайте сперму");
             for (var i = 0; i < 8; i++)
             {
-                AddConsoleLine();
+                MConsole.AddConsoleLine(this);
             }
 
-        }
-        public void AddConsoleLine(string text)
-        {
-            console.Enqueue(new Line { text = ">" + text });
-            if (console.Count > 16)
-            {
-                console.Dequeue();
-                var l = console.First();
-                l.text = "@@" + l.text;
-            }
-        }
-
-        public void AddConsoleLine()
-        {
-            console.Enqueue(new Line { text = ">    " });
-            if (console.Count > 16)
-            {
-                console.Dequeue();
-                var l = console.Peek();
-                l.text = "@@" + l.text;
-            }
         }
         #region senders
+        public void SendWindow()
+        {
+            connection.SendU(new GUIPacket(this.win.ToString()));
+        }
         public void SendMoney()
         {
             if (this.money < 0)
@@ -317,7 +341,7 @@ namespace MinesServer.GameShit
         {
             connection.SendU(new AutoDiggPacket(autoDig));
         }
-        public void tp(int x,int y)
+        public void tp(int x, int y)
         {
             connection.SendU(new TPPacket(x, y));
         }
@@ -331,19 +355,15 @@ namespace MinesServer.GameShit
         }
         public void SendSpeed()
         {
-            connection.SendU(new SpeedPacket(25,20,100000));
+            connection.SendU(new SpeedPacket(25, 20, 100000));
         }
         public void SendInventory()
         {
             connection.SendU(inventory.InvToSend());
         }
-        public void SendHp()
-        {
-            connection.SendU(new LivePacket(health.HP, health.MaxHP));
-        }
         public void SendBInfo()
         {
-            connection.SendU(new BotInfoPacket(name,(int)pos.X,(int)pos.Y,Id));
+            connection.SendU(new BotInfoPacket(name, (int)pos.X, (int)pos.Y, Id));
         }
         public void SendLvl()
         {
@@ -407,7 +427,7 @@ namespace MinesServer.GameShit
                             ch.Load();
                             if (ch != null)
                             {
-                                
+
                                 cx *= 32; cy *= 32;
                                 packets.Add(new HBMapPacket(cx, cy, 32, 32, ch.cells));
                                 foreach (var id in ch.bots)
@@ -425,6 +445,27 @@ namespace MinesServer.GameShit
                 }
                 connection.SendB(new HBPacket(packets.ToArray()));
                 needupdmap = false;
+            }
+        }
+        public void SendDFToBots(int fx, int fxx, int fxy, int dir, int col = 0)
+        {
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
+            for (var xxx = -2; xxx <= 2; xxx++)
+            {
+                for (var yyy = -2; yyy <= 2; yyy++)
+                {
+                    if (valid(this.ChunkX + xxx, this.ChunkY + yyy))
+                    {
+                        var x = (this.ChunkX + xxx);
+                        var y = (this.ChunkY + yyy);
+                        var ch = World.W.chunks[x, y];
+
+                        foreach (var player in ch.bots.Select(id => MServer.GetPlayer(id.Key)))
+                        {
+                            player.SendB(new HBPacket([new HBDirectedFXPacket(this.Id, fxx, fxy, fx, dir, col)]));
+                        }
+                    }
+                }
             }
         }
         public void SendLocalMsg(string msg)
@@ -458,6 +499,15 @@ namespace MinesServer.GameShit
             const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             return new string(Enumerable.Repeat(chars, 12)
                 .Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+        public void CallWinAction(string text)
+        {
+            if (win == null)
+            {
+                connection.SendU(new GuPacket());
+                return;
+            }
+            win.ProcessButton(text);
         }
         public void OnDisconnect()
         {

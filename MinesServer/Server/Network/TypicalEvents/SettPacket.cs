@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
 {
@@ -21,7 +19,8 @@ namespace MinesServer.Network.TypicalEvents
             isOpenPacket = true;
         }
 
-        public SettPacket(string key, string value) {
+        public SettPacket(string key, string value)
+        {
             this.key = key;
             this.value = value;
             isOpenPacket = false;
@@ -37,8 +36,10 @@ namespace MinesServer.Network.TypicalEvents
             return new(parts[0], parts[1]);
         }
 
-        public int Encode(Span<byte> output) {
-            if (isOpenPacket) {
+        public int Encode(Span<byte> output)
+        {
+            if (isOpenPacket)
+            {
                 Span<byte> span = stackalloc byte[1] { (byte)'_' };
                 span.CopyTo(output);
                 return span.Length;

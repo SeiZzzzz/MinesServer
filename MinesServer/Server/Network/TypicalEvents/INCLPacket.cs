@@ -1,6 +1,4 @@
 ﻿using MinesServer.Utils;
-using System;
-using System.Linq;
 using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
@@ -18,7 +16,8 @@ namespace MinesServer.Network.TypicalEvents
 
         public INCLPacket() => isSelectPacket = false;
 
-        public INCLPacket(int selection) {
+        public INCLPacket(int selection)
+        {
             this.selection = selection;
             isSelectPacket = true;
         }
@@ -31,7 +30,8 @@ namespace MinesServer.Network.TypicalEvents
             return new(int.Parse(Encoding.UTF8.GetString(decodeFrom)));
         }
 
-        public int Encode(Span<byte> output) {
+        public int Encode(Span<byte> output)
+        {
             if (isSelectPacket) return Encoding.UTF8.GetBytes(selection.ToString(), output);
             Span<byte> span = stackalloc byte[1] { (byte)'_' };
             span.CopyTo(output);

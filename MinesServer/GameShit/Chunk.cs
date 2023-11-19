@@ -1,4 +1,5 @@
 ﻿using MinesServer.Server;
+using MoreLinq.Extensions;
 
 namespace MinesServer.GameShit
 {
@@ -22,7 +23,7 @@ namespace MinesServer.GameShit
         }
         private void UpdateCells()
         {
-            for(int x = 0; x < 32;x++)
+            for (int x = 0; x < 32; x++)
             {
                 for (int y = 0; y < 32; y++)
                 {

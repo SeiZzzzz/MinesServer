@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MinesServer.Network.ConnectionStatus
+﻿namespace MinesServer.Network.ConnectionStatus
 {
     public readonly struct ReconnectPacket : IDataPart<ReconnectPacket>
     {

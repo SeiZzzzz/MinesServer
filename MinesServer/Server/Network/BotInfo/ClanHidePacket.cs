@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MinesServer.Network.BotInfo
+﻿namespace MinesServer.Network.BotInfo
 {
     public readonly struct ClanHidePacket : IDataPart<ClanHidePacket>
     {

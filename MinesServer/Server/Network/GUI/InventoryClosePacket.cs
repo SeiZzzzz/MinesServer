@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MinesServer.Network.GUI
+﻿namespace MinesServer.Network.GUI
 {
     public readonly struct InventoryClosePacket : IDataPart<InventoryClosePacket>
     {

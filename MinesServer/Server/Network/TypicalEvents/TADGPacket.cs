@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MinesServer.Network.TypicalEvents
+﻿namespace MinesServer.Network.TypicalEvents
 {
     public readonly struct TADGPacket : IDataPart<TADGPacket>
     {

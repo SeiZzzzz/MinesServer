@@ -18,9 +18,9 @@ namespace MinesServer.GameShit
                 ser = "";
             }
         }
-        public void Up(int slot)
+        public void Up(int slot, Player p)
         {
-            skills[slot].Up();
+            skills[slot].Up(p);
         }
         public void InstallSkill(string type, int slot)
         {
@@ -91,10 +91,10 @@ namespace MinesServer.GameShit
                 new Skill()
                 {
                     costfunc = (int x,Skill b) => 1f,
-                    effectfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => x * 1f,
                     expfunc = (int x,Skill b) => 1f,
                     name = "l", // хп
-                    effecttype = SkillEffectType.OnHurt
+                    effecttype = SkillEffectType.OnHealth
                 },
                 new Skill()
                 {
@@ -146,11 +146,13 @@ namespace MinesServer.GameShit
                 },
                 new Skill()
                 {
+                    lastexp = 700,
+                    lastcost = 1100,
                     costfunc = (int x,Skill b) => 1f,
-                    effectfunc = (int x,Skill b) => 1f,
-                    expfunc = (int x,Skill b) => 1f,
+                    effectfunc = (int x,Skill b) => 0.08f + (float)(Math.Log10(x) * (Math.Pow(x, 0.5) / 4)),
+                    expfunc = (int x,Skill b) => (int)(b.lastexp - (b.lastexp * 0.1f)),
                     name = "m", // доба
-                    effecttype = SkillEffectType.OnDig
+                    effecttype = SkillEffectType.OnDigCrys
                 }
 
         };

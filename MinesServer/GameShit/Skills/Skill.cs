@@ -1,8 +1,9 @@
 ﻿using MinesServer.Network.GUI;
+using System.Windows.Data;
 
 namespace MinesServer.GameShit.Skills
 {
-    public class Skill 
+    public class Skill
     {
         public int lvl = 1;
         public float exp = 0;
@@ -10,7 +11,7 @@ namespace MinesServer.GameShit.Skills
         public float GetEffect()
         {
             effectfunc ??= PlayerSkills.skillz.First(i => i.name == name).effectfunc;
-            return effectfunc(lvl,this);
+            return effectfunc(lvl, this);
         }
         public float GetExp()
         {
@@ -26,33 +27,46 @@ namespace MinesServer.GameShit.Skills
         {
             return MemberwiseClone() as Skill;
         }
-        public void Up()
+        public void Up(Player p)
         {
             if (isUpReady())
             {
+                Dictionary<string, int> v = new();
                 lastexp = GetExp();
                 lasteff = GetEffect();
                 lastcost = GetCost();
                 lvl += 1;
                 exp -= GetExp();
+                p.skillslist.Save();
+                v.Add(this.name, (int)((exp * 100f) / GetExp()));
+                p.connection.SendU(new SkillsPacket(v));
             }
         }
-        public void AddExp(Player p)
+        public void AddExp(Player p,float expv = 1)
         {
             Dictionary<string, int> v = new();
-            exp += 1;
+            foreach (var i in p.skillslist.skills)
+            {
+                if (UseSkill(SkillEffectType.OnExp, p))
+                {
+                    if (i.name == "*U")
+                    {
+                        expv *= i.GetEffect();
+                    }
+                }
+            }
+            exp += expv;
+            p.skillslist.Save();
             v.Add(this.name, (int)((exp * 100f) / GetExp()));
             p.connection.SendU(new SkillsPacket(v));
         }
-        public bool UseSkill(SkillEffectType e,Player p)
+        public bool UseSkill(SkillEffectType e, Player p)
         {
-            if (e == effecttype)
+            if (e == EffectType())
             {
-                AddExp(p);
-                p.skillslist.Save();
-                return true; 
+                return true;
             }
-            return false; 
+            return false;
         }
         public bool isUpReady()
         {
@@ -68,7 +82,7 @@ namespace MinesServer.GameShit.Skills
         [NonSerialized]
         public SkillEffectType effecttype;
         [NonSerialized]
-        public Func<int,Skill, float> expfunc;
+        public Func<int, Skill, float> expfunc;
         [NonSerialized]
         public Func<int, Skill, float> effectfunc;
         [NonSerialized]

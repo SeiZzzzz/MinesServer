@@ -40,8 +40,8 @@
 
 namespace SimpleJSON
 {
-    using System.Globalization;
     using System.Collections.Generic;
+    using System.Globalization;
     public partial class JSONNode
     {
         #region Decimal
@@ -245,7 +245,7 @@ namespace SimpleJSON
 
         public static implicit operator JSONNode(List<byte> aByteList) => new JSONArray { AsByteList = aByteList };
 
-        public static implicit operator List<byte> (JSONNode aNode) => aNode.AsByteList;
+        public static implicit operator List<byte>(JSONNode aNode) => aNode.AsByteList;
         #endregion ByteList
 
         #region StringArray
@@ -273,7 +273,7 @@ namespace SimpleJSON
 
         public static implicit operator JSONNode(string[] aStringArray) => new JSONArray { AsStringArray = aStringArray };
 
-        public static implicit operator string[] (JSONNode aNode) => aNode.AsStringArray;
+        public static implicit operator string[](JSONNode aNode) => aNode.AsStringArray;
         #endregion StringArray
         #region StringList
         public virtual List<string> AsStringList
@@ -300,7 +300,7 @@ namespace SimpleJSON
 
         public static implicit operator JSONNode(List<string> aStringList) => new JSONArray { AsStringList = aStringList };
 
-        public static implicit operator List<string> (JSONNode aNode) => aNode.AsStringList;
+        public static implicit operator List<string>(JSONNode aNode) => aNode.AsStringList;
         #endregion StringList
 
         #region NullableTypes
@@ -323,7 +323,7 @@ namespace SimpleJSON
                 return JSONNull.CreateOrGet();
             return new JSONNumber((float)aValue);
         }
-        public static implicit operator float? (JSONNode aNode)
+        public static implicit operator float?(JSONNode aNode)
         {
             if (aNode == null || aNode.IsNull)
                 return null;
@@ -336,7 +336,7 @@ namespace SimpleJSON
                 return JSONNull.CreateOrGet();
             return new JSONNumber((double)aValue);
         }
-        public static implicit operator double? (JSONNode aNode)
+        public static implicit operator double?(JSONNode aNode)
         {
             if (aNode == null || aNode.IsNull)
                 return null;
@@ -349,7 +349,7 @@ namespace SimpleJSON
                 return JSONNull.CreateOrGet();
             return new JSONBool((bool)aValue);
         }
-        public static implicit operator bool? (JSONNode aNode)
+        public static implicit operator bool?(JSONNode aNode)
         {
             if (aNode == null || aNode.IsNull)
                 return null;
@@ -362,7 +362,7 @@ namespace SimpleJSON
                 return JSONNull.CreateOrGet();
             return new JSONNumber((long)aValue);
         }
-        public static implicit operator long? (JSONNode aNode)
+        public static implicit operator long?(JSONNode aNode)
         {
             if (aNode == null || aNode.IsNull)
                 return null;
@@ -375,7 +375,7 @@ namespace SimpleJSON
                 return JSONNull.CreateOrGet();
             return new JSONNumber((short)aValue);
         }
-        public static implicit operator short? (JSONNode aNode)
+        public static implicit operator short?(JSONNode aNode)
         {
             if (aNode == null || aNode.IsNull)
                 return null;

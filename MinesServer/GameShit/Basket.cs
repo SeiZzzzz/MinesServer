@@ -72,7 +72,8 @@ namespace MinesServer.GameShit
         }
         public void SendBasket()
         {
-            player.connection.SendU(new BasketPacket(cry[0], cry[1], cry[2], cry[3], cry[4], cry[5], Buildcap()));
+            var p = new BasketPacket(cry[0], cry[1], cry[2], cry[3], cry[4], cry[5], Buildcap());
+            player.connection.SendU(p);
         }
         public int cap = 0;
         public long AllCry => this.cry.Select((t, i) => cry[i]).Sum();

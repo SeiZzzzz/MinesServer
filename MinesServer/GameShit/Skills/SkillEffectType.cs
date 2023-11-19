@@ -9,5 +9,7 @@
         OnHeal,
         OnUp,
         OnBld,
+        OnDigCrys,
+        OnHealth
     }
 }

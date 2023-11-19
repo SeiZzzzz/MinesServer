@@ -18,6 +18,7 @@
         {
 
         }
+        public bool can_place_block;
         public string name;
         public bool isAlive;
         public bool is_destructible_by_block;

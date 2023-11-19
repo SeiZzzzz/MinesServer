@@ -1,7 +1,6 @@
-﻿using System;
-using System.Text;
-using MinesServer.Utils;
+﻿using MinesServer.Utils;
 using SimpleJSON;
+using System.Text;
 
 namespace MinesServer.Network.Programmator
 {

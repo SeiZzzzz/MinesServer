@@ -1,6 +1,8 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.GameShit.GUI;
-using MinesServer.Network;
+using MinesServer.GameShit.GUI.Horb;
+using MinesServer.GameShit.GUI.Horb.List.Rich;
+
 using MinesServer.Network.Auth;
 using MinesServer.Network.GUI;
 using MinesServer.Network.World;
@@ -11,10 +13,35 @@ namespace MinesServer.Server
 {
     public class Auth
     {
+        public Window authwin;
         public bool complited = false;
         public string nick = "";
         public string passwd = "";
         public bool createnew = false;
+        public void CallAction(string text)
+        {
+            authwin.ProcessButton(text);
+        }
+        public void exit()
+        {
+            temp = null;
+            nick = "";
+            passwd = "";
+            createnew = false;
+        }
+        public void NickNotA(Session initiator)
+        {
+            authwin.CurrentTab.Replace(new Page
+            {
+                Text = "Пароль\nВведён не верный пароль. Попробуйте ещё раз.",
+                Input = new InputConfig
+                {
+                    IsConsole = true,
+                    Placeholder = " "
+                },
+                Buttons = [new("OK", "%I%", (args) => TryToAuthByPlayer(args.Input, initiator))]
+            });
+        }
         public void TryToAuth(AUPacket p, string sid, Session initiator)
         {
             Console.WriteLine("auth?");
@@ -27,18 +54,34 @@ namespace MinesServer.Server
             if (player == null)
             {
                 initiator.SendPing();
-                initiator.SendU(new WorldInfoPacket(World.W.name, 1, 1, 0, "COCK", "http://pi.door/", "ok"));
-                new Builder()
-                    .SetTitle("ВХОД")
-                    .AddTextLine("Ник")
-                    .AddIConsole()
-                    .AddIConsolePlace("")
-                    .AddButton("ОК", "%I%")
-                    .AddButton("НОВЫЙ АКК", "newakk")
-                    .Send(initiator);
+                initiator.SendU(new WorldInfoPacket(World.W.name, World.W.width, World.W.height, 0, "COCK", "http://pi.door/", "ok"));
+                authwin = new Window()
+                {
+                    Title = "ВХОД",
+                    Tabs = [new Tab()
+                    {
+                        Label = "Ник",
+                        Action = "auth",
+                        InitialPage = new Page()
+                        {
+                            Text = "Авторизация",
+                            Buttons = [
+                                new Button("Новый акк", "newakk", (args) => CreateNew(initiator)),
+                                new Button("ok", $"nick:{ActionMacros.Input}", (args) => TryToFindByNick(args.Input!, initiator))
+                            ],
+                            Input = new InputConfig()
+                            {
+                                IsConsole = true,
+                                Placeholder = " "
+                            }
+                        }
+                    }],
+                    ShowTabs = false
+                };
+                initiator.SendWin(authwin.ToString());
                 return;
             }
-            if (CalculateMD5Hash(player.hash + sid) == p.token)
+            else if (player != null && CalculateMD5Hash(player.hash + sid) == p.token)
             {
                 player.connection = initiator;
                 initiator.player = player;
@@ -65,25 +108,36 @@ namespace MinesServer.Server
         {
             temp = new Player();
             createnew = true;
-            new Builder()
-                   .SetTitle("НОВЫЙ ИГРОК")
-                    .AddTextLine("Ник")
-                     .AddIConsole()
-                       .AddIConsolePlace("")
-                        .AddButton("ОК", "%I%")
-                        .Send(initiator);
+            authwin.CurrentTab.Open(new Page
+            {
+                Title = "НОВЫЙ ИГРОК",
+                Text = "Ник",
+                Input = new InputConfig
+                {
+                    IsConsole = true,
+                    Placeholder = " "
+                },
+                Buttons = [new("OK", $"newnick:{ActionMacros.Input}", (args) => SetPasswdForNew(args.Input!, initiator))]
+            });
+            initiator.SendWin(authwin.ToString());
         }
-        public void SetPasswdForNew(Session initiator)
+        public void SetPasswdForNew(string nick, Session initiator)
         {
-            new Builder()
-                  .SetTitle("НОВЫЙ ИГРОК")
-                   .AddTextLine("Пароль")
-                    .AddIConsole()
-                      .AddIConsolePlace("")
-                       .AddButton("ОК", "%I%")
-                       .Send(initiator);
+            this.nick = nick;
+            authwin.CurrentTab.Open(new Page
+            {
+                Title = "НОВЫЙ ИГРОК",
+                Text = "Пароль",
+                Input = new InputConfig
+                {
+                    IsConsole = true,
+                    Placeholder = " "
+                },
+                Buttons = [new("OK", $"passwd:{ActionMacros.Input}", (args) => EndCreateAndInit(args.Input!, initiator))]
+            });
+            initiator.SendWin(authwin.ToString());
         }
-        public void EndCreateAndInit(Session initiator)
+        public void EndCreateAndInit(string passwd, Session initiator)
         {
             complited = true;
             temp.CreatePlayer();
@@ -94,7 +148,7 @@ namespace MinesServer.Server
             db.SaveChanges();
             temp.connection = initiator;
             initiator.player = temp;
-            initiator.SendU(new AHPacket(temp.Id,temp.hash));
+            initiator.SendU(new AHPacket(temp.Id, temp.hash));
             temp.Init();
         }
         public void TryToFindByNick(string name, Session initiator)
@@ -105,27 +159,24 @@ namespace MinesServer.Server
             {
                 temp = player;
                 nick = name;
-                new Builder()
-              .SetTitle("ВХОД")
-              .AddTextLine("Пароль")
-              .AddIConsole()
-              .AddIConsolePlace("")
-              .AddButton("ОК", "%I%")
-              .Send(initiator);
+                authwin.CurrentTab.Open(new Page
+                {
+                    Text = "Пароль",
+                    Input = new InputConfig
+                    {
+                        IsConsole = true,
+                        Placeholder = " "
+                    },
+                    Buttons = [new("OK", $"passwd:{ActionMacros.Input}", (args) => TryToAuthByPlayer(args.Input!, initiator))]
+                });
+                initiator.SendWin(authwin.ToString());
                 return;
+                
             }
             initiator.SendU(new OKPacket("auth", "Игрок не найден"));
             initiator.SendPing();
             initiator.SendWorldInfo();
-            new Builder()
-                .SetTitle("ВХОД")
-                .AddTextLine("Ник")
-                .AddTextLine("игрок не найден")
-                .AddIConsole()
-                .AddIConsolePlace("")
-                .AddButton("ОК", "%I%")
-                .AddButton("НОВЫЙ АКК", "newakk")
-                .Send(initiator);
+            initiator.SendWin(authwin.ToString());
         }
         public void TryToAuthByPlayer(string passwd, Session initiator)
         {
@@ -138,14 +189,18 @@ namespace MinesServer.Server
                 initiator.player.Init();
                 return;
             }
-            new Builder()
-               .SetTitle("ВХОД")
-               .AddTextLine("Пароль")
-               .AddTextLine("Не верный пароль")
-               .AddIConsole()
-               .AddIConsolePlace("")
-               .AddButton("ОК", "%I%")
-               .Send(initiator);
+            /*authwin.CurrentTab.Replace(new Page
+            {
+                Text = "Пароль\nВведён не верный пароль. Попробуйте ещё раз.",
+                Input = new InputConfig
+                {
+                    IsConsole = true,
+                    Placeholder = " "
+                },
+                Buttons = [new("OK", "%I%", (args) => TryToAuthByPlayer(args.Input, initiator))]
+            });*/
+            initiator.SendU(new OKPacket("auth", "Не верный пароль"));
+            initiator.SendWin(authwin.ToString());
 
         }
         public Player temp = null;

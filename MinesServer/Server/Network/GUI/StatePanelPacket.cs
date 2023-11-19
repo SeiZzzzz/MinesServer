@@ -1,6 +1,4 @@
 ﻿using MinesServer.Utils;
-using System;
-using System.Linq;
 using System.Text;
 
 namespace MinesServer.Network.GUI
@@ -41,7 +39,7 @@ namespace MinesServer.Network.GUI
 
         public int Encode(Span<byte> output)
         {
-            if(isClear)
+            if (isClear)
             {
                 Span<byte> span = stackalloc byte[7] { (byte)'C', (byte)'L', (byte)'E', (byte)'A', (byte)'R', (byte)'#', (byte)'#' };
                 span.CopyTo(output);

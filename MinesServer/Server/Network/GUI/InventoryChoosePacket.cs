@@ -1,6 +1,5 @@
-﻿using System;
+﻿using MinesServer.Utils;
 using System.Text;
-using MinesServer.Utils;
 
 namespace MinesServer.Network.GUI
 {
@@ -22,7 +21,7 @@ namespace MinesServer.Network.GUI
             var dy = int.Parse(parts[3]);
             var w = int.Parse(parts[4]);
             var h = int.Parse(parts[5]);
-            if (w * h != parts[6].Length) throw new InvalidPayloadException($"width({w}) and height({h}) does not match the payload length. {w*h}!={parts[6].Length}");
+            if (w * h != parts[6].Length) throw new InvalidPayloadException($"width({w}) and height({h}) does not match the payload length. {w * h}!={parts[6].Length}");
             var grid = new bool[w, h];
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
@@ -30,7 +29,8 @@ namespace MinesServer.Network.GUI
             return new(hint, grid, dx, dy, distance);
         }
 
-        public int Encode(Span<byte> output) {
+        public int Encode(Span<byte> output)
+        {
             var data = "";
             var w = grid.GetLength(0);
             var h = grid.GetLength(1);

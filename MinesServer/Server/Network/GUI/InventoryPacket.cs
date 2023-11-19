@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System;
-using System.Text;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Text;
 
 namespace MinesServer.Network.GUI
 {
@@ -41,9 +38,9 @@ namespace MinesServer.Network.GUI
         }
 
         public static InventoryPacket Choose(string hint, bool[,] grid, int dx, int dy, int distance) => new(new InventoryChoosePacket(hint, grid, dx, dy, distance));
-        
+
         public static InventoryPacket Close() => new(new InventoryClosePacket());
-        
+
         public static InventoryPacket Full(Dictionary<int, int> grid, int selected) => new(new InventoryFullPacket(grid, selected));
 
         public static InventoryPacket Show(Dictionary<int, int> grid, int selected, int all) => new(new InventoryShowPacket(grid, selected, all));

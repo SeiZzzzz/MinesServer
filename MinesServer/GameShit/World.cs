@@ -57,21 +57,21 @@ namespace MinesServer.GameShit
         {
 
         }
-        public void Destroy(int x,int y)
+        public void Destroy(int x, int y)
         {
             if (!ValidCoord(x, y))
             {
                 return;
             }
-                var c = map.GetRoad(x, y);
-                if (c != 0)
-                {
-                    map.SetCell(x, y, c);
-                }
-                else
-                {
-                    map.SetCell(x, y, 32);
-                }
+            var c = map.GetRoad(x, y);
+            if (c != 0)
+            {
+                map.SetCell(x, y, c);
+            }
+            else
+            {
+                map.SetCell(x, y, 32);
+            }
         }
         public void CreateEmptyMap(byte cell)
         {

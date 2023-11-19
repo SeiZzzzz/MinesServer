@@ -39,8 +39,6 @@
  * SOFTWARE.
  * 
  * * * * */
-using System;
-
 namespace SimpleJSON
 {
 #if !SimpleJSON_ExcludeBinary

@@ -33,11 +33,8 @@
  * SOFTWARE.
  * 
  * * * * */
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Text;
 
 namespace SimpleJSON
@@ -363,7 +360,7 @@ namespace SimpleJSON
 
         public static implicit operator JSONNode(string s)
         {
-            return (s is null) ? (JSONNode) JSONNull.CreateOrGet() : new JSONString(s);
+            return (s is null) ? (JSONNode)JSONNull.CreateOrGet() : new JSONString(s);
         }
         public static implicit operator string(JSONNode d)
         {
@@ -797,7 +794,7 @@ namespace SimpleJSON
         {
             var node = new JSONArray();
             node.m_List.Capacity = m_List.Capacity;
-            foreach(var n in m_List)
+            foreach (var n in m_List)
             {
                 if (n != null)
                     node.Add(n.Clone());

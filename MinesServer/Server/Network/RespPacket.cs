@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MinesServer.Network
+﻿namespace MinesServer.Network
 {
     public readonly struct RespPacket : IDataPart<RespPacket>
     {

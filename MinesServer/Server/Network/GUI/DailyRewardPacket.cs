@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-
-namespace MinesServer.Network.GUI
+﻿namespace MinesServer.Network.GUI
 {
     public readonly record struct DailyRewardPacket(bool isEnabled) : IDataPart<DailyRewardPacket>
     {

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
-using MinesServer.Network.Auth;
+﻿using MinesServer.Network.Auth;
 using MinesServer.Network.BotInfo;
 using MinesServer.Network.Chat;
 using MinesServer.Network.ConnectionStatus;
@@ -11,6 +7,8 @@ using MinesServer.Network.Movement;
 using MinesServer.Network.Programmator;
 using MinesServer.Network.Tutorial;
 using MinesServer.Network.World;
+using System.Runtime.InteropServices;
+using System.Text;
 
 namespace MinesServer.Network
 {
@@ -82,13 +80,13 @@ namespace MinesServer.Network
             InventoryPacket.packetName => x => InventoryPacket.Decode(x), // IN
             _ => null
         };
-        
+
         public Packet(string dataType, IDataPartBase data)
         {
             this.dataType = dataType;
             this.data = data;
         }
-        
+
         public int Encode(Span<byte> output)
         {
             if (EventType.Length != eventTypeLength) throw new InvalidPayloadException($"Invalid event type length: Expected {eventTypeLength} but got {EventType.Length}");
