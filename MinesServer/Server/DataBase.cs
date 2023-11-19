@@ -10,6 +10,7 @@ namespace MinesServer.Server
         public DbSet<Inventory> inventories { get; set; }
         public DbSet<Basket> baskets { get; set; }
         public DbSet<PlayerSkills> skills { get; set; }
+        public DbSet<Box> boxes { get; set; }
         public DataBase()
         {
             Database.EnsureCreated();
