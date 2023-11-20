@@ -109,14 +109,14 @@ namespace MinesServer.GameShit
         {
             return CellsSerializer.cells[type];
         }
-        //todo + static
         public void SetCell(int x, int y, byte cell)
         {
             if (!ValidCoord(x, y))
             {
                 return;
             }
-            //map.SetCell(x, y, cell);
+            var ch = W.GetChunk(x, y);
+            ch.SetCell(x - ch.pos.Item1, y - ch.pos.Item2, cell);
             UpdateChunkByCoords(x, y);
         }
         public async void AsyncAction(int secdelay, Action act)
@@ -173,14 +173,14 @@ namespace MinesServer.GameShit
                 ch.ClearPack(x, y);
             });
         }
-        //todo + static
         public static byte GetCell(int x, int y)
         {
             if (!W.ValidCoord(x, y))
             {
                 return 0;
             }
-            return 32;
+            var ch = W.GetChunk(x, y);
+            return ch[x - ch.pos.Item1, y - ch.pos.Item2];
         }
         public bool ContainsPack(int x, int y, out Pack p)
         {

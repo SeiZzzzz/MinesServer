@@ -446,12 +446,12 @@ namespace MinesServer.GameShit
                         {
                             var ch = World.W.chunks[cx, cy];
                             ch.active = true;
-                            ch.LoadN();
+                            ch.Load();
                             if (ch != null)
                             {
 
                                 cx *= 32; cy *= 32;
-                                packets.Add(new HBMapPacket(cx, cy, 32, 32, ch.wcells));
+                                packets.Add(new HBMapPacket(cx, cy, 32, 32, ch.pastedcells));
                                 foreach (var id in ch.bots)
                                 {
                                     var j = MServer.GetPlayer(id.Key);

@@ -4,6 +4,8 @@ using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.HubEvents.Packs;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using System.Configuration;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 
 namespace MinesServer.GameShit
@@ -12,10 +14,10 @@ namespace MinesServer.GameShit
     {
         public Dictionary<int, Player> bots = new();
         public (int, int) pos;
-        private byte[] cells = new byte[32 * 32];
-        public byte[] wcells = new byte[32 * 32];
-        public byte[] rcells = new byte[32 * 32];
-        public float[] durcells = new float[32 * 32];
+        private byte[] cells;
+        public byte[] wcells;
+        public byte[] rcells;
+        public float[] durcells;
         public bool active = false;
         public Chunk((int, int) pos) => this.pos = pos;
         public bool ContainsAlive = false;
@@ -24,19 +26,23 @@ namespace MinesServer.GameShit
         {
             get => cells;
         }
+        public byte this[int x, int y]
+        {
+            get => cells[x + y * 32];
+            private set => cells[x + y * 32] = value;
+        }
         public void Update()
         {
             if (shouldbeloaded())
             {
-                LoadN();
-                //SendAround();
+                Load();
+                SendAround();
                 return;
             }
         }
-        public byte GetCell(int x,int y)
+        public void SetCell(int x,int y,byte cell)
         {
-            //LoadChunkMB()
-            return pastedcells[x + y * 32];
+            //dosomeshit
         }
         public void SendDirectedFx(int fx,int x,int y,int dir,int bid = 0,int color = 0)
         {
@@ -138,8 +144,28 @@ namespace MinesServer.GameShit
         {
             return active && (ShouldBeLoadedBots() || ContainsAlive);
         }
-        public void LoadN() => World.W.map.LoadChunk(this);
-        public void SaveN() => World.W.map.SaveChunk(this);
+        public void Load()
+        {
+            wcells = new byte[1024];rcells = new byte[1024];durcells = new float[1024];cells = new byte[1024];
+            World.W.map.LoadChunk(this);
+            for(int x = 0;x < 32;x++)
+            {
+                for (int y = 0; y < 32; y++)
+                {
+                    if (wcells[x + y * 32] == 0)
+                    {
+                        rcells[x + y * 32] = rcells[x + y * 32] == 0 ? (byte)32 : rcells[x + y * 32];
+                        this[x,y] = rcells[x + y * 32];
+                    }
+                    else
+                    {
+                        durcells[x + y * 32] = World.GetProp(wcells[x + y * 32]).durability;
+                    }
+                    this[x, y] = wcells[x + y * 32];
+                }
+            }
+        }
+        public void Save() => World.W.map.SaveChunk(this);
         private bool ShouldBeLoadedBots()
         {
             for (var xxx = -2; xxx <= 2; xxx++)
@@ -163,7 +189,7 @@ namespace MinesServer.GameShit
         public void SendAround()
         {
             ContainsAlive = false;
-            if (wcells == null)
+            if (pastedcells == null)
             {
                 return;
             }
@@ -174,17 +200,17 @@ namespace MinesServer.GameShit
                     var chx = pos.Item1;
                     var chy = pos.Item2;
                     var cellpos = ((chx * 32) + x, (chy * 32) + y);
-                    if (World.W.chunks[chx, chy] != null && wcells != null)
+                    if (World.W.chunks[chx, chy] != null && pastedcells != null)
                     {
                         var c = World.GetCell(cellpos.Item1, cellpos.Item2);
-                        if (World.isAlive(wcells[x + y * 32]))
+                        if (World.isAlive(this[x,y]))
                         {
                             ContainsAlive = true;
                         }
-                        if (wcells != null && wcells[x + y * 32] != c)
+                        if (pastedcells != null && this[x, y] != c)
                         {
-                            wcells[x + y * 32] = c;
-                            SendCellToBots(cellpos.Item1, cellpos.Item2, wcells[x + y * 32]);
+                            this[x, y] = c;
+                            SendCellToBots(cellpos.Item1, cellpos.Item2, pastedcells[x + y * 32]);
                         }
                     }
                 }
