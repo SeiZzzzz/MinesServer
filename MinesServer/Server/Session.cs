@@ -1,5 +1,4 @@
 ﻿using MinesServer.GameShit;
-using MinesServer.GameShit.GUI;
 using MinesServer.Network;
 using MinesServer.Network.Auth;
 using MinesServer.Network.ConnectionStatus;
@@ -8,7 +7,6 @@ using MinesServer.Network.HubEvents;
 using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using NetCoreServer;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace MinesServer.Server
 {
@@ -114,12 +112,12 @@ namespace MinesServer.Server
             {
                 if (incl.selection == -1)
                 {
-                    player.inventory.Choose(-1);
+                    player.inventory.Choose(-1,player);
                     SendU(new InventoryClosePacket());
                 }
                 else
                 {
-                    player.inventory.Choose(incl.selection.Value);
+                    player.inventory.Choose(incl.selection.Value, player);
                     player.SendInventory();
                 }
             }
@@ -176,7 +174,7 @@ namespace MinesServer.Server
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)
         {
-            SendU(new NickListPacket(packet.botIds.ToDictionary(x => x, x => MServer.GetPlayer(x).player.name)));
+            SendU(new NickListPacket(packet.botIds.ToDictionary(x => x, x => MServer.GetPlayer(x)!.player.name)));
         }
         private void LocalChatHandler(TYPacket parent, LoclPacket packet)
         {

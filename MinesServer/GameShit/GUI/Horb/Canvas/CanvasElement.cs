@@ -1,5 +1,4 @@
 ﻿using System.Drawing;
-using MinesServer.GameShit.GUI;
 
 namespace MinesServer.GameShit.GUI.Horb.Canvas
 {

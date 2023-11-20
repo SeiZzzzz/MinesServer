@@ -2,7 +2,7 @@
 {
     public class Gun : Pack
     {
-        public Gun(int x, int y, int ownerid, Packs type) : base(x, y, ownerid, type)
+        public Gun(int x, int y, int ownerid) : base(x, y, ownerid, Packs.None)
         {
 
         }

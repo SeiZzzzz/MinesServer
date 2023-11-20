@@ -1,7 +1,6 @@
 ﻿using MinesServer.Enums;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
-using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.Skills;
 using MinesServer.Network;
 using MinesServer.Network.BotInfo;
@@ -10,11 +9,9 @@ using MinesServer.Network.HubEvents;
 using MinesServer.Network.HubEvents.Bots;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.Movement;
-using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Core.Metadata.Edm;
 using System.Numerics;
 
 namespace MinesServer.GameShit
@@ -143,21 +140,55 @@ namespace MinesServer.GameShit
             crys.AddCrys(type, odob);
             SendDFToBots(2, x, y, (int)odob, type);
         }
+        public void GetBox(int x,int y)
+        {
+            var b = Box.GetBox(x, y);
+            if (b == null)
+            {
+                return;
+            }
+            crys.Boxcrys(b.bxcrys);
+            crys.SendBasket();
+            using var db = new DataBase();
+            db.Remove(b);
+        }
+        private void CallDestroy(int x,int y)
+        {
+            foreach (var c in skillslist.skills)
+            {
+                if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
+                {
+                    c.AddExp(this);
+                    c.Up(this);
+                }
+            }
+            World.SetDurability(x, y, 0);
+            World.W.Destroy(x, y);
+        }
         public void Bz(int x, int y)
         {
             SendDFToBots(0, x, y, this.dir);
-            var cell = World.W.GetCell(x, y);
-            /*
-            if (!World.GetProp(cell).is_destructible)
+            var cell = World.GetCell(x, y);
+            if (World.GetProp(cell).damage > 0)
+            {
+                health.Hurt(World.GetProp(cell).damage);
+            }
+            if (!World.GetProp(cell).is_diggable)
             {
                 return;
-            }*/
-            var d = World.W.map.GetDurability(x, y);
+            }
+            if (cell == 90)
+            {
+                GetBox(x, y);
+                CallDestroy(x, y);
+                return;
+            }
+            var d = World.GetDurability(x, y);
             var hitdmg = 0.2f;
-            if (World.GetProp(cell).isCry)
+            if (World.isCry(cell))
             {
                 hitdmg = 1f;
-                Mine(cell,x,y);
+                Mine(cell, x, y);
             }
             else
             {
@@ -175,20 +206,11 @@ namespace MinesServer.GameShit
             }
             if ((d - hitdmg) <= 0)
             {
-                foreach (var c in skillslist.skills)
-                {
-                    if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
-                    {
-                        c.AddExp(this);
-                        c.Up(this);
-                    }
-                }
-                World.W.map.SetDurability(x, y, 0);
-                World.W.Destroy(x, y);
+                CallDestroy(x,y);
             }
             else if (d >= 0)
             {
-                World.W.map.SetDurability(x, y, d - hitdmg);
+                World.SetDurability(x, y, d - hitdmg);
             }
         }
         public void Move(int x, int y, int dir)
@@ -216,7 +238,7 @@ namespace MinesServer.GameShit
                     return;
                 }
 
-                var cell = World.W.GetCell(x, y);
+                var cell = World.GetCell(x, y);
                 if (!World.GetProp(cell).isEmpty)
                 {
                     tp(this.x, this.y);
@@ -311,8 +333,8 @@ namespace MinesServer.GameShit
             }
 
             MConsole.AddConsoleLine(this, "Если вы не понимаете, что происходит,");
-            MConsole.AddConsoleLine(this,"или вас попросили выполнить команду,");
-            MConsole.AddConsoleLine(this,"сосите хуй глотайте сперму");
+            MConsole.AddConsoleLine(this, "или вас попросили выполнить команду,");
+            MConsole.AddConsoleLine(this, "сосите хуй глотайте сперму");
             for (var i = 0; i < 8; i++)
             {
                 MConsole.AddConsoleLine(this);
@@ -424,12 +446,12 @@ namespace MinesServer.GameShit
                         {
                             var ch = World.W.chunks[cx, cy];
                             ch.active = true;
-                            ch.Load();
+                            ch.LoadN();
                             if (ch != null)
                             {
 
                                 cx *= 32; cy *= 32;
-                                packets.Add(new HBMapPacket(cx, cy, 32, 32, ch.cells));
+                                packets.Add(new HBMapPacket(cx, cy, 32, 32, ch.wcells));
                                 foreach (var id in ch.bots)
                                 {
                                     var j = MServer.GetPlayer(id.Key);

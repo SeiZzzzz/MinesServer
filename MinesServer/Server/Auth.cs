@@ -1,7 +1,6 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
-using MinesServer.GameShit.GUI.Horb.List.Rich;
 
 using MinesServer.Network.Auth;
 using MinesServer.Network.GUI;
@@ -171,7 +170,7 @@ namespace MinesServer.Server
                 });
                 initiator.SendWin(authwin.ToString());
                 return;
-                
+
             }
             initiator.SendU(new OKPacket("auth", "Игрок не найден"));
             initiator.SendPing();

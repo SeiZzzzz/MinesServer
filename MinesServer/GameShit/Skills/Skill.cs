@@ -1,5 +1,4 @@
 ﻿using MinesServer.Network.GUI;
-using System.Windows.Data;
 
 namespace MinesServer.GameShit.Skills
 {
@@ -42,7 +41,7 @@ namespace MinesServer.GameShit.Skills
                 p.connection.SendU(new SkillsPacket(v));
             }
         }
-        public void AddExp(Player p,float expv = 1)
+        public void AddExp(Player p, float expv = 1)
         {
             Dictionary<string, int> v = new();
             foreach (var i in p.skillslist.skills)

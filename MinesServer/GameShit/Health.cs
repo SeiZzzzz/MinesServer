@@ -1,8 +1,6 @@
 ﻿using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.CompilerServices;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace MinesServer.GameShit
 {
@@ -33,7 +31,7 @@ namespace MinesServer.GameShit
         {
             player.connection.SendU(new LivePacket(HP, MaxHP));
         }
-        public void Hurt(int d,DamageType t = DamageType.Default)
+        public void Hurt(int d, DamageType t = DamageType.Pure)
         {
             if (HP - d > 0)
             {

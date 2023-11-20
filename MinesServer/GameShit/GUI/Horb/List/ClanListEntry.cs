@@ -1,6 +1,4 @@
-﻿using MinesServer.GameShit.GUI;
-
-namespace MinesServer.GameShit.GUI.Horb.List
+﻿namespace MinesServer.GameShit.GUI.Horb.List
 {
     public readonly record struct ClanListEntry(Button Button, byte ClanId, string RightText) { }
 }

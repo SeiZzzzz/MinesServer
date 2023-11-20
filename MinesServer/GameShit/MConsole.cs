@@ -1,15 +1,9 @@
 ﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
+using MinesServer.Network;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
-using MinesServer.Network;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MinesServer.Server;
-using System.Windows.Interop;
 
 namespace MinesServer.GameShit
 {
@@ -37,8 +31,8 @@ namespace MinesServer.GameShit
                 {
                     for (int y = 0; y < World.W.chunksCountH; y++)
                     {
-                        World.W.chunks[x, y].Load();
-                        l.Add(new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].cells));
+                        World.W.chunks[x, y].LoadN();
+                        l.Add(new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].pastedcells));
                     }
                 }
                 p.connection.SendB(new HBPacket(l.ToArray()));
@@ -64,7 +58,7 @@ namespace MinesServer.GameShit
                 l.text = "@@" + l.text;
             }
         }
-        public static void AddConsoleLine(Player p,string text)
+        public static void AddConsoleLine(Player p, string text)
         {
             p.console.Enqueue(new Line { text = ">" + text });
             if (p.console.Count > 16)
@@ -91,8 +85,9 @@ namespace MinesServer.GameShit
                             IsConsole = true
                         },
                         Text = string.Join("", p.console.Select(x => x.text + '\n').ToArray()),
-                        Buttons = [new Button("ВЫПОЛНИТЬ", $"{ActionMacros.Input}", (args) => {
-                            var msg = args.Input![1..];
+                        Buttons = [new Button("ВЫПОЛНИТЬ", $"{ActionMacros.Input}", (args) =>
+                        {
+                            var msg = args.Input!;
                             AddConsoleLine(p, msg);
                             if (msg.Contains(' '))
                             {
@@ -107,7 +102,7 @@ namespace MinesServer.GameShit
                                 commands[msg](p, msg);
                                 return;
                             }
-                            AddConsoleLine(p,"бля это че нахуй");
+                            AddConsoleLine(p, "бля это че нахуй");
                             ShowConsole(p);
                         })]
                     }

@@ -1,5 +1,4 @@
 ﻿using MinesServer.GameShit;
-using MinesServer.GameShit.GUI;
 using NetCoreServer;
 using System.Net;
 using System.Net.Sockets;
@@ -14,6 +13,7 @@ namespace MinesServer.Server
         public MServer(IPAddress address, int port) : base(address, port)
         {
             Instance = this;
+            MConsole.InitCommands();
             players = new Dictionary<int, Session>();
             /*HorbDecoder.InitCommands();*/
             time = new ServerTime();
@@ -23,9 +23,9 @@ namespace MinesServer.Server
             OptionKeepAlive = true;
         }
 
-        public static Session GetPlayer(int id)
+        public static Session? GetPlayer(int id)
         {
-            if (Instance.players.Keys.Contains(id))
+            if (Instance!.players.Keys.Contains(id))
             {
                 return Instance.players[id];
             }

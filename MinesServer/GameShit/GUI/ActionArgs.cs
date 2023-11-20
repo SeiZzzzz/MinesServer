@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace MinesServer.GameShit.GUI
+﻿namespace MinesServer.GameShit.GUI
 {
     public class ActionArgs
     {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace MinesServer.GameShit.GUI
+﻿namespace MinesServer.GameShit.GUI
 {
     public interface IPage
     {

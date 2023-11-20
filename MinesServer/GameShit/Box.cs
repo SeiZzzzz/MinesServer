@@ -1,33 +1,30 @@
-﻿using MinesServer.Enums;
+﻿using Microsoft.EntityFrameworkCore;
+using MinesServer.Enums;
 using MinesServer.Server;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinesServer.GameShit
 {
+    [Keyless]
     public class Box
     {
         public int x { get; set; }
         public int y { get; set; }
         [NotMapped]
         public long[] bxcrys = new long[6];
-        public Box? GetBox(int x,int y)
+        public static Box? GetBox(int x, int y)
         {
-            if (!World.W.ValidCoord(x,y))
+            if (!World.W.ValidCoord(x, y))
             {
                 return null;
             }
             using var db = new DataBase();
             return db.boxes.FirstOrDefault(t => t.x == x && t.y == y);
-        }
-        public static void BuildBox(int x,int y, long[] cry, Player p)
+        }        
+        public static void BuildBox(int x, int y, long[] cry, Player p)
         {
-            var cell = World.W.map.GetCell(x, y);
-            if (!(World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_block))
+            var cell = World.GetCell(x, y);
+            if (!World.GetProp(cell).isEmpty)
             {
                 return;
             }
@@ -37,7 +34,7 @@ namespace MinesServer.GameShit
                 long remcry = cry[i];
                 if (p == null)
                 {
-                   box.bxcrys[i] = remcry;
+                    box.bxcrys[i] = remcry;
                 }
                 else if (p.crys.RemoveCrys(i, remcry))
                 {
@@ -48,7 +45,7 @@ namespace MinesServer.GameShit
             {
                 return;
             }
-            box.y = y;box.x = x;
+            box.y = y; box.x = x;
             using (var db = new DataBase())
             {
                 db.boxes.Add(box);
