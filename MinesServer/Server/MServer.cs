@@ -10,6 +10,7 @@ namespace MinesServer.Server
         public ServerTime time { get; private set; }
         public Dictionary<int, Session> players;
         public static MServer? Instance;
+        public static bool started = false;
         public MServer(IPAddress address, int port) : base(address, port)
         {
             Instance = this;
@@ -18,7 +19,6 @@ namespace MinesServer.Server
             /*HorbDecoder.InitCommands();*/
             time = new ServerTime();
             new World(Default.cfg.WorldName, 32 * 10, 32 * 10);
-            DataBase.Load();
             time.Start();
             OptionKeepAlive = true;
         }

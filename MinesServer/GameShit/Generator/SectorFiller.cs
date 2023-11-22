@@ -75,7 +75,7 @@ namespace MinesServer.GameShit.Generator
             var error = 0;
             foreach (var c in s.seccells)
             {
-                c.value = (float)((c.value - min) / (max - min));
+                c.value = ((c.value - min) / (max - min));
                 for (int i = 0; i < dick.Count; i++)
                 {
                     c.type = c.value >= dick.ElementAt(i).Value.Item1 && c.value <= dick.ElementAt(i).Value.Item2 ? dick.ElementAt(i).Key : c.type;

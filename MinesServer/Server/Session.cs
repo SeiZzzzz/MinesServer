@@ -91,10 +91,21 @@ namespace MinesServer.Server
                 case INCLPacket incl: Incl(packet, incl); break;
                 case INUSPacket inus: Inus(packet, inus); break;
                 case PongPacket pi: Ping(packet, pi); break;
+                case DPBXPacket dpbx: Dpbx(packet, dpbx);break;
+                case SettPacket sett: Sett(packet, sett);break;
                 default:
                     // Invalid event type
                     break;
             }
+        }
+        private void Sett(TYPacket f, SettPacket p)
+        {
+            player.settings.SendSettings(player);
+        }
+        private void Dpbx(TYPacket f, DPBXPacket p)
+        {
+            player.win = player.crys.OpenBoxGui();
+            player.SendWindow();
         }
         private void Ping(TYPacket f, PongPacket p)
         {
@@ -102,9 +113,7 @@ namespace MinesServer.Server
         }
         private void Inus(TYPacket f, INUSPacket inus)
         {
-            var x = (int)(this.player.pos.X + (this.player.dir == 3 ? 1 : this.player.dir == 1 ? -1 : 0));
-            var y = (int)(this.player.pos.Y + (this.player.dir == 0 ? 1 : this.player.dir == 2 ? -1 : 0));
-            player.inventory.Use(x, y);
+            player.inventory.Use(player);
         }
         private void Incl(TYPacket f, INCLPacket incl)
         {
@@ -112,8 +121,7 @@ namespace MinesServer.Server
             {
                 if (incl.selection == -1)
                 {
-                    player.inventory.Choose(-1,player);
-                    SendU(new InventoryClosePacket());
+                    player.inventory.Choose(-1, player);
                 }
                 else
                 {
@@ -126,13 +134,8 @@ namespace MinesServer.Server
         {
             if (player != null && player.win == null)
             {
-                int x = (int)(parent.x + (packet.direction == 3 ? 1 : packet.direction == 1 ? -1 : 0));
-                int y = (int)(parent.y + (packet.direction == 0 ? 1 : packet.direction == 2 ? -1 : 0));
                 player.dir = packet.direction;
-                if (World.W.ValidCoord(x, y))
-                {
-                    player.Bz(x, y);
-                }
+                 player.Bz();
             }
         }
         private void GeoHandler(TYPacket parent, XgeoPacket packet)
@@ -216,8 +219,7 @@ namespace MinesServer.Server
             {
                 if (button.ToString() == "exit")
                 {
-                    player.win = null;
-                    SendU(new GuPacket());
+                    CloseWindow();
                     return;
                 }
                 player.CallWinAction(button);
@@ -256,6 +258,11 @@ namespace MinesServer.Server
         public void SendCell(int x, int y, byte cell)
         {
             SendB(new HBPacket([new HBMapPacket(x, y, 1, 1, [cell])]));
+        }
+        public void CloseWindow()
+        {
+            player.win = null;
+            SendU(new GuPacket());
         }
         #endregion
         public void UpdateMs()

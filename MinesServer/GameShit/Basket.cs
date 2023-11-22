@@ -1,4 +1,7 @@
-﻿using MinesServer.Network.GUI;
+﻿using MinesServer.GameShit.GUI;
+using MinesServer.GameShit.GUI.Horb;
+using MinesServer.Network.GUI;
+using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit
@@ -70,8 +73,30 @@ namespace MinesServer.GameShit
         {
             return 1;
         }
+        public Window OpenBoxGui()
+        {
+            return new Window()
+            {
+                ShowTabs = false,
+                Title = "Создание бокса",
+                Tabs = [new Tab() {
+                    Label = "хуй",
+                    Action = "dropbox",
+                    InitialPage = new Page()
+                    {
+                        CrystalConfig = new CrystalConfig("  останется", "будет в боксе", [new CrysLine("", 0, 0, cry[0],0), new CrysLine("", 0, 0, cry[1], 0),
+                            new CrysLine("", 0, 0, cry[2], 0), new CrysLine("", 0, 0, cry[3], 0),
+                            new CrysLine("", 0, 0, cry[4], 0),new CrysLine("", 0, 0, cry[5], 0)]),
+                        Text = "\nИспользуйте полосы прокрутки, чтобы выбрать сколько положить в бокс\",\r\n                    \"ВНИМАНИЕ! При создании бокса теряется нихуя кристаллов\n",
+                        Buttons = [new Button("<color=green>В БОКС</color>", $"dropbox:{ActionMacros.CrystalSliders}",(args) => { player.BBox(args.CrystalSliders); })]
+                    }
+                }]
+            };
+        }
         public void SendBasket()
         {
+            using var db = new DataBase();
+            db.SaveChanges();
             var p = new BasketPacket(cry[0], cry[1], cry[2], cry[3], cry[4], cry[5], Buildcap());
             player.connection.SendU(p);
         }

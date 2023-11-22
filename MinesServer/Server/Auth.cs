@@ -16,7 +16,6 @@ namespace MinesServer.Server
         public bool complited = false;
         public string nick = "";
         public string passwd = "";
-        public bool createnew = false;
         public void CallAction(string text)
         {
             authwin.ProcessButton(text);
@@ -26,7 +25,6 @@ namespace MinesServer.Server
             temp = null;
             nick = "";
             passwd = "";
-            createnew = false;
         }
         public void NickNotA(Session initiator)
         {
@@ -106,7 +104,6 @@ namespace MinesServer.Server
         public void CreateNew(Session initiator)
         {
             temp = new Player();
-            createnew = true;
             authwin.CurrentTab.Open(new Page
             {
                 Title = "НОВЫЙ ИГРОК",
@@ -139,13 +136,13 @@ namespace MinesServer.Server
         public void EndCreateAndInit(string passwd, Session initiator)
         {
             complited = true;
+            using var db = new DataBase();
             temp.CreatePlayer();
+            db.players.Add(temp);
             temp.passwd = passwd;
             temp.name = nick;
-            using var db = new DataBase();
-            db.players.Add(temp);
-            db.SaveChanges();
             temp.connection = initiator;
+            db.SaveChanges();
             initiator.player = temp;
             initiator.SendU(new AHPacket(temp.Id, temp.hash));
             temp.Init();
@@ -153,7 +150,7 @@ namespace MinesServer.Server
         public void TryToFindByNick(string name, Session initiator)
         {
             using var db = new DataBase();
-            Player player = db.players.FirstOrDefault(p => p.name == name);
+            Player player = db.players.FirstOrDefault(p => p.name == name)!;
             if (player != default(Player))
             {
                 temp = player;

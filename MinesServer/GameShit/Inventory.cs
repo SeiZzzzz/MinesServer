@@ -1,4 +1,6 @@
-﻿using MinesServer.Network.GUI;
+﻿using MinesServer.GameShit.Buildings;
+using MinesServer.Network;
+using MinesServer.Network.GUI;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace MinesServer.GameShit
@@ -11,39 +13,47 @@ namespace MinesServer.GameShit
             typeditems = new Dictionary<int, ItemUsage>
             {
                 {
-                    0,(x, y) =>
+                    0,(p) =>
                     {
-
+                        return true;
                     }
                 },
                 {
-                    1,(x, y) =>
+                    1,(p) =>
                     {
-
+                        new Resp((int)p.GetDirCord(true).X,(int)p.GetDirCord(true).Y,p.Id).Build();
+                        return true;
                     }
                 },
                 {
-                    2,(x, y) =>
+                    2,(p) =>
                     {
-
+                        return true;
                     }
                 },
                 {
-                    3,(x, y) =>
+                    3,(p) =>
                     {
-
+                        return true;
                     }
                 },
                 {
-                    4,(x, y) =>
+                    4,(p) =>
                     {
-
+                        return true;
                     }
                 },
                 {
-                    5,World.Boom
+                    5,(p) =>{
+                    World.Boom((int)p.GetDirCord().X,(int)p.GetDirCord().Y);
+                        return true;
+                        }
                 }
             };
+        }
+        public bool canplace(int x,int y)
+        {
+            return true;
         }
         public void SetItem(int id, int col)
         {
@@ -70,19 +80,24 @@ namespace MinesServer.GameShit
         {
             return new InventoryPacket(new InventoryShowPacket(getinv(), selected, Lenght));
         }
-        public void Use(int x, int y)
+        public void Use(Player p)
         {
-            if (typeditems.ContainsKey(selected) && World.GetProp(World.GetCell(x,y)).can_place_over)
+            if (typeditems.ContainsKey(selected) && World.GetProp(World.GetCell((int)p.GetDirCord().X, (int)p.GetDirCord().Y)).can_place_over)
             {
-                typeditems[selected](x,y);
+                typeditems[selected](p);
             }
         }
         public Dictionary<int, ItemUsage> typeditems;
-        public delegate void ItemUsage(int x, int y);
-        public void Choose(int id,Player p)
+        public delegate bool ItemUsage(Player p);
+        public void Choose(int id, Player p)
         {
+            IDataPartBase packet = InventoryPacket.Choose("ты хуесос", new bool[0, 0], 123, 123, 12);
             selected = id;
-            p.connection.SendU(InventoryPacket.Choose("ты хуесос", new bool[0,0], 123, 123, 12));
+            if (id == -1)
+            {
+                packet = new InventoryClosePacket();
+            }
+            p.connection.SendU(packet);
         }
         public int selected = -1;
         [NotMapped]

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MinesServer.GameShit;
+using MinesServer.GameShit.Buildings;
 
 namespace MinesServer.Server
 {
@@ -11,6 +12,8 @@ namespace MinesServer.Server
         public DbSet<Basket> baskets { get; set; }
         public DbSet<PlayerSkills> skills { get; set; }
         public DbSet<Box> boxes { get; set; }
+        public DbSet<Settings> settings { get; set; }
+        public DbSet<Resp> resps { get; set; }
         public DataBase()
         {
             Database.EnsureCreated();
@@ -43,7 +46,12 @@ namespace MinesServer.Server
             using var db = new DataBase();
             try
             {
-
+                foreach(var i in db.boxes)
+                {
+                    World.W.GetChunk(i.x, i.y).Load();
+                    World.SetCell(i.x, i.y, 90);
+                    World.W.GetChunk(i.x, i.y).Save();
+                }
             }
             catch (Exception ex)
             {

@@ -1,13 +1,14 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MinesServer.Enums;
+using MinesServer.GameShit.GUI;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit
 {
-    [Keyless]
     public class Box
     {
+        public int Id { get; set; }
         public int x { get; set; }
         public int y { get; set; }
         [NotMapped]
@@ -20,11 +21,11 @@ namespace MinesServer.GameShit
             }
             using var db = new DataBase();
             return db.boxes.FirstOrDefault(t => t.x == x && t.y == y);
-        }        
+        }
         public static void BuildBox(int x, int y, long[] cry, Player p)
         {
             var cell = World.GetCell(x, y);
-            if (!World.GetProp(cell).isEmpty)
+            if (!(World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over))
             {
                 return;
             }
@@ -49,7 +50,9 @@ namespace MinesServer.GameShit
             using (var db = new DataBase())
             {
                 db.boxes.Add(box);
+                db.SaveChanges();
             }
+            World.SetCell(x, y, 90);
         }
         public long this[CrystalType crystal]
         {

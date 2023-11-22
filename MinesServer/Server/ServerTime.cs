@@ -37,7 +37,7 @@ namespace MinesServer.Server
         }
         public void Update()
         {
-            if (World.W.map == null)
+            if (World.W.map == null || !MServer.started)
             {
                 return;
             }
@@ -57,7 +57,11 @@ namespace MinesServer.Server
             {
                 try
                 {
-                    gameActions.Dequeue()();
+                    var action = gameActions.Dequeue();
+                    if (action != null)
+                    {
+                        action();
+                    }
                 }
                 catch (Exception ex)
                 {

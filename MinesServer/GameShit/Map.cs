@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
-using RT.Util.Streams;
-using System.IO;
+﻿using RT.Util.Streams;
 
 namespace MinesServer.GameShit
 {
@@ -24,34 +22,39 @@ namespace MinesServer.GameShit
         public bool MapExists = true;
         public void SaveChunk(Chunk ch)
         {
-            stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-            stream.Write(ch.wcells);
-            rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-            rstream.Write(ch.rcells);
-            dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
-            var durbytes = new byte[ch.durcells.Length * 4];
-            Buffer.BlockCopy(ch.durcells, 0, durbytes, 0, durbytes.Length);
-            dstream.Write(durbytes);
+            lock (ch.durcells)
+            {
+                stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+                stream.Write(ch.wcells);
+                rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+                rstream.Write(ch.rcells);
+                dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
+                var durbytes = new byte[ch.durcells.Length * 4];
+                Buffer.BlockCopy(ch.durcells, 0, durbytes, 0, durbytes.Length);
+                dstream.Write(durbytes);
+            }
         }
         public void LoadChunk(Chunk ch)
         {
-            stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-            stream.Read(ch.wcells);
-            rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-            rstream.Read(ch.rcells);
-            dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
-            var durbytes = new byte[ch.durcells.Length * 4];
-            dstream.Read(durbytes);
-            Buffer.BlockCopy(durbytes, 0, ch.durcells, 0, ch.durcells.Length);
+                stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+                stream.Read(ch.wcells);
+                rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+                rstream.Read(ch.rcells);
+                dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
+                var durbytes = new byte[ch.durcells.Length * 4];
+                dstream.Read(durbytes);
+                Buffer.BlockCopy(durbytes, 0, ch.durcells, 0, ch.durcells.Length);
         }
         public void SaveAllChunks()
         {
-            for(int x = 0;x < World.W.chunksCountW;x++)
+            for (int x = 0; x < World.W.chunksCountW; x++)
             {
 
                 for (int y = 0; y < World.W.chunksCountH; y++)
                 {
-                    World.W.chunks[x, y].SaveN();
+                    var ch = World.W.chunks[x, y];
+                    ch.Save();
+                    ch.Dispose();
                 }
             }
         }

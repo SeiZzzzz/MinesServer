@@ -23,7 +23,7 @@
                 var x = r.Next(width);
                 var y = 0;
                 spawns.Add((x, y));
-                
+
 
             }
         }
@@ -36,11 +36,11 @@
             sec.End();
             var map = sec.map;
             var rc = 0;
-            for (int x = 0; x < width; x+= 32)
+            for (int x = 0; x < width; x += 32)
             {
                 for (int y = 0; y < height; y += 32)
                 {
-                    for(int chx = 0; chx < 32; chx++)
+                    for (int chx = 0; chx < 32; chx++)
                     {
                         for (int chy = 0; chy < 32; chy++)
                         {
@@ -53,7 +53,7 @@
                             rc++;
                         }
 
-                    }    
+                    }
                 }
                 Console.Write($"\r{rc}/{map.Length} saving rocks");
             }
@@ -79,7 +79,7 @@
                 {
                     var ty = c.type == CellType.Empty ? (byte)0 : (byte)c.type;
                     var ch = World.W.GetChunk(c.pos.Item1, c.pos.Item2);
-                    var xx = c.pos.Item1 - ch.pos.Item1 * 32;var yy = c.pos.Item2 - ch.pos.Item2 * 32;
+                    var xx = c.pos.Item1 - ch.WorldX; var yy = c.pos.Item2 - ch.WorldY;
                     if (ty != 0)
                     {
                         ch.wcells[xx + yy * 32] = ty;

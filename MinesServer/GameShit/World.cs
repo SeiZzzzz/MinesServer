@@ -1,7 +1,7 @@
-﻿using MinesServer.GameShit.Buildings;
+﻿using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
+using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Generator;
 using MinesServer.Server;
-using System.Reflection.Metadata.Ecma335;
 
 namespace MinesServer.GameShit
 {
@@ -29,6 +29,7 @@ namespace MinesServer.GameShit
             CreateChunks();
             if (!map.MapExists)
             {
+                EmptyChunks();
                 Console.WriteLine($"Creating World Preset{width} x {height}({chunksCountW} x {chunksCountH} chunks)");
                 Console.WriteLine("EmptyMapGeneration");
                 x = DateTime.Now;
@@ -44,6 +45,8 @@ namespace MinesServer.GameShit
             Console.WriteLine("LoadConfirmed");
             Console.WriteLine("Started");
             gen.GenerateSpawn(4);
+            DataBase.Load();
+            MServer.started = true;
         }
         public void CreateChunks()
         {
@@ -55,37 +58,54 @@ namespace MinesServer.GameShit
                 }
             }
         }
+        public void EmptyChunks()
+        {
+            for (int chx = 0; chx < chunksCountW; chx++)
+            {
+                for (int chy = 0; chy < chunksCountH; chy++)
+                {
+                    chunks[chx, chy].EmptyLoad();
+                }
+            }
+        }
         public void DestroyByBoom()
         {
             //idk
         }
-        public void Destroy(int x, int y)
+        public enum destroytype
         {
-            //todo + static
-            if (!ValidCoord(x, y))
+            Cell,
+            Road,
+            CellAndRoad
+        }
+        public static void Destroy(int x, int y, destroytype t = destroytype.Cell)
+        {
+            if (!W.ValidCoord(x, y))
             {
                 return;
-            }/*
-            var c = map.GetRoad(x, y);
-            if (c != 0)
-            {
-                //map.SetCell(x, y, c);
             }
-            else
-            {
-                //map.SetCell(x, y, 32);
-            }*/
+            var ch = W.GetChunk(x, y);
+            ch.DestroyCell(x - ch.WorldX, y - ch.WorldY, t);
         }
-        public static float GetDurability(int x,int y)
+        public static float GetDurability(int x, int y)
         {
-            //todo
-            return 1f;
+            if (!W.ValidCoord(x, y))
+            {
+                return 0f;
+            }
+            var ch = W.GetChunk(x, y);
+            return ch.GetDurability(x - ch.WorldX, y - ch.WorldY);
         }
         public static void SetDurability(int x, int y, float d)
-        { 
-            //todo 
+        {
+            if (!W.ValidCoord(x, y))
+            {
+                return;
+            }
+            var ch = W.GetChunk(x, y);
+            ch.SetDurability(x - ch.WorldX, y - ch.WorldY, d);
         }
-            public void CreateEmptyMap(byte cell)
+        public void CreateEmptyMap(byte cell)
         {
             int cells = 0;
             var j = DateTime.Now;
@@ -94,7 +114,7 @@ namespace MinesServer.GameShit
                 for (int y = 0; y < height; y++)
                 {
                     cells += 1;
-                    SetCell(x, y, cell);
+                    World.SetCell(x, y, cell);
                 }
                 if (DateTime.Now - j > TimeSpan.FromSeconds(2))
                 {
@@ -109,15 +129,37 @@ namespace MinesServer.GameShit
         {
             return CellsSerializer.cells[type];
         }
-        public void SetCell(int x, int y, byte cell)
+        public static void SetCell(int x, int y, byte cell)
         {
-            if (!ValidCoord(x, y))
+            if (!W.ValidCoord(x, y))
             {
                 return;
             }
             var ch = W.GetChunk(x, y);
-            ch.SetCell(x - ch.pos.Item1, y - ch.pos.Item2, cell);
-            UpdateChunkByCoords(x, y);
+            ch.SetCell(x - ch.WorldX, y - ch.WorldY, cell);
+            W.UpdateChunkByCoords(x, y);
+        }
+        public static void AddPack(int x,int y,Pack p)
+        {
+            if (!W.ValidCoord(x, y))
+            {
+                return;
+            }
+            var ch = W.GetChunk(x, y);
+            ch.SetPack(x - ch.WorldX, y - ch.WorldY,p);
+        }
+        public static void RemovePack(int x,int y,Player p = null)
+        {
+
+        }
+        public static byte GetCell(int x, int y)
+        {
+            if (!W.ValidCoord(x, y))
+            {
+                return 0;
+            }
+            var ch = W.GetChunk(x, y);
+            return ch.GetCell(x - ch.WorldX, y - ch.WorldY);
         }
         public async void AsyncAction(int secdelay, Action act)
         {
@@ -127,25 +169,25 @@ namespace MinesServer.GameShit
                 act();
             });
         }
-        public Stack<Player> GetPlayersFromPos(int x,int y)
+        public Stack<Player> GetPlayersFromPos(int x, int y)
         {
             var st = new Stack<Player>();
-            foreach(var id in GetChunk(x,y).bots.Keys)
+            foreach (var id in GetChunk(x, y).bots.Keys)
             {
                 var p = MServer.GetPlayer(id);
                 if (p == null)
                 {
                     continue;
                 }
-                    if (p.player.x == x && p.player.y == y)
-                    {
-                        st.Push(p.player);
-                    }
-                
+                if (p.player.x == x && p.player.y == y)
+                {
+                    st.Push(p.player);
+                }
+
             }
             return st;
         }
-        public static void Boom(int x,int y)
+        public static void Boom(int x, int y)
         {
             var ch = W.GetChunk(x, y);
             ch.SendPack('B', x, y, 0, 0);
@@ -155,16 +197,16 @@ namespace MinesServer.GameShit
                 {
                     for (int _y = -4; _y < 4; _y++)
                     {
-                        if (W.ValidCoord(x + _x, y + _y) && System.Numerics.Vector2.Distance(new System.Numerics.Vector2(x, y),new System.Numerics.Vector2(x + _x, y + _y)) <= 3.5f)
+                        if (W.ValidCoord(x + _x, y + _y) && System.Numerics.Vector2.Distance(new System.Numerics.Vector2(x, y), new System.Numerics.Vector2(x + _x, y + _y)) <= 3.5f)
                         {
                             foreach (var p in W.GetPlayersFromPos(x + _x, y + _y))
                             {
                                 p.health.Hurt(40);
                             }
-                                var c = GetCell(x + _x, y + _y);
+                            var c = GetCell(x + _x, y + _y);
                             if (GetProp(c).is_destructible)
                             {
-                                    W.Destroy(x + _x, y + _y);
+                                Destroy(x + _x, y + _y);
                             }
                         }
                     }
@@ -173,20 +215,11 @@ namespace MinesServer.GameShit
                 ch.ClearPack(x, y);
             });
         }
-        public static byte GetCell(int x, int y)
-        {
-            if (!W.ValidCoord(x, y))
-            {
-                return 0;
-            }
-            var ch = W.GetChunk(x, y);
-            return ch[x - ch.pos.Item1, y - ch.pos.Item2];
-        }
         public bool ContainsPack(int x, int y, out Pack p)
         {
             var chpos = GetChunkPosByCoords(x, y);
             var ch = chunks[chpos.Item1, chpos.Item2];
-            p = ch.GetPackAt((x - ch.pos.Item1 * 32), (y - ch.pos.Item2 * 32))!;
+            p = ch.GetPack((x - ch.WorldX), (y - ch.WorldY))!;
             if (p == null)
             {
                 return false;

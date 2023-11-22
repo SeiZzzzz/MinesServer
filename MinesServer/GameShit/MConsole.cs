@@ -31,7 +31,7 @@ namespace MinesServer.GameShit
                 {
                     for (int y = 0; y < World.W.chunksCountH; y++)
                     {
-                        World.W.chunks[x, y].LoadN();
+                        World.W.chunks[x, y].Load();
                         l.Add(new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].pastedcells));
                     }
                 }
