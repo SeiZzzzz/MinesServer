@@ -1,7 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Generator;
+using MinesServer.Network;
+using MinesServer.Network.HubEvents.FX;
+using MinesServer.Network.World;
 using MinesServer.Server;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace MinesServer.GameShit
 {
@@ -38,15 +42,33 @@ namespace MinesServer.GameShit
                 Console.WriteLine("Generation End");
                 Console.WriteLine($"{DateTime.Now - x} loaded");
                 x = DateTime.Now;
+                CreateSpawns(4);
             }
             Console.WriteLine("Creating chunkmesh");
             x = DateTime.Now;
             Console.WriteLine($"{DateTime.Now - x} loaded");
             Console.WriteLine("LoadConfirmed");
             Console.WriteLine("Started");
-            gen.GenerateSpawn(4);
             DataBase.Load();
             MServer.started = true;
+        }
+        public void CreateSpawns(int c)
+        {
+            var r = new Random();
+            using (var db = new DataBase())
+            {
+                while (db.resps.Where(i => i.ownerid == 0).Count() < c)
+                {
+                    var x = r.Next(width);
+                    var y = 3;
+                    if (CanBuildPack(-2, 6, -2, 3, x, y, null,true))
+                        {
+                        new Resp(x, y, 0).Build();
+
+                            }
+                }
+            }
+            
         }
         public void CreateChunks()
         {
@@ -68,9 +90,28 @@ namespace MinesServer.GameShit
                 }
             }
         }
-        public void DestroyByBoom()
+        public bool CanBuildPack(int left,int right,int bottom,int top,int x,int y,Player player,bool ignoreplace = false)
         {
-            //idk
+            var h = 0;
+            List<IDataPartBase> packets = new();
+            for (int cx = left;cx <= right;cx++)
+            {
+                for (int cy = bottom; cy <= top; cy++)
+                {
+                    var p = GetProp(GetCell(x + cx, y + cy));
+                    if (((!p.can_place_over || !p.isEmpty || !PackPart(x,y)) && !ignoreplace) || (ignoreplace && !p.is_destructible))
+                    {
+                        packets.Add(new HBFXPacket(x + cx, y + cy, 0));
+                        h++;
+                    }
+                }
+            }
+            if (h > 0 && player != null)
+            {
+                player.connection.SendB(new HBPacket(packets.ToArray()));
+                return false;
+            }
+            return true;
         }
         public enum destroytype
         {
@@ -129,15 +170,24 @@ namespace MinesServer.GameShit
         {
             return CellsSerializer.cells[type];
         }
-        public static void SetCell(int x, int y, byte cell)
+        public static void SetCell(int x, int y, byte cell, bool packmesh = false)
         {
             if (!W.ValidCoord(x, y))
             {
                 return;
             }
             var ch = W.GetChunk(x, y);
-            ch.SetCell(x - ch.WorldX, y - ch.WorldY, cell);
+            ch.SetCell(x - ch.WorldX, y - ch.WorldY, cell,packmesh);
             W.UpdateChunkByCoords(x, y);
+        }
+        public static bool PackPart(int x,int y)
+        {
+            if (!W.ValidCoord(x, y))
+            {
+                return false;
+            }
+            var ch = W.GetChunk(x, y);
+            return ch.packsprop[(x - ch.WorldX) + (y - ch.WorldY) * 32];
         }
         public static void AddPack(int x,int y,Pack p)
         {
@@ -204,9 +254,9 @@ namespace MinesServer.GameShit
                                 p.health.Hurt(40);
                             }
                             var c = GetCell(x + _x, y + _y);
-                            if (GetProp(c).is_destructible)
+                            if (GetProp(c).is_destructible && !PackPart(x + _x, y + _y))
                             {
-                                Destroy(x + _x, y + _y);
+                                Destroy(x + _x, y + _y,destroytype.CellAndRoad);
                             }
                         }
                     }
@@ -215,10 +265,10 @@ namespace MinesServer.GameShit
                 ch.ClearPack(x, y);
             });
         }
-        public bool ContainsPack(int x, int y, out Pack p)
+        public static bool ContainsPack(int x, int y, out Pack p)
         {
-            var chpos = GetChunkPosByCoords(x, y);
-            var ch = chunks[chpos.Item1, chpos.Item2];
+            var chpos = W.GetChunkPosByCoords(x, y);
+            var ch = W.chunks[chpos.Item1, chpos.Item2];
             p = ch.GetPack((x - ch.WorldX), (y - ch.WorldY))!;
             if (p == null)
             {

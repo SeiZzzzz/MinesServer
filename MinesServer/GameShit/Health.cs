@@ -1,4 +1,5 @@
-﻿using MinesServer.GameShit.Skills;
+﻿using MinesServer.GameShit.Buildings;
+using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -31,6 +32,18 @@ namespace MinesServer.GameShit
         {
             player.connection.SendU(new LivePacket(HP, MaxHP));
         }
+        public void Death()
+        {
+            Console.WriteLine("death " + player.Id);
+            HP = MaxHP;
+            var r = player.GetCurrentResp()!;
+            r.OnRespawn(player);
+            var newpos = r.GetRandompoint();
+            player.x = newpos.Item1; player.y = newpos.Item2;
+            player.MoveToChunk(player.ChunkX, player.ChunkY);
+            player.SendMap();
+            player.tp(player.x, player.y);
+        }
         public void Hurt(int d, DamageType t = DamageType.Pure)
         {
             if (HP - d > 0)
@@ -38,6 +51,11 @@ namespace MinesServer.GameShit
                 HP -= d;
                 //hurtandresend
             }
+            else
+            {
+                Death();
+            }
+            SendHp();
         }
     }
 }

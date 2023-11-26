@@ -1,14 +1,14 @@
 ﻿namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct ADMNPacket : IDataPart<ADMNPacket>
+    public readonly struct CmenPacket : IDataPart<CmenPacket>
     {
-        public const string packetName = "ADMN";
+        public const string packetName = "Cmen";
 
         public string PacketName => packetName;
 
         public int Length => 1;
 
-        public static ADMNPacket Decode(ReadOnlySpan<byte> decodeFrom)
+        public static CmenPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
             if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'_' })) throw new InvalidPayloadException("Invalid payload");
             return new();

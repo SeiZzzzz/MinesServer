@@ -93,10 +93,20 @@ namespace MinesServer.Server
                 case PongPacket pi: Ping(packet, pi); break;
                 case DPBXPacket dpbx: Dpbx(packet, dpbx);break;
                 case SettPacket sett: Sett(packet, sett);break;
+                case ADMNPacket admn: ADMN(packet, admn);break;
+                case RespPacket res: Res(packet, res);break;
                 default:
                     // Invalid event type
                     break;
             }
+        }
+        private void Res(TYPacket f, RespPacket p)
+        {
+            player.health.Death();
+        }
+        private void ADMN(TYPacket f, ADMNPacket p)
+        {
+            player.win.CurrentTab.History.Peek().OnAdmin.Invoke();
         }
         private void Sett(TYPacket f, SettPacket p)
         {
@@ -134,7 +144,7 @@ namespace MinesServer.Server
         {
             if (player != null && player.win == null)
             {
-                player.dir = packet.direction;
+                 player.dir = packet.direction;
                  player.Bz();
             }
         }
@@ -142,12 +152,7 @@ namespace MinesServer.Server
         {
             if (player != null && player.win == null)
             {
-                int x = (int)(parent.x + (player.dir == 3 ? 1 : player.dir == 1 ? -1 : 0));
-                int y = (int)(parent.y + (player.dir == 0 ? 1 : player.dir == 2 ? -1 : 0));
-                if (World.W.ValidCoord(x, y))
-                {
-                    //geo
-                }
+                    player.Geo();
             }
         }
         private void BuildHandler(TYPacket parent, XbldPacket packet)
@@ -169,7 +174,7 @@ namespace MinesServer.Server
         }
         private void MoveHandler(TYPacket parent, XmovPacket packet)
         {
-            if (player != null && player.win == null)
+            if (player != null)
             {
                 var dir = packet.direction;
                 player.Move((int)parent.x, (int)parent.y, dir > 9 ? dir - 10 : dir);

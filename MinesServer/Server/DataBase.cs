@@ -52,6 +52,11 @@ namespace MinesServer.Server
                     World.SetCell(i.x, i.y, 90);
                     World.W.GetChunk(i.x, i.y).Save();
                 }
+                foreach (var i in db.resps)
+                {
+                    World.AddPack(i.x, i.y, i);
+                    i.Build();
+                }
             }
             catch (Exception ex)
             {

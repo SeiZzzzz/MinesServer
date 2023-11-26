@@ -21,8 +21,13 @@ namespace MinesServer.GameShit
                 {
                     1,(p) =>
                     {
-                        new Resp((int)p.GetDirCord(true).X,(int)p.GetDirCord(true).Y,p.Id).Build();
-                        return true;
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-2,6,-2,3,(int)coord.X,(int)coord.Y,p))
+                            {
+                        new Resp((int)coord.X,(int)coord.Y,p.Id).Build();
+                            return true;
+                            }
+                        return false;
                     }
                 },
                 {
@@ -51,10 +56,6 @@ namespace MinesServer.GameShit
                 }
             };
         }
-        public bool canplace(int x,int y)
-        {
-            return true;
-        }
         public void SetItem(int id, int col)
         {
             var x = items;
@@ -82,9 +83,13 @@ namespace MinesServer.GameShit
         }
         public void Use(Player p)
         {
-            if (typeditems.ContainsKey(selected) && World.GetProp(World.GetCell((int)p.GetDirCord().X, (int)p.GetDirCord().Y)).can_place_over)
+            if (typeditems.ContainsKey(selected) && World.GetProp(World.GetCell((int)p.GetDirCord().X, (int)p.GetDirCord().Y)).can_place_over && items[selected] > 0)
             {
-                typeditems[selected](p);
+                if (typeditems[selected](p))
+                {
+                    items[selected]--;
+                }
+                p.connection.SendU(InvToSend());
             }
         }
         public Dictionary<int, ItemUsage> typeditems;
@@ -95,8 +100,9 @@ namespace MinesServer.GameShit
             selected = id;
             if (id == -1)
             {
-                packet = new InventoryClosePacket();
+                packet = InventoryPacket.Close();
             }
+            p.connection.SendU(InvToSend());
             p.connection.SendU(packet);
         }
         public int selected = -1;

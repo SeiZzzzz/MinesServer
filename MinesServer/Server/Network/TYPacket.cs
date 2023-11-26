@@ -61,6 +61,7 @@ namespace MinesServer.Network
             PROGPacket.packetName => x => PROGPacket.Decode(x),
             MissPacket.packetName => x => MissPacket.Decode(x),
             ChinPacket.packetName => x => ChinPacket.Decode(x),
+            ADMNPacket.packetName => x => ADMNPacket.Decode(x),
             _ => null
         };
 

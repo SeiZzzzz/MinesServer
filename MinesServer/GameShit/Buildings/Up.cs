@@ -14,5 +14,9 @@ namespace MinesServer.GameShit.Buildings
         {
             return null;
         }
+        public override void Build()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

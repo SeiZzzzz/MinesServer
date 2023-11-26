@@ -15,18 +15,6 @@
         }
         public static int height;
         public static int width;
-        public void GenerateSpawn(int count)
-        {
-            var r = new Random();
-            for (int i = 0; i < count; i++)
-            {
-                var x = r.Next(width);
-                var y = 0;
-                spawns.Add((x, y));
-
-
-            }
-        }
         public void StartGeneration()
         {
             Console.WriteLine("Generating sectors");

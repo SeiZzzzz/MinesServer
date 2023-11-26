@@ -145,7 +145,7 @@ namespace MinesServer.Server
             db.SaveChanges();
             initiator.player = temp;
             initiator.SendU(new AHPacket(temp.Id, temp.hash));
-            temp.Init();
+            initiator.player.Init();
         }
         public void TryToFindByNick(string name, Session initiator)
         {

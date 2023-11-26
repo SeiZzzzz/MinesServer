@@ -10,7 +10,7 @@ namespace MinesServer.GameShit.Buildings
         public Pack(int x, int y, int ownerid, PackType type)
         {
             this.x = x; this.y = y; this.ownerid = ownerid; this.type = type;
-            World.
+            World.AddPack(x, y, this);
         }
         public int id { get; set; }
         public int x { get; set; }
@@ -21,6 +21,7 @@ namespace MinesServer.GameShit.Buildings
         public PackType type { get; set; }
         public int ownerid { get; set; }
         public abstract Window? GUIWin(Player p);
+        public abstract void Build();
         public virtual void Update()
         {
 

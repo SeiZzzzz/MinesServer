@@ -34,6 +34,11 @@ namespace MinesServer
         }
         private static void Loop()
         {
+            commands.Add("save", () => {
+                using var db = new DataBase();
+                db.SaveChanges();
+                World.W.map.SaveAllChunks();
+            });
             commands.Add("restart", () => { server.Stop(); Console.WriteLine("kinda restart"); server.Start(); });
             commands.Add("players", () =>
             {

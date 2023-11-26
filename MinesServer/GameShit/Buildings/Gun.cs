@@ -7,6 +7,10 @@
         {
             return null;
         }
+        public override void Build()
+        {
+            throw new NotImplementedException();
+        }
         public int charge { get; set; }
         public int maxcharge { get; set; }
         public int cost { get; set; }
