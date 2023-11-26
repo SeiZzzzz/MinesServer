@@ -20,6 +20,14 @@ namespace MinesServer.GameShit
                     p.SendInventory();
                 }
             });
+            commands.Add("addgeo", (p, arg) =>
+            {
+                if (arg.Split(" ").Length > 1 && byte.TryParse(arg.Split(" ")[1], out var i))
+                {
+                    p.geo.Push(i);
+                    p.SendGeo();
+                }
+            });
             commands.Add("myid", (p, arg) =>
             {
                 AddConsoleLine(p, p.Id.ToString());
@@ -94,12 +102,14 @@ namespace MinesServer.GameShit
                                 if (commands.Keys.Contains(msg.Split(' ')[0]))
                                 {
                                     commands[msg.Split(' ')[0]](p, msg);
+                                    ShowConsole(p);
                                     return;
                                 }
                             }
                             if (commands.Keys.Contains(msg))
                             {
                                 commands[msg](p, msg);
+                                ShowConsole(p);
                                 return;
                             }
                             AddConsoleLine(p, "бля это че нахуй");

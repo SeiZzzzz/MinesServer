@@ -10,11 +10,13 @@ using MinesServer.Network.HubEvents.Bots;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.HubEvents.Packs;
 using MinesServer.Network.Movement;
+using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
 using NetCoreServer;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
+using System.Text;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 
 namespace MinesServer.GameShit
@@ -46,7 +48,7 @@ namespace MinesServer.GameShit
         public Stack<byte> geo = new Stack<byte>();
         public Queue<Line> console = new Queue<Line>();
         [NotMapped]
-        public Window win;
+        public Window? win;
         [NotMapped]
         private float cb;
         public DateTime Delay;
@@ -119,7 +121,7 @@ namespace MinesServer.GameShit
                 geo.Push(cell);
                 World.Destroy(x, y);
             }
-            else if(World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over && geo.Count > 0)
+            else if(World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over && geo.Count > 0 && !World.PackPart(x,y))
             {
                 World.SetCell(x, y, geo.Pop());
                 World.SetDurability(x, y, 0);
@@ -180,6 +182,7 @@ namespace MinesServer.GameShit
             using var db = new DataBase();
             db.Remove(b);
             db.SaveChanges();
+            connection.SendB(new HBPacket([new HBChatPacket(Id, x, y, "+" + b.AllCrys)]));
         }
         private void CallDestroy(int x, int y)
         {
@@ -400,7 +403,10 @@ namespace MinesServer.GameShit
         #region senders
         public void SendWindow()
         {
-            connection.SendU(new GUIPacket(this.win.ToString()));
+            if (win != null)
+            {
+                connection.SendU(new GUIPacket(win.ToString()));
+            }
         }
         public void SendMoney()
         {

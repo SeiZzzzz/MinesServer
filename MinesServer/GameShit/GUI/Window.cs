@@ -13,7 +13,7 @@ namespace MinesServer.GameShit.GUI
     {
         Tab[] _tabs;
 
-        public string Title { get; init; } = "!!!!! NO TITLE !!!!!";
+        public string Title { get; set; } = "!!!!! NO TITLE !!!!!";
 
         public Tab CurrentTab { get; private set; }
 
@@ -27,7 +27,7 @@ namespace MinesServer.GameShit.GUI
             }
         }
 
-        public bool ShowTabs { get; init; } = true;
+        public bool ShowTabs { get; set; }
 
         public void AdminButton()
         {
@@ -126,11 +126,11 @@ namespace MinesServer.GameShit.GUI
                 if (horb.RichList is not null)
                 {
                     if (horb.RichList!.Value.NoScroll) obj["rich_no_scroll"] = true;
-                    obj["rich_list"] = new JSONArray();
+                    obj["richList"] = new JSONArray();
                     foreach (var i in horb.RichList!.Value.Entries)
                     {
-                        obj["rich_list"].Add(i.SerializedLabel);
-                        obj["rich_list"].Add(i.Type switch
+                        obj["richList"].Add(i.SerializedLabel);
+                        obj["richList"].Add(i.Type switch
                         {
                             RichListEntryType.Text => "text",
                             RichListEntryType.Boolean => "bool",
@@ -141,9 +141,9 @@ namespace MinesServer.GameShit.GUI
                             RichListEntryType.Card => "3card",
                             _ => ""
                         });
-                        obj["rich_list"].Add(i.Values);
-                        obj["rich_list"].Add(i.SerializedAction);
-                        obj["rich_list"].Add(i.SerializedValue);
+                        obj["richList"].Add(i.Values);
+                        obj["richList"].Add(i.SerializedAction);
+                        obj["richList"].Add(i.SerializedValue);
                     }
                 }
                 if (horb.ClanList is not null)

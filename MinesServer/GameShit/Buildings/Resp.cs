@@ -60,48 +60,35 @@ namespace MinesServer.GameShit.Buildings
 
         public override Window? GUIWin(Player p)
         {
+            Action adminaction = (p.Id != ownerid ? null : () =>
+            {
+                if (p.Id == ownerid)
+                {
+                    p.win.CurrentTab.Replace(new Page()
+                    {
+                        Text = " ",
+                        RichList = new RichListConfig()
+                        {
+                            Entries = [new RichListEntry(RichListEntryType.Fill, "Заряд", $"{(charge * 100) / maxcharge}#{charge}/{maxcharge}#1#fill:b_100#fill:b_1000#fill:b_max", "", "fuck", new Button("h", "kill", (args) => { return; }))
+                            ]
+                        },
+                        Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { Console.WriteLine(args.RichList); })]
+                    });
+                }
+            })!;
             Page page = p.respid != id ? new Page()
             {
-                OnAdmin = (p.Id != ownerid ? null : () =>
-                {
-                    if (p.Id == ownerid)
-                    {
-                        p.win.CurrentTab.Replace(new Page()
-                        {
-                            RichList = new RichListConfig()
-                            {
-                                Entries = [new RichListEntry(RichListEntryType.Fill, "Заряд", "123123", "12321", "хуй?"),
-                                ]
-                            },
-                            Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { Console.WriteLine(args.RichList); })]
-                        });
-                    }
-                })!,
+                OnAdmin = adminaction,
                 
                 Text = $"@@Респ - это место, где будет появляться ваш робот\nпосле уничтожения (HP = 0)\n\nЦена восстановления: <color=green>${cost}</color>\n\n<color=#f88>Привязать робота к респу?</color>",
                 Buttons = [new Button("ПРИВЯЗАТЬ", "bind", (args) =>
                 {
                     p.SetResp(this);
                     p.win = GUIWin(p)!;
-                    p.SendWindow();
                 })]
             } : new Page()
             {
-                OnAdmin = (p.Id != ownerid ? null : () =>
-                {
-                    if (p.Id == ownerid)
-                    {
-                        p.win.CurrentTab.Replace(new Page()
-                        {
-                            RichList = new RichListConfig()
-                            {
-                                Entries = [new RichListEntry(RichListEntryType.Fill, "Заряд", "123123", "12321", "хуй?"),
-                                ]
-                            },
-                            Buttons = []
-                        });
-                    }
-                })!,
+                OnAdmin = adminaction,
                 Text = $"@@Респ - это место, где будет появляться ваш робот\nпосле уничтожения (HP = 0)\n\nЦена восстановления: <color=green>${cost}</color>\n\n<color=#8f8>Вы привязаны к этому респу.</color>",
                 Buttons = []
             };

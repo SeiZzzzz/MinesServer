@@ -25,7 +25,7 @@ namespace MinesServer.GameShit
         public static void BuildBox(int x, int y, long[] cry, Player p)
         {
             var cell = World.GetCell(x, y);
-            if (!(World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over))
+            if (!(World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over && !World.PackPart(x, y)))
             {
                 return;
             }
@@ -54,6 +54,7 @@ namespace MinesServer.GameShit
             }
             World.SetCell(x, y, 90);
         }
+        public long AllCrys => bxcrys.Sum();
         public long this[CrystalType crystal]
         {
             get => bxcrys[(int)crystal];

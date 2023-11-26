@@ -60,7 +60,7 @@ namespace MinesServer.GameShit
                 while (db.resps.Where(i => i.ownerid == 0).Count() < c)
                 {
                     var x = r.Next(width);
-                    var y = 3;
+                    var y = 5;
                     if (CanBuildPack(-2, 6, -2, 3, x, y, null,true))
                         {
                         new Resp(x, y, 0).Build();
@@ -99,18 +99,23 @@ namespace MinesServer.GameShit
                 for (int cy = bottom; cy <= top; cy++)
                 {
                     var p = GetProp(GetCell(x + cx, y + cy));
-                    if (((!p.can_place_over || !p.isEmpty || !PackPart(x,y)) && !ignoreplace) || (ignoreplace && !p.is_destructible))
+                    if ((ignoreplace && (p.is_destructible || PackPart(x + cx, y + cy))) || ((PackPart(x + cx, y + cy) || !p.can_place_over || !p.isEmpty) && !ignoreplace))
                     {
-                        MServer.Instance.time.AddAction(() =>
+                        if (player != null)
                         {
-                            player.connection.SendB(new HBPacket([new HBFXPacket(x + cx, y + cy, 0)]));
-                        });
+                                packets.Add(new HBFXPacket(x + cx, y + cy, 0));
+                        }
+                        
                         h++;
                     }
                 }
             }
-            if (h > 0 && player != null)
+            if (h > 0)
             {
+                if (packets.Count > 0)
+                {
+                        player.connection.SendB(new HBPacket(packets.ToArray()));
+                }
                 return false;
             }
             return true;
@@ -172,6 +177,14 @@ namespace MinesServer.GameShit
         {
             return CellsSerializer.cells[type];
         }
+        public static void MoveCell(int x,int y,int plusx,int plusy)
+        {
+            var cell = GetCell(x, y);
+            var durability = GetDurability(x, y);
+            Destroy(x, y, destroytype.Cell);
+            SetCell(x + plusx, y + plusy, cell);
+            SetDurability(x + plusx, y + plusy, durability);
+        }
         public static void SetCell(int x, int y, byte cell, bool packmesh = false)
         {
             if (!W.ValidCoord(x, y))
@@ -180,7 +193,6 @@ namespace MinesServer.GameShit
             }
             var ch = W.GetChunk(x, y);
             ch.SetCell(x - ch.WorldX, y - ch.WorldY, cell,packmesh);
-            W.UpdateChunkByCoords(x, y);
         }
         public static bool PackPart(int x,int y)
         {
@@ -189,9 +201,9 @@ namespace MinesServer.GameShit
                 return false;
             }
             var ch = W.GetChunk(x, y);
-            if (ch.pastedcells == null)
+            if (ch.packsprop == null)
             {
-                ch.Load();
+                ch.LoadPackProps();
             }
             return ch.packsprop[(x - ch.WorldX) + (y - ch.WorldY) * 32];
         }

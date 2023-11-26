@@ -14,9 +14,14 @@ namespace MinesServer.Server
         public DbSet<Box> boxes { get; set; }
         public DbSet<Settings> settings { get; set; }
         public DbSet<Resp> resps { get; set; }
+        public static bool created = false;
         public DataBase()
         {
-            Database.EnsureCreated();
+            if (!created)
+            {
+                Database.EnsureCreated();
+                created = true;
+            }
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

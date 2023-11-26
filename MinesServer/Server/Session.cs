@@ -106,7 +106,12 @@ namespace MinesServer.Server
         }
         private void ADMN(TYPacket f, ADMNPacket p)
         {
-            player.win.CurrentTab.History.Peek().OnAdmin.Invoke();
+            if (player.win != null)
+            {
+                player.win.AdminButton();
+                player.win.ShowTabs = false;
+            }
+            player.SendWindow();
         }
         private void Sett(TYPacket f, SettPacket p)
         {
@@ -228,6 +233,7 @@ namespace MinesServer.Server
                     return;
                 }
                 player.CallWinAction(button);
+                player.SendWindow();
             });
         }
         #endregion
@@ -258,7 +264,7 @@ namespace MinesServer.Server
 
         public void SendLocalChat(string msg)
         {
-            SendB(new HBChatPacket(player.Id, player.x, player.y, msg));
+            SendB(new HBPacket([new HBChatPacket(player.Id, player.x, player.y, msg)]));
         }
         public void SendCell(int x, int y, byte cell)
         {

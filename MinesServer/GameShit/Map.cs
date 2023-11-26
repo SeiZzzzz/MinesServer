@@ -1,4 +1,5 @@
-﻿using RT.Util.Streams;
+﻿using Microsoft.Identity.Client;
+using RT.Util.Streams;
 
 namespace MinesServer.GameShit
 {
@@ -22,18 +23,24 @@ namespace MinesServer.GameShit
         public bool MapExists = true;
         public void SaveChunk(Chunk ch)
         {
+            byte[] w = ch.wcells, r = ch.rcells;
+            float[] dur = ch.durcells;
+            if (w != null && r != null && dur != null)
+            {
                 stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-                stream.Write(ch.wcells);
+                stream.Write(w);
                 rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-                rstream.Write(ch.rcells);
+                rstream.Write(r);
                 dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
-                var durbytes = new byte[ch.durcells.Length * 4];
-                Buffer.BlockCopy(ch.durcells, 0, durbytes, 0, durbytes.Length);
+                var durbytes = new byte[dur.Length * 4];
+                Buffer.BlockCopy(dur, 0, durbytes, 0, durbytes.Length);
                 dstream.Write(durbytes);
+            }
+            
         }
         public void LoadChunk(Chunk ch)
         {
-                stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+            stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
                 stream.Read(ch.wcells);
                 rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
                 rstream.Read(ch.rcells);
@@ -44,16 +51,15 @@ namespace MinesServer.GameShit
         }
         public void SaveAllChunks()
         {
-            for (int x = 0; x < World.W.chunksCountW; x++)
-            {
-
-                for (int y = 0; y < World.W.chunksCountH; y++)
+                for (int x = 0; x < World.W.chunksCountW; x++)
                 {
-                    var ch = World.W.chunks[x, y];
-                    ch.Save();
-                    ch.Dispose();
+
+                    for (int y = 0; y < World.W.chunksCountH; y++)
+                    {
+                        var ch = World.W.chunks[x, y];
+                        ch.Save();
+                    }
                 }
-            }
         }
         private BinaryStream stream;
         private BinaryStream rstream;
