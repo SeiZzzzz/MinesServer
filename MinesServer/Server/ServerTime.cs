@@ -14,6 +14,7 @@ namespace MinesServer.Server
         {
             gameActions.Enqueue(action);
         }
+
         public void Start()
         {
             Task.Run(() =>

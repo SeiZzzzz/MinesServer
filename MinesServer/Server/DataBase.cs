@@ -55,7 +55,6 @@ namespace MinesServer.Server
                 foreach (var i in db.resps)
                 {
                     World.AddPack(i.x, i.y, i);
-                    i.Build();
                 }
             }
             catch (Exception ex)

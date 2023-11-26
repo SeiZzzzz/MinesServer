@@ -22,8 +22,6 @@ namespace MinesServer.GameShit
         public bool MapExists = true;
         public void SaveChunk(Chunk ch)
         {
-            lock (ch.durcells)
-            {
                 stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
                 stream.Write(ch.wcells);
                 rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
@@ -32,7 +30,6 @@ namespace MinesServer.GameShit
                 var durbytes = new byte[ch.durcells.Length * 4];
                 Buffer.BlockCopy(ch.durcells, 0, durbytes, 0, durbytes.Length);
                 dstream.Write(durbytes);
-            }
         }
         public void LoadChunk(Chunk ch)
         {

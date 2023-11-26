@@ -44,40 +44,48 @@ namespace MinesServer.GameShit
                 Load();
                 return;
             }
+            Task.WhenAll();
             Dispose();
         }
         public void SetCell(int x, int y, byte cell,bool packmesh = false)
         {
-            Load();
-            if (World.GetProp(cell).isEmpty)
+            Task.Run(() =>
             {
-                wcells[x + y * 32] = 0;
-                rcells[x + y * 32] = cell;
-                this[x, y] = cell;
-            }
-            else
-            {
-                wcells[x + y * 32] = cell;
-                durcells[x + y * 32] = World.GetProp(cell).durability;
-                this[x, y] = cell;
-            }
-            if (packmesh)
-            {
-                packsprop[x + y * 32] = true;
-            }
-            if (active)
-            {
-                SendCellToBots(WorldX + x, WorldY + y, this[x, y]);
-            }
-            Save();
+                Load();
+                if (World.GetProp(cell).isEmpty)
+                {
+                    wcells[x + y * 32] = 0;
+                    rcells[x + y * 32] = cell;
+                    this[x, y] = cell;
+                }
+                else
+                {
+                    wcells[x + y * 32] = cell;
+                    durcells[x + y * 32] = World.GetProp(cell).durability;
+                    this[x, y] = cell;
+                }
+                if (packmesh)
+                {
+                    packsprop[x + y * 32] = true;
+                }
+                if (active)
+                {
+                    SendCellToBots(WorldX + x, WorldY + y, this[x, y]);
+                }
+                Save();
+            });
         }
         public byte GetCell(int x, int y)
         {
-            if (cells == null)
+            return Task.Run(byte () =>
             {
-                Load();
-            }
-            return this[x, y];
+                if (cells == null)
+                {
+                    Load();
+                }
+                return this[x, y];
+            }).Result;
+            
         }
         public float GetDurability(int x, int y) => durcells[x + y * 32];
         public void SetDurability(int x, int y, float d) => durcells[x + y * 32] = d;
@@ -229,52 +237,60 @@ namespace MinesServer.GameShit
         }
         public void Dispose()
         {
-            Save();
-            cells = null;
-            wcells = null;
-            durcells = null;
-            rcells = null;
+                Save();
+                cells = null;
+                wcells = null;
+                durcells = null;
+                rcells = null;
+            
         }
         public void Load()
         {
-            if (cells != null)
+            Task.Run(() =>
             {
-                return;
-            }
-            wcells = new byte[1024]; rcells = new byte[1024]; durcells = new float[1024]; cells = new byte[1024];
-            World.W.map.LoadChunk(this);
-            for (int x = 0; x < 32; x++)
-            {
-                for (int y = 0; y < 32; y++)
+                if (cells != null && wcells != null)
                 {
-                    if (wcells[x + y * 32] == 0)
+                    return;
+                }
+                wcells = new byte[1024]; rcells = new byte[1024]; durcells = new float[1024]; cells = new byte[1024];
+                World.W.map.LoadChunk(this);
+                for (int x = 0; x < 32; x++)
+                {
+                    for (int y = 0; y < 32; y++)
                     {
-                        rcells[x + y * 32] = rcells[x + y * 32] == 0 ? (byte)32 : rcells[x + y * 32];
-                        this[x, y] = rcells[x + y * 32];
-                    }
-                    else
-                    {
-                        this[x, y] = wcells[x + y * 32];
-                        durcells[x + y * 32] = World.GetProp(wcells[x + y * 32]).durability;
+                        if (wcells[x + y * 32] == 0)
+                        {
+                            rcells[x + y * 32] = rcells[x + y * 32] == 0 ? (byte)32 : rcells[x + y * 32];
+                            this[x, y] = rcells[x + y * 32];
+                        }
+                        else
+                        {
+                            this[x, y] = wcells[x + y * 32];
+                            durcells[x + y * 32] = World.GetProp(wcells[x + y * 32]).durability;
+                        }
                     }
                 }
-            }
-            if (packsprop == null)
-            {
-                packsprop = new bool[1024]; 
-                foreach(var p in packs.Values)
+                if (packsprop == null)
                 {
-                    p.Build();
+                    packsprop = new bool[1024];
+                    foreach (var p in packs.Values)
+                    {
+                        p.Build();
+                    }
                 }
-            }
+            });
                
         }
         public void Save()
         {
-            if (cells != null)
+            Task.Run(() =>
             {
-                World.W.map.SaveChunk(this);
-            }
+                if (cells != null)
+                {
+                    World.W.map.SaveChunk(this);
+                }
+            });
+            
         }
         private bool ShouldBeLoadedBots()
         {

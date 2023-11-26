@@ -101,14 +101,16 @@ namespace MinesServer.GameShit
                     var p = GetProp(GetCell(x + cx, y + cy));
                     if (((!p.can_place_over || !p.isEmpty || !PackPart(x,y)) && !ignoreplace) || (ignoreplace && !p.is_destructible))
                     {
-                        packets.Add(new HBFXPacket(x + cx, y + cy, 0));
+                        MServer.Instance.time.AddAction(() =>
+                        {
+                            player.connection.SendB(new HBPacket([new HBFXPacket(x + cx, y + cy, 0)]));
+                        });
                         h++;
                     }
                 }
             }
             if (h > 0 && player != null)
             {
-                player.connection.SendB(new HBPacket(packets.ToArray()));
                 return false;
             }
             return true;
@@ -187,6 +189,10 @@ namespace MinesServer.GameShit
                 return false;
             }
             var ch = W.GetChunk(x, y);
+            if (ch.pastedcells == null)
+            {
+                ch.Load();
+            }
             return ch.packsprop[(x - ch.WorldX) + (y - ch.WorldY) * 32];
         }
         public static void AddPack(int x,int y,Pack p)
@@ -241,7 +247,7 @@ namespace MinesServer.GameShit
         {
             var ch = W.GetChunk(x, y);
             ch.SendPack('B', x, y, 0, 0);
-            W.AsyncAction(7, () =>
+            W.AsyncAction(10, () =>
             {
                 for (int _x = -4; _x < 4; _x++)
                 {
