@@ -1,6 +1,7 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
+using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit

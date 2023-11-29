@@ -15,25 +15,29 @@ namespace MinesServer.GameShit.Buildings
 {
     public class Up : Pack
     {
+        #region fields
+        public int hp { get; set; }
+        public long moneyinside { get; set; }
+        #endregion
         public Up(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Up) {
             using var db = new DataBase();
+            hp = 100;
             db.ups.Add(this);
             db.SaveChanges();
         }
-        public long moneyinside { get; set; }
         public Up() { }
         public override Window? GUIWin(Player p)
         {
             var onskill = (int arg) => { p.skillslist.selectedslot = arg; p.win = GUIWin(p); p.SendWindow(); };
-            var oninstall = (int slot, string skilltype) => {
+            var oninstall = (int slot, SkillType skilltype) => {
                 p.win.CurrentTab.Replace(new UpPage() {
                     Skills = p.skillslist.GetSkills(),
                     OnSkill = onskill,
                     SlotAmount = 25,
                     Title = "титле",
-                    SkillIcon = Mines3Enums.SkillFromCode(skilltype),
+                    SkillIcon = skilltype,
                     Text = "описание и цена установки",
-                    Button = new Button("Установить", "confirm", (args) => { p.skillslist.InstallSkill(skilltype, p.skillslist.selectedslot, p);p.win = GUIWin(p);p.SendWindow(); })
+                    Button = new Button("Установить", "confirm", (args) => { p.skillslist.InstallSkill(skilltype.GetCode(), p.skillslist.selectedslot, p);p.win = GUIWin(p);p.SendWindow(); })
                 });
                 p.SendWindow();
             };

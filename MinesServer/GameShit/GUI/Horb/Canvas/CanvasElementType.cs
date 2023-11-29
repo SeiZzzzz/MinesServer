@@ -2,12 +2,12 @@
 {
     public enum CanvasElementType
     {
-        Image,
-        Line,
-        Button,
-        Rect,
-        TextField,
-        TPButton,
-        MicroButton
+        Image = 'I',
+        Line = 'L',
+        Button = 'B',
+        Rect = 'R',
+        TextField = 'T',
+        TPButton = 't',
+        MicroButton = 'b'
     }
 }

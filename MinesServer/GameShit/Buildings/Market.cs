@@ -12,14 +12,18 @@ namespace MinesServer.GameShit.Buildings
 {
     public class Market : Pack
     {
+        #region fields
+        public int hp { get; set; }
+        public long moneyinside { get; set; }
+        #endregion;
         public Market() { }
         public Market(int ownerid,int x,int y) : base(ownerid,x,y,PackType.Market)
         {
             using var db = new DataBase();
+            hp = 100;
             db.markets.Add(this);
             db.SaveChanges();
         }
-        public long moneyinside { get; set; }
         public override void Build()
         {
             World.SetCell(x, y, 37, true);

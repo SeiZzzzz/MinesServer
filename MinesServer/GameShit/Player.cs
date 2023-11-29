@@ -322,7 +322,9 @@ namespace MinesServer.GameShit
         public Resp? GetCurrentResp()
         {
             using var db = new DataBase();
-            return db.resps.FirstOrDefault(i => i.id == respid);
+            var r = db.resps.FirstOrDefault(i => i.id == respid);
+            World.ContainsPack(r.x, r.y, out var p);
+            return p as Resp;
         }
         private void AddBasicSkills()
         {

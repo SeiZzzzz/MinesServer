@@ -15,8 +15,8 @@ namespace MinesServer.GameShit.GUI.UP
         Action? OnAdmin,
         Action<int>? OnDelete,
         Action<int>? OnSkill,
-        Action<int, string>? OnInstall,
-        SkillType? SkillIcon = SkillType.Unknown
+        Action<int, SkillType>? OnInstall,
+        SkillType? SkillIcon
         ) : IPage
     {
         public bool ProcessButton(string action)
@@ -57,7 +57,9 @@ namespace MinesServer.GameShit.GUI.UP
                     var slot = int.Parse(match.Groups[2].Value);
                     if (slot > SlotAmount) throw new InvalidPayloadException("Tried to install a skill into non-existent slot");
                     if (slot != SelectedSlot) throw new InvalidPayloadException("Tried to install a skill into a slot that is not currently selected");
-                    OnInstall(slot, match.Groups[1].Value);
+                    var skill = Mines3Enums.SkillFromCode(match.Groups[1].Value);
+                    if(skill == SkillType.Unknown) throw new InvalidPayloadException("Invalid skill type: " + match.Groups[1].Value);
+                    OnInstall(slot, skill);
                     return true;
                 }
             }

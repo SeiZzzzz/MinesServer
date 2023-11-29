@@ -2,9 +2,9 @@
 
 namespace MinesServer.GameShit.GUI
 {
-    public readonly record struct Button(string Label, string ActionFormat, Action<ActionArgs> Handler = null)
+    public readonly record struct Button(string Label, string ActionFormat, Action<ActionArgs>? Handler = null)
     {
-        private static readonly string[] _macros = new string[] { ActionMacros.Input, ActionMacros.RichList, ActionMacros.PaintGrid, ActionMacros.CrystalSliders };
+        private static readonly string[] _macros = [ActionMacros.Input, ActionMacros.RichList, ActionMacros.PaintGrid, ActionMacros.CrystalSliders];
 
         public bool ProcessButton(string action)
         {

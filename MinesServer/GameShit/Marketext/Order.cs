@@ -42,9 +42,13 @@ namespace MinesServer.GameShit.Marketext
                 using var db = new DataBase();
                 db.orders.Remove(this);
                 var buyer = MServer.GetPlayer(buyerid);
-                if (buyer != null)
+                if (buyer != null && buyer.inventory != null)
                 {
                     buyer.inventory.items[itemid] += num;
+                }
+                else
+                {
+                    db.inventories.First(i => i.Id == buyerid).items[itemid] += num;
                 }
                 var initiator = MServer.GetPlayer(initiatorid);
                 if (initiator != null)

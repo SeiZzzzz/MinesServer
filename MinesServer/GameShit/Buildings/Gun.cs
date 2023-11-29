@@ -2,7 +2,17 @@
 {
     public class Gun : Pack
     {
-        public Gun(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Gun) { }
+        #region fields
+        public int hp { get; set; }
+        public int charge { get; set; }
+        public int maxcharge { get; set; }
+        public int cost { get; set; }
+        public override int cid { get; set; }
+        #endregion
+        public Gun(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Gun)
+        {
+            hp = 100;
+        }
         public override GUI.Window? GUIWin(Player p)
         {
             return null;
@@ -11,10 +21,6 @@
         {
             throw new NotImplementedException();
         }
-        public int charge { get; set; }
-        public int maxcharge { get; set; }
-        public int cost { get; set; }
-        public int cid { get; set; }
         public override void Update()
         {
             base.Update();

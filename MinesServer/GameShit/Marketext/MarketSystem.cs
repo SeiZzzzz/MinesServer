@@ -2,6 +2,8 @@
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List;
 using MinesServer.Server;
+using MoreLinq;
+using RT.Util.ExtensionMethods;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,7 +22,10 @@ namespace MinesServer.GameShit.Marketext
         {
             string[] names =
             {
-                "TP","Resp","UP","Market"
+                "TP","Resp","UP","Market","Clans","boom","prot","raz","Cred","Rembot","geopack","CyanAlive","RedAlive","VioletAlive","BlackNigger","WhiteAlive",
+                "BlueAlive","VulcRadar","AliveRadar","BotRadar","TPR","Konstr Bot","Boy gay","Zalupa Zalupa","Crafter","BoomShop","Gun","Gate","Dizz","Storage",
+                "PackRadar","x3 up","freeup","mine x4","Gypno","poli","nano bot","accum","transgender","Comp","c190","Fed","NiggerRock","RedRock","AntiMage","EMO",
+                "RainbowAlive","spot","NC","Money","Оперативные Порно Покемоны."
             };
             return names[i];
         }
@@ -74,7 +79,8 @@ namespace MinesServer.GameShit.Marketext
         {
             ListEntry[] re = [];
             using var db = new DataBase();
-            foreach (var i in db.orders.Where(o => o.itemid == type))
+            var list = db.orders.Where(o => o.itemid == type);
+            foreach (var i in list.OrderBy(it => it.cost))
             {
                 var cost = i.buyerid == 0 ? i.cost : i.cost + (i.cost * 0.01f);
                 re = re.Append(new ListEntry($"{i.itemid.PackName()} x{i.num}", new Button($"<color=#aaeeaa>{(int)Math.Ceiling(cost)}$</color>", $"openorder:{i.id}", (args) => { OpenOrder(p, i.id); p.SendWindow(); }))).ToArray();
@@ -113,12 +119,37 @@ namespace MinesServer.GameShit.Marketext
                 Card = new Card(CardImageType.Item, itemtype.ToString(), itemtype.PackName()),
             });
         }
+        private static InventoryItem[] Items()
+        {
+            using var db = new DataBase();
+            InventoryItem[] items = [];
+            for(int i = 0;i < 51;i++)
+            {
+                if (i == 49)
+                    continue;
+                var c = db.orders.Where(z => z.itemid == i).OrderBy(i => i.cost).FirstOrDefault()?.cost.ToString();
+                var count = db.orders.Where(order => order.itemid == i).Count();
+                items = items.Append(InventoryItem.Item(i, (count > 0 ? count.ToString() : ""), (string.IsNullOrWhiteSpace(c) ? "" : c + "$"), false, InventoryTextColor.Default, InventoryTextColor.Green)).ToArray();
+            }
+            return items;
+        }
+        public static void OpenItemAuc(Player p,int item)
+        {
+            p.win.CurrentTab.Open(new Page()
+            {
+                Title = "Auc " + item.PackName(),
+                Buttons = [new Button("Создать Ордер", "createorder", (args) => { OpenOrderCreation(p, item); p.SendWindow(); })],
+                List = GetItems(p, item)
+            });
+        }
         public static IPage? GlobalFirstPage(Player p)
         {
+            var oninventory = (int type) => { OpenItemAuc(p, type);p.SendWindow(); };
             return new Page() {
-                Title = "Auc " + 2.PackName(),
-                Buttons = [new Button("Продать кри", "sell", (args) => { OpenOrderCreation(p, 2); })],
-                List = GetItems(p,2)
+                OnInventory = oninventory,
+                Inventory = Items(),
+                Title = "МАРКЕТ",
+                Buttons = [new Button("Продать кри", "sell", (args) => { Console.WriteLine("sell"); })],
             };
         }
     }

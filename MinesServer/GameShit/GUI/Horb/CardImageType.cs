@@ -2,9 +2,9 @@
 {
     public enum CardImageType
     {
-        Skill,
-        Item,
-        Clan,
-        WebImage
+        Skill = 's',
+        Item = 'i',
+        Clan = 'c',
+        WebImage = 'w'
     }
 }

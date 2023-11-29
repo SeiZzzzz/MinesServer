@@ -8,5 +8,6 @@ namespace MinesServer.GameShit.Buildings
 {
     public class Storage
     {
+        public int hp { get; set; }
     }
 }

@@ -106,8 +106,8 @@ namespace MinesServer.GameShit.GUI
                 if (horb.Text is not null) obj["text"] = horb.Text;
                 if (horb.CrystalConfig is not null)
                 {
-                    obj["crys_left"] = horb.CrystalConfig?.LeftText;
-                    obj["crys_right"] = horb.CrystalConfig?.RightText;
+                    obj["crys_left"] = horb.CrystalConfig!.Value.LeftText;
+                    obj["crys_right"] = horb.CrystalConfig!.Value.RightText;
                     if (horb.CrystalConfig.Value.BuyMode) obj["crys_buy"] = true;
                     obj["crys_lines"] = new JSONArray();
                     foreach (var c in horb.CrystalConfig.Value.Lines)
@@ -119,8 +119,8 @@ namespace MinesServer.GameShit.GUI
                     foreach (var i in horb.List!)
                     {
                         obj["list"].Add(i.Label);
-                        obj["list"].Add(i.Button?.Label);
-                        obj["list"].Add(i.Button?.ActionFormat);
+                        obj["list"].Add(i.Button?.Label ?? "");
+                        obj["list"].Add(i.Button?.ActionFormat ?? "");
                     }
                 }
                 if (horb.RichList is not null)
@@ -185,14 +185,7 @@ namespace MinesServer.GameShit.GUI
                 if (horb.Card is not null)
                 {
                     var card = horb.Card!.Value;
-                    obj["card"] = $"{card.ImageType switch
-                    {
-                        CardImageType.Skill => "s",
-                        CardImageType.Item => "i",
-                        CardImageType.Clan => "c",
-                        CardImageType.WebImage => "w",
-                        _ => ""
-                    }}{card.ImageURI}:{card.Text}";
+                    obj["card"] = $"{(char)card.ImageType}{card.ImageURI}:{card.Text}";
                 }
                 if (horb.Canvas is not null)
                 {
@@ -210,21 +203,19 @@ namespace MinesServer.GameShit.GUI
                         if (i.Width is not null) content.Append(i.Width + "w");
                         if (i.OriginX is not null) content.Append(i.OriginX + "x");
                         if (i.OriginY is not null) content.Append(i.OriginY + "y");
-                        content.Append($"={i.Type switch
-                        {
-                            CanvasElementType.Image => "I",
-                            CanvasElementType.Button => "B",
-                            CanvasElementType.Rect => "R",
-                            CanvasElementType.Line => "L",
-                            CanvasElementType.TextField => "T",
-                            CanvasElementType.TPButton => "t",
-                            CanvasElementType.MicroButton => "b",
-                            _ => ""
-                        }}#{i.Content?.Label}");
+                        content.Append($"={(char)i.Type}#{i.Content?.Label}");
                         obj["canvas"].Add(content.ToString());
-                        if (i.Type is CanvasElementType.Button or CanvasElementType.TPButton or CanvasElementType.MicroButton) obj["canvas"].Add(i.Content?.ActionFormat);
+                        if (i.Type is CanvasElementType.Button or CanvasElementType.TPButton or CanvasElementType.MicroButton) obj["canvas"].Add(i.Content!.Value.ActionFormat);
                     }
                 }
+                if(horb.Inventory is not null)
+                    obj["inv"] = string.Join(":", horb.Inventory!.Select(x =>
+                    {
+                        if (x.Id == -1) return "-1:f";
+                        if (x.Amount is not null) return $"{(x.Id >= 2000 ? $"s{x.Id - 2000}" : x.Id)}:{(x.Faint ? "-" : "")}{x.Amount ?? 0}";
+                        if (x.Faint && string.IsNullOrWhiteSpace(x.UpText) && string.IsNullOrWhiteSpace(x.DownText)) return $"{(x.Id >= 2000 ? $"s{((SkillType)(x.Id - 2000)).GetCode()}" : x.Id)}:f";
+                        return $"{(x.Id >= 2000 ? $"s{x.Id - 2000}" : x.Id)}:{(x.Faint ? "@" : "")}{(char)x.UpTextColor}{x.UpText};{(char)x.DownTextColor}{x.DownText}";
+                    }));
                 return "horb:" + obj.ToString();
             }
             else if (page is UpPage up)
@@ -232,18 +223,17 @@ namespace MinesServer.GameShit.GUI
                 if (up.Text is not null) obj["txt"] = up.Text;
                 obj["k"] = string.Join("#", up.Skills.Select(x => $"{x.Type.GetCode()}:{x.Level}:{x.Slot}:{(x.CanUpgrade ? "1" : "0")}")) + "#";
                 obj["s"] = up.SlotAmount;
+                obj["b"] = "";
                 if (up.Button is not null)
                 {
                     obj["b"] = up.Button!.Value.Label;
                     obj["ba"] = up.Button!.Value.ActionFormat;
                 }
-                else obj["b"] = "";
                 if (up.SkillsToInstall is not null) obj["i"] = string.Join(":", up.SkillsToInstall!.Select(x => (x.Value ? "" : "_") + x.Key.GetCode()));
-                else obj["i"] = "";
                 if (up.OnDelete is not null) obj["del"] = 1;
                 if (up.SelectedSlot is not null) obj["sl"] = up.SelectedSlot!.Value;
                 else obj["sl"] = -1;
-                obj["si"] = up.SkillIcon?.GetCode()!;
+                obj["si"] = up.SkillIcon?.GetCode() ?? "";
                 return "up:" + obj.ToString();
             }
             return "unknown-report-this-to-the-developer:" + obj.ToString();

@@ -1,8 +1,10 @@
-﻿using MinesServer.GameShit.GUI;
+﻿using MinesServer.Enums;
+using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.Network.GUI;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.CompilerServices;
 
 namespace MinesServer.GameShit
 {
@@ -15,6 +17,11 @@ namespace MinesServer.GameShit
         public Basket()
         {
 
+        }
+        public long this[CrystalType type]
+        {
+            set => cry[(int)type] = value;
+            get => cry[(int)type];
         }
         public long[] cry =
         {

@@ -13,6 +13,14 @@ namespace MinesServer.GameShit.Buildings
 {
     public class Resp : Pack
     {
+        #region fields
+        public int charge { get; set; }
+        public int maxcharge { get; set; }
+        public int cost { get; set; }
+        public override int cid { get; set; }
+        public long moneyinside { get; set; }
+        public int hp { get; set; }
+        #endregion
         public Resp()
         {
 
@@ -21,12 +29,15 @@ namespace MinesServer.GameShit.Buildings
             cost = 1000;
             charge = 100;
             maxcharge = 1000;
+            hp = 100;
             using var db = new DataBase();
             db.resps.Add(this);
             db.SaveChanges();
         }
         public void OnRespawn(Player p)
         {
+            using var db = new DataBase();
+            db.Attach(this);
             if (ownerid > 0)
             {
                 if (p.money > cost) p.money -= cost;
@@ -42,10 +53,9 @@ namespace MinesServer.GameShit.Buildings
                     p.GetCurrentResp()?.OnRespawn(p);
                 }
                 p.SendMoney();
-                using var db = new DataBase();
-                db.SaveChanges();
                 World.W.GetChunk(x, y).ResendPacks();
             }
+            db.SaveChanges();
         }
         [NotMapped]
         public override int off
@@ -80,15 +90,26 @@ namespace MinesServer.GameShit.Buildings
             }
             base.Build();
         }
-        public int charge { get; set; }
-        public int maxcharge { get; set; }
-        public int cost { get; set; }
-        public int cid { get; set; }
-        public long moneyinside { get; set; }
-
+        public void Fill(Player p,int num)
+        {
+            using var db = new DataBase();
+            db.Attach(this);
+            if (p.crys.RemoveCrys((int)Enums.CrystalType.Blue, num))
+            {
+                charge += num;
+            }
+            db.SaveChanges();
+        }
+        public void AdminSaveChanges(Dictionary<string,string> d)
+        {
+        }
         public override Window? GUIWin(Player p)
         {
-            Action adminaction = (p.Id != ownerid ? null : () =>
+            Button[] fillbuttons = [p.crys[Enums.CrystalType.Blue] >= 100 ? new Button("+100", "fill:100", (args) => Fill(p, 100)) : new Button("+100", "fill:100"),
+                p.crys[Enums.CrystalType.Blue] >= 1000 ? new Button("+1000", "fill:1000", (args) => Fill(p, 1000)) : new Button("+1000", "fill:1000"),
+                p.crys[Enums.CrystalType.Blue] >= maxcharge - charge ? new Button("max", "fill:max", (args) => Fill(p, maxcharge - charge)) : new Button("max", "fill:max")
+                ];
+            Action adminaction = (p.Id != ownerid && p.clanid != cid ? null : () =>
             {
                 if (p.Id == ownerid)
                 {
@@ -97,10 +118,15 @@ namespace MinesServer.GameShit.Buildings
                         Text = " ",
                         RichList = new RichListConfig()
                         {
-                            Entries = [new RichListEntry(RichListEntryType.Fill, "Заряд", $"{(charge * 100) / maxcharge}#{charge}/{maxcharge}#1#fill:b_100#fill:b_1000#fill:b_max", "", "fuck", [new Button("h", "kill", (args) => { return; })])
+                            Entries = [RichListEntry.Fill("заряд", charge, maxcharge, Enums.CrystalType.Blue, fillbuttons[0], fillbuttons[1], fillbuttons[2]),
+                                RichListEntry.Text("hp"),
+                                RichListEntry.UInt32("cost", "cost", (uint)cost),
+                                RichListEntry.ButtonLine("прибыль", new Button()),
+                                RichListEntry.Bool("Клановый респ", "clan", cid > 0),
+                                RichListEntry.DropDown("зона", "clanzone", [], 1)
                             ]
                         },
-                        Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { Console.WriteLine(args.RichList); })]
+                        Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { AdminSaveChanges(args.RichList); })]
                     });
                 }
             })!;
