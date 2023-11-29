@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using MinesServer.Network.Constraints;
+using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct ChatPacket : IDataPart<ChatPacket>
+    public readonly struct ChatPacket : ITypicalPacket, IDataPart<ChatPacket>
     {
         public readonly string message;
 

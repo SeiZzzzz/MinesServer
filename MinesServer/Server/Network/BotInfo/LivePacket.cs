@@ -1,15 +1,16 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.BotInfo
 {
-    public readonly record struct LivePacket(int hp, int maxHp) : IDataPart<LivePacket>
+    public readonly record struct LivePacket(int CurrentHP, int MaxHP) : ITopLevelPacket, IDataPart<LivePacket>
     {
         public const string packetName = "@L";
 
         public string PacketName => packetName;
 
-        public int Length => 1 + hp.Digits() + maxHp.Digits();
+        public int Length => 1 + CurrentHP.Digits() + MaxHP.Digits();
 
         public static LivePacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +19,6 @@ namespace MinesServer.Network.BotInfo
             return new(int.Parse(parts[0]), int.Parse(parts[1]));
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(hp + ":" + maxHp, output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(CurrentHP + ":" + MaxHP, output);
     }
 }

@@ -13,7 +13,7 @@ namespace MinesServer.GameShit.GUI
     {
         Tab[] _tabs;
 
-        public string Title { get; set; } = "!!!!! NO TITLE !!!!!";
+        public string Title { get; init; } = "!!!!! NO TITLE !!!!!";
 
         public Tab CurrentTab { get; private set; }
 
@@ -230,18 +230,20 @@ namespace MinesServer.GameShit.GUI
             else if (page is UpPage up)
             {
                 if (up.Text is not null) obj["txt"] = up.Text;
-                obj["k"] = string.Join("#", up.Skills.Select(x => $"{x.Type.GetCode()}:{x.Level}:{x.Slot}:{(x.CanUpgrade ? "1" : "0")}"));
+                obj["k"] = string.Join("#", up.Skills.Select(x => $"{x.Type.GetCode()}:{x.Level}:{x.Slot}:{(x.CanUpgrade ? "1" : "0")}")) + "#";
                 obj["s"] = up.SlotAmount;
                 if (up.Button is not null)
                 {
                     obj["b"] = up.Button!.Value.Label;
                     obj["ba"] = up.Button!.Value.ActionFormat;
                 }
-                if (up.SkillsToInstall is not null) obj["i"] = string.Join(":", up.SkillsToInstall!.Select(x => (x.Value ? "" : "_") + x.Key));
+                else obj["b"] = "";
+                if (up.SkillsToInstall is not null) obj["i"] = string.Join(":", up.SkillsToInstall!.Select(x => (x.Value ? "" : "_") + x.Key.GetCode()));
+                else obj["i"] = "";
                 if (up.OnDelete is not null) obj["del"] = 1;
                 if (up.SelectedSlot is not null) obj["sl"] = up.SelectedSlot!.Value;
                 else obj["sl"] = -1;
-                obj["si"] = up.SkillIcon.GetCode();
+                obj["si"] = up.SkillIcon?.GetCode()!;
                 return "up:" + obj.ToString();
             }
             return "unknown-report-this-to-the-developer:" + obj.ToString();

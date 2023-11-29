@@ -1,6 +1,7 @@
 ﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.Network;
+using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
@@ -28,13 +29,22 @@ namespace MinesServer.GameShit
                     p.SendGeo();
                 }
             });
+            commands.Add("addmoney", (p, arg) =>
+            {
+                if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1], out var i))
+                {
+                    p.money += i;
+                    AddConsoleLine(p, "ok");
+                    p.SendMoney();
+                }
+            });
             commands.Add("myid", (p, arg) =>
             {
                 AddConsoleLine(p, p.Id.ToString());
             });
             commands.Add("getallmap", (p, arg) =>
             {
-                List<IDataPartBase> l = new();
+                List<IHubPacket> l = new();
                 for (int x = 0; x < World.W.chunksCountW; x++)
                 {
                     for (int y = 0; y < World.W.chunksCountH; y++)

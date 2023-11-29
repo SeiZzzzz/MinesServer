@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using MinesServer.Network.Constraints;
+using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct RndmPacket : IDataPart<RndmPacket>
+    public readonly struct RndmPacket : ITypicalPacket, IDataPart<RndmPacket>
     {
         public readonly string hash;
 

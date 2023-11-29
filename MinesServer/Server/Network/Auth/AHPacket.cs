@@ -1,9 +1,10 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.Auth
 {
-    public readonly struct AHPacket : IDataPart<AHPacket>
+    public readonly struct AHPacket : ITopLevelPacket, IDataPart<AHPacket>
     {
         public readonly bool isBad;
         public readonly int? user_id;

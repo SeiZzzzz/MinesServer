@@ -45,7 +45,7 @@ namespace MinesServer
                 Console.WriteLine($"online {server.players.Count}");
                 for (int i = 0; i < server.players.Count; i++)
                 {
-                    Console.WriteLine($"id: {server.players.ElementAt(i).Value.player.Id}\n name :[{server.players.ElementAt(i).Value.player.name}]");
+                    Console.WriteLine($"id: {server.players.ElementAt(i).Value.Id}\n name :[{server.players.ElementAt(i).Value.name}]");
                 }
             });
             for (; ; )

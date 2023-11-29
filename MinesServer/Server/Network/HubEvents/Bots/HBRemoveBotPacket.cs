@@ -1,8 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using MinesServer.Network.Constraints;
+using System.Runtime.InteropServices;
 
 namespace MinesServer.Network.HubEvents.Bots
 {
-    public readonly record struct HBRemoveBotPacket(int bid, int block) : IDataPart<HBRemoveBotPacket>
+    public readonly record struct HBRemoveBotPacket(int BotId, int Block) : IHubPacket, IDataPart<HBRemoveBotPacket>
     {
         public const string packetName = "S";
 
@@ -19,11 +20,11 @@ namespace MinesServer.Network.HubEvents.Bots
 
         public int Encode(Span<byte> output)
         {
-            var tmpbid = Convert.ToUInt16(bid);
-            MemoryMarshal.Write(output, ref tmpbid);
+            var tmpbid = Convert.ToUInt16(BotId);
+            MemoryMarshal.Write(output, in tmpbid);
             var bytesWritten = sizeof(ushort);
-            var tmpblock = block;
-            MemoryMarshal.Write(output[2..], ref tmpblock);
+            var tmpblock = Block;
+            MemoryMarshal.Write(output[2..], in tmpblock);
             bytesWritten += sizeof(int);
             return bytesWritten;
         }

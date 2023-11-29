@@ -2,6 +2,7 @@
 using MinesServer.Network.BotInfo;
 using MinesServer.Network.Chat;
 using MinesServer.Network.ConnectionStatus;
+using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Network.Movement;
 using MinesServer.Network.Programmator;
@@ -13,14 +14,11 @@ using System.Text;
 namespace MinesServer.Network
 {
     public delegate IDataPartBase PacketDecoder(ReadOnlySpan<byte> decodeFrom);
-    public readonly struct Packet : IDataPart<Packet>
+    public readonly record struct Packet(string dataType, ITopLevelPacket data) : IDataPart<Packet>
     {
         const int dataTypeLength = sizeof(byte);
         const int eventTypeLength = sizeof(byte) * 2;
         const int lengthLength = sizeof(int);
-
-        public readonly string dataType;
-        public readonly IDataPartBase data;
 
         public string PacketName => throw new NotImplementedException();
 
@@ -81,16 +79,10 @@ namespace MinesServer.Network
             _ => null
         };
 
-        public Packet(string dataType, IDataPartBase data)
-        {
-            this.dataType = dataType;
-            this.data = data;
-        }
-
         public int Encode(Span<byte> output)
         {
             if (EventType.Length != eventTypeLength) throw new InvalidPayloadException($"Invalid event type length: Expected {eventTypeLength} but got {EventType.Length}");
-            if (GetDecoder(EventType) is null) throw new InvalidPayloadException($"Invalid event type: {EventType}");
+            if (GetDecoder(EventType) is null) throw new NotImplementedException($"Event type {EventType} is not implemented");
             var length = Length;
             MemoryMarshal.Write(output, in length);
             var bytesWritten = lengthLength;
@@ -109,7 +101,7 @@ namespace MinesServer.Network
             var dataType = Encoding.UTF8.GetString(input[caret..(caret += dataTypeLength)]);
             var eventType = Encoding.UTF8.GetString(input[caret..(caret += eventTypeLength)]);
             var decoder = GetDecoder(eventType) ?? throw new InvalidPayloadException($"Invalid event type: {eventType}");
-            return new(dataType, decoder(input[caret..packetLength]));
+            return new(dataType, (ITopLevelPacket)decoder(input[caret..packetLength]));
         }
 
         public int Length => lengthLength + dataTypeLength + eventTypeLength + data.Length;

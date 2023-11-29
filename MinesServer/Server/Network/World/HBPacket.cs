@@ -1,4 +1,5 @@
-﻿using MinesServer.Network.HubEvents;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Network.HubEvents;
 using MinesServer.Network.HubEvents.Bots;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.HubEvents.Packs;
@@ -6,11 +7,11 @@ using System.Text;
 
 namespace MinesServer.Network.World
 {
-    public readonly struct HBPacket : IDataPart<HBPacket>
+    public readonly struct HBPacket : ITopLevelPacket, IDataPart<HBPacket>
     {
         const int eventTypeLength = sizeof(byte);
 
-        public readonly IDataPartBase[] data;
+        public readonly IHubPacket[] data;
 
         public const string packetName = "HB";
 
@@ -34,21 +35,21 @@ namespace MinesServer.Network.World
         public static HBPacket Decode(ReadOnlySpan<byte> input)
         {
             var caret = 0;
-            var result = new List<IDataPartBase>();
+            var result = new List<IHubPacket>();
             while (caret < input.Length)
             {
                 var eventType = Convert.ToChar(input[caret]);
                 var decoder = GetDecoder(eventType.ToString()) ?? throw new InvalidPayloadException($"Invalid HB event type: {eventType}");
                 caret++;
                 var data = decoder(input[caret..]);
-                result.Add(data);
+                result.Add((IHubPacket)data);
                 caret += data.Length;
             }
 
             return new(result.ToArray());
         }
 
-        public HBPacket(IDataPartBase[] data)
+        public HBPacket(IHubPacket[] data)
         {
             var invalidPacket = data.FirstOrDefault(x => GetDecoder(x.PacketName) is null);
             if (invalidPacket is not null) throw new InvalidPayloadException($"Invalid event type: {invalidPacket.PacketName}");

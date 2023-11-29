@@ -1,8 +1,10 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.Network;
+using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Windows.Controls;
 namespace MinesServer.GameShit
 {
     public class Inventory
@@ -33,13 +35,25 @@ namespace MinesServer.GameShit
                 {
                     2,(p) =>
                     {
+                        var coord = p.GetDirCord(true);
+                         if (World.W.CanBuildPack(-2,2,-3,4,(int)coord.X,(int)coord.Y,p))
+                            {
+                        new Up((int)coord.X,(int)coord.Y,p.Id).Build();
+                            return true;
+                            }
                         return true;
                     }
                 },
                 {
                     3,(p) =>
                     {
-                        return true;
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-3,3,-3,3,(int)coord.X,(int)coord.Y,p))
+                            {
+                        new Market((int)coord.X,(int)coord.Y,p.Id).Build();
+                            return true;
+                            }
+                        return false;
                     }
                 },
                 {
@@ -89,21 +103,20 @@ namespace MinesServer.GameShit
                 {
                     items[selected]--;
                 }
-                p.connection.SendU(InvToSend());
             }
         }
         public Dictionary<int, ItemUsage> typeditems;
         public delegate bool ItemUsage(Player p);
         public void Choose(int id, Player p)
         {
-            IDataPartBase packet = InventoryPacket.Choose("ты хуесос", new bool[0, 0], 123, 123, 12);
+            ITopLevelPacket packet = InventoryPacket.Choose("ты хуесос", new bool[0, 0], 123, 123, 12);
             selected = id;
             if (id == -1)
             {
                 packet = InventoryPacket.Close();
             }
-            p.connection.SendU(InvToSend());
-            p.connection.SendU(packet);
+            p.connection?.SendU(InvToSend());
+            p.connection?.SendU(packet);
         }
         public int selected = -1;
         [NotMapped]
@@ -148,6 +161,10 @@ namespace MinesServer.GameShit
             set
             {
                 itemstobd = string.Join(';', value);
+                using var db = new DataBase();
+                db.players.First(i => i.Id == Id).SendInventory();
+                db.SaveChanges();
+                
             }
         }
     }

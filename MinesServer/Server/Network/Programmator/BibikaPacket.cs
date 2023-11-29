@@ -1,6 +1,8 @@
-﻿namespace MinesServer.Network.Programmator
+﻿using MinesServer.Network.Constraints;
+
+namespace MinesServer.Network.Programmator
 {
-    public readonly struct BibikaPacket : IDataPart<BibikaPacket>
+    public readonly struct BibikaPacket : ITopLevelPacket, IDataPart<BibikaPacket>
     {
         public const string packetName = "BB";
 
@@ -10,13 +12,13 @@
 
         public static BibikaPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
-            if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'_' })) throw new InvalidPayloadException("Invalid payload");
+            if (!decodeFrom.SequenceEqual([(byte)'_'])) throw new InvalidPayloadException("Invalid payload");
             return new();
         }
 
         public int Encode(Span<byte> output)
         {
-            Span<byte> span = stackalloc byte[1] { (byte)'_' };
+            Span<byte> span = [(byte)'_'];
             span.CopyTo(output);
             return span.Length;
         }

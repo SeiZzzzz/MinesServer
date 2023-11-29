@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using MinesServer.Network.Constraints;
+using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct ChooPacket : IDataPart<ChooPacket>
+    public readonly struct ChooPacket : ITypicalPacket, IDataPart<ChooPacket>
     {
         public readonly string tag;
 

@@ -8,16 +8,16 @@ namespace MinesServer.GameShit.GUI.Horb
     {
         public required Button[] Buttons { get; init; }
         public CrystalConfig? CrystalConfig { get; init; }
-        public ListEntry[] List { get; init; }
+        public ListEntry[]? List { get; init; }
         public RichListConfig? RichList { get; init; }
-        public ClanListEntry[] ClanList { get; init; }
+        public ClanListEntry[]? ClanList { get; init; }
         public InputConfig? Input { get; init; }
-        public CanvasElement[] Canvas { get; init; }
+        public CanvasElement[]? Canvas { get; init; }
         public Style? Style { get; init; }
         public Card? Card { get; init; }
-        public string Title { get; init; }
-        public string Text { get; init; }
-        public Action OnAdmin { get; init; }
+        public string? Title { get; init; }
+        public string? Text { get; init; }
+        public Action? OnAdmin { get; init; }
 
         public bool ProcessButton(string action)
         {
@@ -30,8 +30,14 @@ namespace MinesServer.GameShit.GUI.Horb
                     return true;
 
             foreach (var i in RichList?.Entries ?? Enumerable.Empty<RichListEntry>())
-                if (i.Type == RichListEntryType.Button && i.Button!.Value.ProcessButton(action))
+                if (i.Type == RichListEntryType.Button && i.Buttons![0].ProcessButton(action))
                     return true;
+                else if(i.Type == RichListEntryType.Fill)
+                {
+                    foreach (var btn in i.Buttons!)
+                        if (btn.ProcessButton(action))
+                            return true;
+                }
                 else if (i.Type == RichListEntryType.Card)
                     foreach (var e in i.Cards!)
                         if (e.Button.ProcessButton(action))

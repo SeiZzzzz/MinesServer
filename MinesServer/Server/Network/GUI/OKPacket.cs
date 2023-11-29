@@ -1,14 +1,15 @@
-﻿using System.Text;
+﻿using MinesServer.Network.Constraints;
+using System.Text;
 
 namespace MinesServer.Network.GUI
 {
-    public readonly record struct OKPacket(string title, string text) : IDataPart<OKPacket>
+    public readonly record struct OKPacket(string Title, string Text) : ITopLevelPacket, IDataPart<OKPacket>
     {
         public const string packetName = "OK";
 
         public string PacketName => packetName;
 
-        public int Length => 1 + Encoding.UTF8.GetByteCount(title) + Encoding.UTF8.GetByteCount(text);
+        public int Length => 1 + Encoding.UTF8.GetByteCount(Title) + Encoding.UTF8.GetByteCount(Text);
 
         public static OKPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -17,6 +18,6 @@ namespace MinesServer.Network.GUI
             return new(parts[0], parts[1]);
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(title + "#" + text, output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(Title + "#" + Text, output);
     }
 }

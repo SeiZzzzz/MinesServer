@@ -1,10 +1,11 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using MoreLinq;
 using System.Text;
 
 namespace MinesServer.Network.World
 {
-    public readonly struct NickListPacket : IDataPart<NickListPacket>
+    public readonly struct NickListPacket : ITopLevelPacket, IDataPart<NickListPacket>
     {
         public readonly Dictionary<int, string> nicks;
 

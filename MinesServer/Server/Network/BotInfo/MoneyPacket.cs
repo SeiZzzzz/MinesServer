@@ -1,16 +1,17 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using SimpleJSON;
 using System.Text;
 
 namespace MinesServer.Network.BotInfo
 {
-    public readonly record struct MoneyPacket(long money, long creds) : IDataPart<MoneyPacket>
+    public readonly record struct MoneyPacket(long Money, long Creds) : ITopLevelPacket, IDataPart<MoneyPacket>
     {
         public const string packetName = "P$";
 
         public string PacketName => packetName;
 
-        public int Length => 19 + money.Digits() + creds.Digits();
+        public int Length => 19 + Money.Digits() + Creds.Digits();
 
         public static MoneyPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +19,6 @@ namespace MinesServer.Network.BotInfo
             return new(obj["money"], obj["creds"]);
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($$"""{"money":{{money}},"creds":{{creds}}}""", output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($$"""{"money":{{Money}},"creds":{{Creds}}}""", output);
     }
 }

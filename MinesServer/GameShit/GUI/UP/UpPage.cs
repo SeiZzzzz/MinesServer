@@ -16,7 +16,7 @@ namespace MinesServer.GameShit.GUI.UP
         Action<int>? OnDelete,
         Action<int>? OnSkill,
         Action<int, string>? OnInstall,
-        SkillType SkillIcon = SkillType.Unknown
+        SkillType? SkillIcon = SkillType.Unknown
         ) : IPage
     {
         public bool ProcessButton(string action)

@@ -1,15 +1,16 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.GUI
 {
-    public readonly record struct OnlinePacket(int online, int prog) : IDataPart<OnlinePacket>
+    public readonly record struct OnlinePacket(int Online, int Prog) : ITopLevelPacket, IDataPart<OnlinePacket>
     {
         public const string packetName = "ON";
 
         public string PacketName => packetName;
 
-        public int Length => 1 + online.Digits() + prog.Digits();
+        public int Length => 1 + Online.Digits() + Prog.Digits();
 
         public static OnlinePacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +19,6 @@ namespace MinesServer.Network.GUI
             return new(int.Parse(parts[0]), int.Parse(parts[1]));
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(online + ":" + prog, output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(Online + ":" + Prog, output);
     }
 }

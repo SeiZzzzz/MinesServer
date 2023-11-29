@@ -1,8 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using MinesServer.Network.Constraints;
+using System.Runtime.InteropServices;
 
 namespace MinesServer.Network.HubEvents.FX
 {
-    public readonly record struct HBFXPacket(int x, int y, int fx) : IDataPart<HBFXPacket>
+    public readonly record struct HBFXPacket(int X, int Y, int FX) : IHubPacket, IDataPart<HBFXPacket>
     {
         public const string packetName = "F";
 
@@ -20,13 +21,13 @@ namespace MinesServer.Network.HubEvents.FX
 
         public int Encode(Span<byte> output)
         {
-            output[0] = Convert.ToByte(fx);
+            output[0] = Convert.ToByte(FX);
             var bytesWritten = 1;
-            var tmpx = Convert.ToUInt16(x);
-            var tmpy = Convert.ToUInt16(y);
-            MemoryMarshal.Write(output[1..], ref tmpx);
+            var tmpx = Convert.ToUInt16(X);
+            var tmpy = Convert.ToUInt16(Y);
+            MemoryMarshal.Write(output[1..], in tmpx);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[3..], ref tmpy);
+            MemoryMarshal.Write(output[3..], in tmpy);
             bytesWritten += sizeof(ushort);
             return bytesWritten;
         }

@@ -6,7 +6,7 @@ namespace MinesServer.GameShit.GUI
     {
         IPage _initPage;
 
-        public string Title { get; init; }
+        public string? Title { get; init; }
 
         public required string Label { get; init; }
 

@@ -1,4 +1,6 @@
-﻿using MinesServer.Network.GUI;
+﻿using MinesServer.Enums;
+using MinesServer.Network.GUI;
+using MinesServer.Server;
 
 namespace MinesServer.GameShit.Skills
 {
@@ -6,20 +8,20 @@ namespace MinesServer.GameShit.Skills
     {
         public int lvl = 1;
         public float exp = 0;
-        public string name;
+        public SkillType type;
         public float GetEffect()
         {
-            effectfunc ??= PlayerSkills.skillz.First(i => i.name == name).effectfunc;
-            return effectfunc(lvl, this);
+            effectfunc ??= PlayerSkills.skillz.First(i => i.type == type).effectfunc;
+            return (float)Math.Round(effectfunc(lvl, this),2);
         }
         public float GetExp()
         {
-            expfunc ??= PlayerSkills.skillz.First(i => i.name == name).expfunc;
+            expfunc ??= PlayerSkills.skillz.First(i => i.type == type).expfunc;
             return expfunc(lvl, this);
         }
         public float GetCost()
         {
-            costfunc ??= PlayerSkills.skillz.First(i => i.name == name).costfunc;
+            costfunc ??= PlayerSkills.skillz.First(i => i.type == type).costfunc;
             return costfunc(lvl, this);
         }
         public Skill Clone()
@@ -37,8 +39,11 @@ namespace MinesServer.GameShit.Skills
                 lvl += 1;
                 exp -= GetExp();
                 p.skillslist.Save();
-                v.Add(this.name, (int)((exp * 100f) / GetExp()));
+                v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
                 p.connection.SendU(new SkillsPacket(v));
+                p.SendLvl();
+                p.health.SendHp();
+                p.skillslist.Save();
             }
         }
         public void AddExp(Player p, float expv = 1)
@@ -48,7 +53,7 @@ namespace MinesServer.GameShit.Skills
             {
                 if (UseSkill(SkillEffectType.OnExp, p))
                 {
-                    if (i.name == "*U")
+                    if (i.type == SkillType.Upgrade)
                     {
                         expv *= i.GetEffect();
                     }
@@ -56,8 +61,9 @@ namespace MinesServer.GameShit.Skills
             }
             exp += expv;
             p.skillslist.Save();
-            v.Add(this.name, (int)((exp * 100f) / GetExp()));
+            v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
             p.connection.SendU(new SkillsPacket(v));
+            p.skillslist.Save();
         }
         public bool UseSkill(SkillEffectType e, Player p)
         {
@@ -67,13 +73,17 @@ namespace MinesServer.GameShit.Skills
             }
             return false;
         }
+        public string Description()
+        {
+            return $"lvl:{lvl} effect:{GetEffect()} cost:{GetCost()} exp:{exp}/{GetExp()}";
+        }
         public bool isUpReady()
         {
             return exp >= GetExp();
         }
         public SkillEffectType EffectType()
         {
-            return PlayerSkills.skillz.First(i => i.name == name).effecttype;
+            return PlayerSkills.skillz.First(i => i.type == type).effecttype;
         }
         public float lastexp;
         public float lasteff;

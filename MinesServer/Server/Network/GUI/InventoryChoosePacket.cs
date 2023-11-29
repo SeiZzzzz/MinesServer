@@ -1,15 +1,16 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.GUI
 {
-    public readonly record struct InventoryChoosePacket(string hint, bool[,] grid, int dx, int dy, int distance) : IDataPart<InventoryChoosePacket>
+    public readonly record struct InventoryChoosePacket(string Hint, bool[,] Grid, int DX, int DY, int Distance) : IInventoryPacket, IDataPart<InventoryChoosePacket>
     {
         public const string packetName = "choose";
 
         public string PacketName => packetName;
 
-        public int Length => 6 + Encoding.UTF8.GetByteCount(hint) + dx.Digits() + dy.Digits() + distance.Digits() + grid.GetLength(0).Digits() + grid.GetLength(1).Digits() + grid.GetLength(0) * grid.GetLength(1);
+        public int Length => 6 + Encoding.UTF8.GetByteCount(Hint) + DX.Digits() + DY.Digits() + Distance.Digits() + Grid.GetLength(0).Digits() + Grid.GetLength(1).Digits() + Grid.GetLength(0) * Grid.GetLength(1);
 
         public static InventoryChoosePacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -32,12 +33,12 @@ namespace MinesServer.Network.GUI
         public int Encode(Span<byte> output)
         {
             var data = "";
-            var w = grid.GetLength(0);
-            var h = grid.GetLength(1);
+            var w = Grid.GetLength(0);
+            var h = Grid.GetLength(1);
             for (int y = 0; y < h; y++)
                 for (int x = 0; x < w; x++)
-                    data += grid[x, y] ? "1" : "0";
-            return Encoding.UTF8.GetBytes($"{hint}:{distance}:{dx}:{dy}:{w}:{h}:{data}", output);
+                    data += Grid[x, y] ? "1" : "0";
+            return Encoding.UTF8.GetBytes($"{Hint}:{Distance}:{DX}:{DY}:{w}:{h}:{data}", output);
         }
     }
 }

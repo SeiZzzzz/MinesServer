@@ -1,15 +1,16 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.ConnectionStatus
 {
-    public readonly record struct PongPacket(int pongResponse, int currentTime) : IDataPart<PongPacket>
+    public readonly record struct PongPacket(int PongResponse, int CurrentTime) : ITopLevelPacket, IDataPart<PongPacket>, ITypicalPacket
     {
         public const string packetName = "PO";
 
         public string PacketName => packetName;
 
-        public int Length => 1 + pongResponse.Digits() + currentTime.Digits();
+        public int Length => 1 + PongResponse.Digits() + CurrentTime.Digits();
 
         public static PongPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +19,6 @@ namespace MinesServer.Network.ConnectionStatus
             return new(int.Parse(parts[0]), int.Parse(parts[1]));
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($"{pongResponse}:{currentTime}", output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($"{PongResponse}:{CurrentTime}", output);
     }
 }

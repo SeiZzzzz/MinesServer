@@ -1,15 +1,16 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.Chat
 {
-    public readonly record struct ChatColorPacket(short color = 0) : IDataPart<ChatColorPacket>
+    public readonly record struct ChatColorPacket(short Color = 0) : ITopLevelPacket, IDataPart<ChatColorPacket>
     {
         public const string packetName = "mC";
 
         public string PacketName => packetName;
 
-        public int Length => color.Digits();
+        public int Length => Color.Digits();
 
         public static ChatColorPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +19,6 @@ namespace MinesServer.Network.Chat
             return new(color);
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(color.ToString(), output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(Color.ToString(), output);
     }
 }

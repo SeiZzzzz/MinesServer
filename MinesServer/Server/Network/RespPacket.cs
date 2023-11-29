@@ -1,6 +1,8 @@
-﻿namespace MinesServer.Network
+﻿using MinesServer.Network.Constraints;
+
+namespace MinesServer.Network
 {
-    public readonly struct RespPacket : IDataPart<RespPacket>
+    public readonly struct RespPacket : ITopLevelPacket, IDataPart<RespPacket>
     {
         public const string packetName = "@R";
 
@@ -10,13 +12,13 @@
 
         public static RespPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
-            if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'1' })) throw new InvalidPayloadException("Invalid payload");
+            if (!decodeFrom.SequenceEqual([(byte)'1'])) throw new InvalidPayloadException("Invalid payload");
             return new();
         }
 
         public int Encode(Span<byte> output)
         {
-            Span<byte> span = stackalloc byte[1] { (byte)'1' };
+            Span<byte> span = [(byte)'1'];
             span.CopyTo(output);
             return span.Length;
         }

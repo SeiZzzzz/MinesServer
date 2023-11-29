@@ -1,14 +1,15 @@
-﻿using System.Text;
+﻿using MinesServer.Network.Constraints;
+using System.Text;
 
 namespace MinesServer.Network.Chat
 {
-    public readonly record struct CurrentChatPacket(string tag, string name) : IDataPart<CurrentChatPacket>
+    public readonly record struct CurrentChatPacket(string Tag, string Name) : ITopLevelPacket, IDataPart<CurrentChatPacket>
     {
         public const string packetName = "mO";
 
         public string PacketName => packetName;
 
-        public int Length => 1 + Encoding.UTF8.GetByteCount(tag) + Encoding.UTF8.GetByteCount(name);
+        public int Length => 1 + Encoding.UTF8.GetByteCount(Tag) + Encoding.UTF8.GetByteCount(Name);
 
         public static CurrentChatPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -17,6 +18,6 @@ namespace MinesServer.Network.Chat
             return new(parts[0], parts[1]);
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($"{tag}:{name}", output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($"{Tag}:{Name}", output);
     }
 }

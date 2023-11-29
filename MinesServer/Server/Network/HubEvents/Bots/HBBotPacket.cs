@@ -1,8 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using MinesServer.Network.Constraints;
+using System.Runtime.InteropServices;
 
 namespace MinesServer.Network.HubEvents.Bots
 {
-    public readonly record struct HBBotPacket(int id, int x, int y, int dir, int skin, int cid, int tail) : IDataPart<HBBotPacket>
+    public readonly record struct HBBotPacket(int Id, int X, int Y, int Direction, int Skin, int ClanId, int Tail) : IHubPacket, IDataPart<HBBotPacket>
     {
         public const string packetName = "X";
 
@@ -24,20 +25,20 @@ namespace MinesServer.Network.HubEvents.Bots
 
         public int Encode(Span<byte> output)
         {
-            output[0] = Convert.ToByte(dir);
-            output[1] = Convert.ToByte(skin);
-            output[2] = Convert.ToByte(tail);
+            output[0] = Convert.ToByte(Direction);
+            output[1] = Convert.ToByte(Skin);
+            output[2] = Convert.ToByte(Tail);
             var bytesWritten = 3;
-            var tmpid = Convert.ToUInt16(id);
+            var tmpid = Convert.ToUInt16(Id);
             MemoryMarshal.Write(output[3..], in tmpid);
             bytesWritten += sizeof(ushort);
-            var tmpx = Convert.ToUInt16(x);
+            var tmpx = Convert.ToUInt16(X);
             MemoryMarshal.Write(output[5..], in tmpx);
             bytesWritten += sizeof(ushort);
-            var tmpy = Convert.ToUInt16(y);
+            var tmpy = Convert.ToUInt16(Y);
             MemoryMarshal.Write(output[7..], in tmpy);
             bytesWritten += sizeof(ushort);
-            var tmpcid = Convert.ToUInt16(cid);
+            var tmpcid = Convert.ToUInt16(ClanId);
             MemoryMarshal.Write(output[9..], in tmpcid);
             bytesWritten += sizeof(ushort);
             return bytesWritten;

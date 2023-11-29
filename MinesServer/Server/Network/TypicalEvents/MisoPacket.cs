@@ -1,6 +1,8 @@
-﻿namespace MinesServer.Network.TypicalEvents
+﻿using MinesServer.Network.Constraints;
+
+namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct MisoPacket : IDataPart<MisoPacket>
+    public readonly struct MisoPacket : ITypicalPacket, IDataPart<MisoPacket>
     {
         public const string packetName = "Miso";
 
@@ -10,13 +12,13 @@
 
         public static MisoPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
-            if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'0' })) throw new InvalidPayloadException("Invalid payload");
+            if (!decodeFrom.SequenceEqual([(byte)'0'])) throw new InvalidPayloadException("Invalid payload");
             return new();
         }
 
         public int Encode(Span<byte> output)
         {
-            Span<byte> span = stackalloc byte[1] { (byte)'0' };
+            Span<byte> span = [(byte)'0'];
             span.CopyTo(output);
             return span.Length;
         }

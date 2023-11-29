@@ -1,15 +1,16 @@
-﻿using System.Runtime.InteropServices;
+﻿using MinesServer.Network.Constraints;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MinesServer.Network.HubEvents
 {
-    public readonly record struct HBChatPacket(int bid, int x, int y, string message) : IDataPart<HBChatPacket>
+    public readonly record struct HBChatPacket(int BotId, int X, int Y, string Message) : IHubPacket, IDataPart<HBChatPacket>
     {
         public const string packetName = "C";
 
         public string PacketName => packetName;
 
-        public int Length => sizeof(ushort) * 4 + Encoding.UTF8.GetByteCount(message);
+        public int Length => sizeof(ushort) * 4 + Encoding.UTF8.GetByteCount(Message);
 
         public static HBChatPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -23,10 +24,10 @@ namespace MinesServer.Network.HubEvents
 
         public int Encode(Span<byte> output)
         {
-            var tmpbid = Convert.ToUInt16(bid);
-            var tmpx = Convert.ToUInt16(x);
-            var tmpy = Convert.ToUInt16(y);
-            var bytesWritten = Encoding.UTF8.GetBytes(message, output[8..]);
+            var tmpbid = Convert.ToUInt16(BotId);
+            var tmpx = Convert.ToUInt16(X);
+            var tmpy = Convert.ToUInt16(Y);
+            var bytesWritten = Encoding.UTF8.GetBytes(Message, output[8..]);
             var tmplen = Convert.ToUInt16(bytesWritten);
             MemoryMarshal.Write(output, in tmpbid);
             bytesWritten += sizeof(ushort);

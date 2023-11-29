@@ -1,8 +1,9 @@
-﻿using System.Runtime.InteropServices;
+﻿using MinesServer.Network.Constraints;
+using System.Runtime.InteropServices;
 
 namespace MinesServer.Network.HubEvents.FX
 {
-    public readonly record struct HBDirectedFXPacket(int bid, int x, int y, int fx, int dir, int color) : IDataPart<HBDirectedFXPacket>
+    public readonly record struct HBDirectedFXPacket(int BotId, int X, int Y, int FX, int Direction, int Color) : IHubPacket, IDataPart<HBDirectedFXPacket>
     {
         public const string packetName = "D";
 
@@ -23,18 +24,18 @@ namespace MinesServer.Network.HubEvents.FX
 
         public int Encode(Span<byte> output)
         {
-            output[0] = Convert.ToByte(fx);
-            output[1] = Convert.ToByte(dir);
-            output[2] = Convert.ToByte(color);
+            output[0] = Convert.ToByte(FX);
+            output[1] = Convert.ToByte(Direction);
+            output[2] = Convert.ToByte(Color);
             var bytesWritten = 3;
-            var tmpx = Convert.ToUInt16(x);
-            var tmpy = Convert.ToUInt16(y);
-            var tmpbid = Convert.ToUInt16(bid);
-            MemoryMarshal.Write(output[3..], ref tmpx);
+            var tmpx = Convert.ToUInt16(X);
+            var tmpy = Convert.ToUInt16(Y);
+            var tmpbid = Convert.ToUInt16(BotId);
+            MemoryMarshal.Write(output[3..], in tmpx);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[5..], ref tmpy);
+            MemoryMarshal.Write(output[5..], in tmpy);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[7..], ref tmpbid);
+            MemoryMarshal.Write(output[7..], in tmpbid);
             bytesWritten += sizeof(ushort);
             return bytesWritten;
         }

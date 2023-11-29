@@ -1,24 +1,16 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct XbldPacket : IDataPart<XbldPacket>
+    public readonly record struct XbldPacket(int Direction, string BlockType) : ITypicalPacket, IDataPart<XbldPacket>
     {
-        public readonly int direction;
-        public readonly string blockType;
-
         public const string packetName = "Xbld";
 
         public string PacketName => packetName;
 
-        public XbldPacket(int dir, string block)
-        {
-            direction = dir;
-            blockType = block;
-        }
-
-        public int Length => direction.Digits() + blockType.Length;
+        public int Length => Direction.Digits() + BlockType.Length;
 
         public static XbldPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -28,6 +20,6 @@ namespace MinesServer.Network.TypicalEvents
             return new(dir, blockType);
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(direction + blockType, output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(Direction + BlockType, output);
     }
 }

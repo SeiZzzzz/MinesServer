@@ -1,14 +1,15 @@
-﻿using System.Runtime.InteropServices;
+﻿using MinesServer.Network.Constraints;
+using System.Runtime.InteropServices;
 
 namespace MinesServer.Network.HubEvents.FX
 {
-    public readonly record struct HBGunPacket(int x, int y, int color, int[] bots) : IDataPart<HBGunPacket>
+    public readonly record struct HBGunPacket(int X, int Y, int Color, int[] Bots) : IHubPacket, IDataPart<HBGunPacket>
     {
         public const string packetName = "Z";
 
         public string PacketName => packetName;
 
-        public int Length => sizeof(byte) * 2 + sizeof(ushort) * 2 + bots.Length * 2;
+        public int Length => sizeof(byte) * 2 + sizeof(ushort) * 2 + Bots.Length * 2;
 
         public static HBGunPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -24,19 +25,19 @@ namespace MinesServer.Network.HubEvents.FX
 
         public int Encode(Span<byte> output)
         {
-            output[0] = Convert.ToByte(bots.Length);
-            output[1] = Convert.ToByte(color);
+            output[0] = Convert.ToByte(Bots.Length);
+            output[1] = Convert.ToByte(Color);
             var bytesWritten = 2;
-            var tmpx = Convert.ToUInt16(x);
-            var tmpy = Convert.ToUInt16(y);
-            MemoryMarshal.Write(output[2..], ref tmpx);
+            var tmpx = Convert.ToUInt16(X);
+            var tmpy = Convert.ToUInt16(Y);
+            MemoryMarshal.Write(output[2..], in tmpx);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[4..], ref tmpy);
+            MemoryMarshal.Write(output[4..], in tmpy);
             bytesWritten += sizeof(ushort);
-            for (int i = 0; i < bots.Length; i++)
+            for (int i = 0; i < Bots.Length; i++)
             {
-                var tmpi = Convert.ToUInt16(bots[i]);
-                MemoryMarshal.Write(output[(6 + i * sizeof(ushort))..], ref tmpi);
+                var tmpi = Convert.ToUInt16(Bots[i]);
+                MemoryMarshal.Write(output[(6 + i * sizeof(ushort))..], in tmpi);
                 bytesWritten += sizeof(ushort);
             }
             return bytesWritten;

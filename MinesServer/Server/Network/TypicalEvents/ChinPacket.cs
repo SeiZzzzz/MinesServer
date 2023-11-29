@@ -1,9 +1,10 @@
-﻿using System.Text;
+﻿using MinesServer.Network.Constraints;
+using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
 {
     [Obsolete("FIX THIS!!!!!!")]
-    public readonly struct ChinPacket : IDataPart<ChinPacket>
+    public readonly struct ChinPacket : ITypicalPacket, IDataPart<ChinPacket>
     {
         public readonly string message;
 

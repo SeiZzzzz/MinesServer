@@ -1,9 +1,11 @@
-﻿namespace MinesServer.Network
+﻿using MinesServer.Network.Constraints;
+
+namespace MinesServer.Network
 {
     [Obsolete("This packet is no longer supported by the client.")]
-    public readonly struct ModulesPacket : IDataPart<ModulesPacket>
+    public readonly struct ModulesPacket : ITopLevelPacket, IDataPart<ModulesPacket>
     {
-        public readonly string[] modules = Array.Empty<string>();
+        public readonly string[] modules = [];
 
         public const string packetName = "PM";
 

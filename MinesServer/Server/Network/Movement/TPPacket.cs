@@ -1,15 +1,16 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.Movement
 {
-    public readonly record struct TPPacket(int x, int y) : IDataPart<TPPacket>
+    public readonly record struct TPPacket(int X, int Y) : ITopLevelPacket, IDataPart<TPPacket>
     {
         public const string packetName = "@T";
 
         public string PacketName => packetName;
 
-        public int Length => 1 + x.Digits() + y.Digits();
+        public int Length => 1 + X.Digits() + Y.Digits();
 
         public static TPPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +19,6 @@ namespace MinesServer.Network.Movement
             return new(int.Parse(parts[0]), int.Parse(parts[1]));
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(x + ":" + y, output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(X + ":" + Y, output);
     }
 }

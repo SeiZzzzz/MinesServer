@@ -2,6 +2,7 @@
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Generator;
 using MinesServer.Network;
+using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
 using MinesServer.Server;
@@ -93,13 +94,13 @@ namespace MinesServer.GameShit
         public bool CanBuildPack(int left,int right,int bottom,int top,int x,int y,Player player,bool ignoreplace = false)
         {
             var h = 0;
-            List<IDataPartBase> packets = new();
+            List<IHubPacket> packets = new();
             for (int cx = left;cx <= right;cx++)
             {
                 for (int cy = bottom; cy <= top; cy++)
                 {
                     var p = GetProp(GetCell(x + cx, y + cy));
-                    if ((ignoreplace && (p.is_destructible || PackPart(x + cx, y + cy))) || ((PackPart(x + cx, y + cy) || !p.can_place_over || !p.isEmpty) && !ignoreplace))
+                    if (!ValidCoord(x + cx,y + cy) || (ignoreplace && (p.is_destructible || PackPart(x + cx, y + cy))) || ((PackPart(x + cx, y + cy) || !p.can_place_over || !p.isEmpty) && !ignoreplace))
                     {
                         if (player != null)
                         {
@@ -125,6 +126,18 @@ namespace MinesServer.GameShit
             Cell,
             Road,
             CellAndRoad
+        }
+        public static bool DamageCell(int x,int y,float dmg)
+        {
+            var d = GetDurability(x, y);
+            if ((d - dmg) <= 0)
+            {
+                SetDurability(x, y, 0);
+                Destroy(x, y);
+                return true;
+            }
+            SetDurability(x, y, d - dmg);
+            return false;
         }
         public static void Destroy(int x, int y, destroytype t = destroytype.Cell)
         {
@@ -247,9 +260,9 @@ namespace MinesServer.GameShit
                 {
                     continue;
                 }
-                if (p.player.x == x && p.player.y == y)
+                if (p.x == x && p.y == y)
                 {
-                    st.Push(p.player);
+                    st.Push(p);
                 }
 
             }

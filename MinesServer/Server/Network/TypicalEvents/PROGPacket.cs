@@ -1,6 +1,8 @@
-﻿namespace MinesServer.Network.TypicalEvents
+﻿using MinesServer.Network.Constraints;
+
+namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct PROGPacket : IDataPart<PROGPacket>
+    public readonly struct PROGPacket : ITypicalPacket, IDataPart<PROGPacket>
     {
         // TODO: Perhaps chenge this to an actual prgram type?
         public readonly byte[] program;

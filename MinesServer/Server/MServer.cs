@@ -8,14 +8,14 @@ namespace MinesServer.Server
     {
         public System.Timers.Timer timer;
         public ServerTime time { get; private set; }
-        public Dictionary<int, Session> players;
+        public Dictionary<int, Player> players;
         public static MServer? Instance;
         public static bool started = false;
         public MServer(IPAddress address, int port) : base(address, port)
         {
             Instance = this;
             MConsole.InitCommands();
-            players = new Dictionary<int, Session>();
+            players = new Dictionary<int, Player>();
             /*HorbDecoder.InitCommands();*/
             time = new ServerTime();
             new World(Default.cfg.WorldName, 32 * 10, 32 * 10);
@@ -23,13 +23,14 @@ namespace MinesServer.Server
             OptionKeepAlive = true;
         }
 
-        public static Session? GetPlayer(int id)
+        public static Player? GetPlayer(int id)
         {
             if (Instance!.players.Keys.Contains(id))
             {
                 return Instance.players[id];
             }
-            return null;
+            var db = new DataBase();
+            return db.players.FirstOrDefault(i => i.Id == id);
         }
         protected override TcpSession CreateSession()
         {

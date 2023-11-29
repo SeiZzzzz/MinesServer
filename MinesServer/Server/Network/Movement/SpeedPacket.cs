@@ -1,9 +1,10 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.Movement
 {
-    public readonly record struct SpeedPacket(int XY_PAUSE, int ROAD_PAUSE, int DEPTH) : IDataPart<SpeedPacket>
+    public readonly record struct SpeedPacket(int XY_PAUSE, int ROAD_PAUSE, int DEPTH) : ITopLevelPacket, IDataPart<SpeedPacket>
     {
         public const string packetName = "sp";
 

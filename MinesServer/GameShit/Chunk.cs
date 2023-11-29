@@ -4,6 +4,7 @@ using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.HubEvents.Packs;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using System.DirectoryServices.ActiveDirectory;
 
 namespace MinesServer.GameShit
 {
@@ -42,6 +43,7 @@ namespace MinesServer.GameShit
         {
             if (shouldbeloaded())
             {
+                updlasttick = false;
                 var currenttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 if (currenttick - lasttick > 700)
                 {
@@ -145,15 +147,17 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            var player = MServer.GetPlayer(id.Key);
-                            if (player != null)
-                            {
-
-                                player.SendB(new HBPacket([new HBDirectedFXPacket(id.Key, x, y, fx, dir, color)]));
-                            }
+                             MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBDirectedFXPacket(id.Key, x, y, fx, dir, color)]));
                         }
                     }
                 }
+            }
+        }
+        public void ResendPacks()
+        {
+            foreach (var p in packs.Values)
+            {
+                SendPack((char)p.type, p.x, p.y, p.cid, p.off);
             }
         }
         public void SendPack(char type, int x, int y, int cid, int off)
@@ -172,7 +176,7 @@ namespace MinesServer.GameShit
                             var player = MServer.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                player.SendB(new HBPacket([new HBPacksPacket(x + y * World.W.height, [new HBPack(type, x, y, cid, off)])]));
+                                MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.W.height, [new HBPack(type, x, y, cid, off)])]));
                             }
                         }
                     }
@@ -192,11 +196,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            var player = MServer.GetPlayer(id.Key);
-                            if (player != null)
-                            {
-                                player.SendB(new HBPacket([new HBPacksPacket(x + y * World.W.height, [])]));
-                            }
+                            MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.W.height, [])]));
                         }
                     }
                 }
@@ -206,7 +206,7 @@ namespace MinesServer.GameShit
         public void SetPack(int x, int y, Pack p)
         {
             packs[x + y * 32] = p;
-            SendPack((char)p.type, p.x, p.y, p.cid, p.off);
+            SendPack((char)p.type, WorldX + x, WorldY + y, p.cid, p.off);
         }
         public void RemovePack(int x,int y)
         {
@@ -217,31 +217,40 @@ namespace MinesServer.GameShit
         }
         private void UpdateCells()
         {
-            List<(int, int)> cellstoupd = new();
+            if (wcells == null || rcells == null)
+            {
+                return;
+            }
+            List<(int, int,byte)> cellstoupd = new();
             for (int y = 0; y < 32; y++)
             {
                 for (int x = 0; x < 32; x++)
                 {
                     this[x, y] = wcells[x + y * 32] == 0 ? rcells[x + y * 32] : wcells[x + y * 32];
                     var prop = World.GetProp(this[x, y]);
-                    if (World.isAlive(this[x, y]))
+                    if (prop.isSand || prop.isBoulder || World.isAlive(this[x, y]))
                     {
-                        //upd
-                    }
-                    else if (prop.isSand || prop.isBoulder)
-                    {
-                        if (World.GetProp(World.GetCell(WorldX + x,WorldY + y + 1)).isEmpty)
-                        {
-                            cellstoupd.Add((WorldX + x, WorldY + y));
-                        }
+                        cellstoupd.Add((WorldX + x, WorldY + y, this[x,y]));
                     }
                 }
             }
             foreach(var c in cellstoupd)
             {
-                World.MoveCell(c.Item1, c.Item2, 0, 1);
+                if (World.isAlive(c.Item3) && Physics.Alive(c.Item1, c.Item2))
+                {
+                    updlasttick = true;
+                }
+                else if (World.GetProp(c.Item3).isSand && Physics.Sand(c.Item1, c.Item2))
+                {
+                    updlasttick = true;
+                }
+                else if (World.GetProp(c.Item3).isBoulder && Physics.Boulder(c.Item1, c.Item2))
+                {
+                    updlasttick = true;
+                }
             }
         }
+        private bool updlasttick = false;
         public void AddBot(Player player)
         {
             if (this != null)
@@ -251,7 +260,7 @@ namespace MinesServer.GameShit
         }
         public bool shouldbeloaded()
         {
-            return active && (ShouldBeLoadedBots() || ContainsAlive);
+            return active && (ShouldBeLoadedBots() || ContainsAlive || updlasttick);
         }
         public void EmptyLoad()
         {
@@ -333,11 +342,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            var player = MServer.GetPlayer(id.Key);
-                            if (player != null)
-                            {
-                                player.SendCell(x, y, cell);
-                            }
+                            MServer.GetPlayer(id.Key)?.connection?.SendCell(x, y, cell);
                         }
                     }
                 }

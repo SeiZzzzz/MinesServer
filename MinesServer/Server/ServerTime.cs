@@ -1,4 +1,5 @@
 ﻿using MinesServer.GameShit;
+using System.ComponentModel.DataAnnotations;
 
 namespace MinesServer.Server
 {
@@ -47,11 +48,8 @@ namespace MinesServer.Server
                 var player = MServer.GetPlayer(j);
                 if (player != null)
                 {
-                    player.UpdateMs();
-                    if (player.player != null)
-                    {
-                        player.player.Update();
-                    }
+                        player?.connection?.UpdateMs();
+                        player?.Update();
                 }
             }
             for (int i = 0; i < gameActions.Count; i++)
@@ -76,6 +74,12 @@ namespace MinesServer.Server
                     World.W.chunks[x, y].Update();
                 }
             }
+            using var db = new DataBase();
+            foreach(var order in db.orders)
+            {
+                order.CheckReady();
+            }
+            db.SaveChanges();
         }
     }
 }

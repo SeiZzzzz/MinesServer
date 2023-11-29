@@ -1,4 +1,8 @@
-﻿using MinesServer.GameShit.Skills;
+﻿using MinesServer.Enums;
+using MinesServer.GameShit.GUI.Horb;
+using MinesServer.GameShit.GUI.UP;
+using MinesServer.GameShit.Skills;
+using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit
@@ -18,24 +22,60 @@ namespace MinesServer.GameShit
                 ser = "";
             }
         }
-        public void Up(int slot, Player p)
+        public void SelectSlot(Player p)
         {
-            skills[slot].Up(p);
+            
         }
-        public void InstallSkill(string type, int slot)
+        [NotMapped]
+        public int selectedslot = -1;
+        public void DeletetSkill(Player p)
         {
+            skills[selectedslot] = null;
+            p.SendLvl();
+            Save();
+        }
+        public void InstallSkill(string type, int slot,Player p)
+        {
+            if (skills.FirstOrDefault(i => i?.type.GetCode() == type) != null)
+             {
+                return;
+            }
             var s = new Skill();
-            skills[slot] = skillz.First(i => i.name == type).Clone();
+            skills[slot] = skillz.First(i => i.type.GetCode() == type).Clone();
+            p.SendLvl();
             Save();
         }
         public void Save()
         {
             ser = Newtonsoft.Json.JsonConvert.SerializeObject(skills, Newtonsoft.Json.Formatting.None);
+            using var db = new DataBase();
+            db.SaveChanges();
+        }
+        public Dictionary<SkillType,bool> SkillToInstall()
+        {
+            Dictionary<SkillType, bool> d = new();
+            foreach (var sk in skillz)
+            {
+                d.Add(sk.type, true);
+            }
+            return d;
+        }
+        public int lvlsummary() => skills.Sum(i => i?.lvl ?? 0);
+        public UpSkill[] GetSkills()
+        {
+            List<UpSkill> ski = new();
+            for(int i = 0; i < skills.Length;i++)
+            {
+                if (skills[i] != null)
+                {
+                    ski.Add(new UpSkill(i, skills[i].lvl, skills[i].isUpReady(), skills[i].type));
+                    continue;
+                }
+            }
+            return ski.ToArray();
         }
         [NotMapped]
-        public Player owner;
-        [NotMapped]
-        public Skill[] skills = new Skill[35];
+        public Skill?[] skills = new Skill[35];
         [NotMapped]
         public static List<Skill> skillz = new List<Skill>()
         {
@@ -45,7 +85,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 100f + x * 10,
                     expfunc = (int x,Skill b) => b.lastexp + ((int)(b.lastexp * 10) / 100),
-                    name = "d", // dick
+                    type = SkillType.Digging, // dick
                     effecttype = SkillEffectType.OnDig
                 },
                 new Skill()
@@ -53,7 +93,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "L", // стройка
+                    type = SkillType.BuildGreen, // стройка
                     effecttype = SkillEffectType.OnBld
                 },
                 new Skill()
@@ -61,7 +101,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "F", // охлад
+                    type = SkillType.Fridge, // охлад
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
@@ -69,7 +109,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "M", // движение,
+                    type = SkillType.Movement, // движение,
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
@@ -77,7 +117,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "t", // по дорогам
+                    type = SkillType.RoadMovement, // по дорогам
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
@@ -85,15 +125,15 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "p", // упаковка
+                    type = SkillType.Packing, // упаковка
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
                     costfunc = (int x,Skill b) => 1f,
-                    effectfunc = (int x,Skill b) => x * 1f,
+                    effectfunc = (int x,Skill b) => x * 3f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "l", // хп
+                    type = SkillType.Health, // хп
                     effecttype = SkillEffectType.OnHealth
                 },
                 new Skill()
@@ -101,7 +141,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "b", // упаковка синь
+                    type = SkillType.PackingBlue, // упаковка синь
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
@@ -109,7 +149,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "c", // упаковка голь
+                    type = SkillType.PackingCyan, // упаковка голь
                     effecttype = SkillEffectType.OnMove
                 },
                  new Skill()
@@ -117,7 +157,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "g", // упаковка зель
+                    type = SkillType.PackingGreen, // упаковка зель
                     effecttype = SkillEffectType.OnMove
                 },
                   new Skill()
@@ -125,7 +165,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "r", // упаковка крась
+                    type = SkillType.PackingRed, // упаковка крась
                     effecttype = SkillEffectType.OnMove
                 },
                     new Skill()
@@ -133,7 +173,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "v", // упаковка фиоль
+                    type = SkillType.PackingViolet, // упаковка фиоль
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
@@ -141,7 +181,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 1f,
                     expfunc = (int x,Skill b) => 1f,
-                    name = "w", // упаковка бель
+                    type = SkillType.PackingWhite, // упаковка бель
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
@@ -150,8 +190,8 @@ namespace MinesServer.GameShit
                     lastcost = 1100,
                     costfunc = (int x,Skill b) => 1f,
                     effectfunc = (int x,Skill b) => 0.08f + (float)(Math.Log10(x) * (Math.Pow(x, 0.5) / 4)),
-                    expfunc = (int x,Skill b) => (int)(b.lastexp - (b.lastexp * 0.1f)),
-                    name = "m", // доба
+                    expfunc = (int x,Skill b) => 0,
+                    type = SkillType.MineGeneral, // доба
                     effecttype = SkillEffectType.OnDigCrys
                 }
 

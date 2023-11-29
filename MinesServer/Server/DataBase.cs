@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MinesServer.GameShit;
 using MinesServer.GameShit.Buildings;
+using MinesServer.GameShit.Marketext;
 
 namespace MinesServer.Server
 {
@@ -14,6 +15,9 @@ namespace MinesServer.Server
         public DbSet<Box> boxes { get; set; }
         public DbSet<Settings> settings { get; set; }
         public DbSet<Resp> resps { get; set; }
+        public DbSet<Market> markets { get; set; }
+        public DbSet<Up> ups { get; set; }
+        public DbSet<Order> orders { get; set; }
         public static bool created = false;
         public DataBase()
         {
@@ -58,6 +62,14 @@ namespace MinesServer.Server
                     World.W.GetChunk(i.x, i.y).Save();
                 }
                 foreach (var i in db.resps)
+                {
+                    World.AddPack(i.x, i.y, i);
+                }
+                foreach (var i in db.markets)
+                {
+                    World.AddPack(i.x, i.y, i);
+                }
+                foreach (var i in db.ups)
                 {
                     World.AddPack(i.x, i.y, i);
                 }

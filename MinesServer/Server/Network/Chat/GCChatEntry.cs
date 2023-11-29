@@ -2,11 +2,11 @@
 
 namespace MinesServer.Network.Chat
 {
-    public readonly record struct GCChatEntry(string tag, string title, string nickname, string text, bool notification) : IDataPart<GCChatEntry>
+    public readonly record struct GCChatEntry(string Tag, string Title, string Nickname, string Text, bool Notification) : IDataPart<GCChatEntry>
     {
         public string PacketName => throw new NotImplementedException();
 
-        public int Length => 9 + Encoding.UTF8.GetByteCount(tag) + Encoding.UTF8.GetByteCount(title) + Encoding.UTF8.GetByteCount(nickname) + Encoding.UTF8.GetByteCount(text);
+        public int Length => 9 + Encoding.UTF8.GetByteCount(Tag) + Encoding.UTF8.GetByteCount(Title) + Encoding.UTF8.GetByteCount(Nickname) + Encoding.UTF8.GetByteCount(Text);
 
         public static GCChatEntry Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +18,6 @@ namespace MinesServer.Network.Chat
             return new(parts[0], parts[2], msg[0], msg[1], parts[1] == "1");
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($"{tag}±{(notification ? "1" : "0")}±{title}±{nickname}: {text}", output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($"{Tag}±{(Notification ? "1" : "0")}±{Title}±{Nickname}: {Text}", output);
     }
 }

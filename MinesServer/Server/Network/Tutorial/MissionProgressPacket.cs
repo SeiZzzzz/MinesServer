@@ -1,15 +1,16 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.Tutorial
 {
-    public readonly record struct MissionProgressPacket(int exp, int max) : IDataPart<MissionProgressPacket>
+    public readonly record struct MissionProgressPacket(int Experience, int Max) : ITopLevelPacket, IDataPart<MissionProgressPacket>
     {
         public const string packetName = "MP";
 
         public string PacketName => packetName;
 
-        public int Length => 1 + exp.Digits() + max.Digits();
+        public int Length => 1 + Experience.Digits() + Max.Digits();
 
         public static MissionProgressPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +19,6 @@ namespace MinesServer.Network.Tutorial
             return new(int.Parse(parts[0]), int.Parse(parts[1]));
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(exp + ":" + max, output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(Experience + ":" + Max, output);
     }
 }

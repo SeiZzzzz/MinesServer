@@ -1,8 +1,9 @@
-﻿using System.Text;
+﻿using MinesServer.Network.Constraints;
+using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct SettPacket : IDataPart<SettPacket>
+    public readonly struct SettPacket : ITypicalPacket, IDataPart<SettPacket>
     {
         // Because myachin
         public readonly bool isOpenPacket;
@@ -30,7 +31,7 @@ namespace MinesServer.Network.TypicalEvents
 
         public static SettPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
-            if (decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'_' })) return new();
+            if (decodeFrom.SequenceEqual([(byte)'_'])) return new();
             var parts = Encoding.UTF8.GetString(decodeFrom).Split(':');
             if (parts.Length != 2) throw new InvalidPayloadException($"Expected {2} parts but got {parts.Length}");
             return new(parts[0], parts[1]);
@@ -40,7 +41,7 @@ namespace MinesServer.Network.TypicalEvents
         {
             if (isOpenPacket)
             {
-                Span<byte> span = stackalloc byte[1] { (byte)'_' };
+                Span<byte> span = [(byte)'_'];
                 span.CopyTo(output);
                 return span.Length;
             }

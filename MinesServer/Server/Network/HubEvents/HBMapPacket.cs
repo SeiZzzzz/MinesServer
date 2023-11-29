@@ -1,14 +1,15 @@
-﻿using System.Runtime.InteropServices;
+﻿using MinesServer.Network.Constraints;
+using System.Runtime.InteropServices;
 
 namespace MinesServer.Network.HubEvents
 {
-    public readonly record struct HBMapPacket(int x, int y, int width, int height, byte[] cells) : IDataPart<HBMapPacket>
+    public readonly record struct HBMapPacket(int X, int Y, int Width, int Height, byte[] Cells) : IHubPacket, IDataPart<HBMapPacket>
     {
         public const string packetName = "M";
 
         public string PacketName => packetName;
 
-        public int Length => sizeof(byte) * 2 + sizeof(ushort) * 2 + cells.Length;
+        public int Length => sizeof(byte) * 2 + sizeof(ushort) * 2 + Cells.Length;
 
         public static HBMapPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -21,17 +22,17 @@ namespace MinesServer.Network.HubEvents
 
         public int Encode(Span<byte> output)
         {
-            if (width * height != cells.Length) throw new InvalidPayloadException("Chunk size does not match the cells array size");
-            output[0] = Convert.ToByte(width);
-            output[1] = Convert.ToByte(height);
+            if (Width * Height != Cells.Length) throw new ArgumentOutOfRangeException(nameof(Cells), "Chunk size does not match the cells array size");
+            output[0] = Convert.ToByte(Width);
+            output[1] = Convert.ToByte(Height);
             var bytesWritten = 2;
-            var tmpx = Convert.ToUInt16(Convert.ToInt32(x));
-            var tmpy = Convert.ToUInt16(Convert.ToInt32(y));
+            var tmpx = Convert.ToUInt16(Convert.ToInt32(X));
+            var tmpy = Convert.ToUInt16(Convert.ToInt32(Y));
             MemoryMarshal.Write(output[2..], in tmpx);
             bytesWritten += sizeof(ushort);
             MemoryMarshal.Write(output[4..], in tmpy);
             bytesWritten += sizeof(ushort);
-            var span = cells.AsSpan();
+            var span = Cells.AsSpan();
             span.CopyTo(output[6..]);
             bytesWritten += span.Length;
             return bytesWritten;

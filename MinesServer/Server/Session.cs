@@ -2,6 +2,7 @@
 using MinesServer.Network;
 using MinesServer.Network.Auth;
 using MinesServer.Network.ConnectionStatus;
+using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.TypicalEvents;
@@ -78,7 +79,7 @@ namespace MinesServer.Server
         }
         private void TY(TYPacket packet)
         {
-            switch (packet.data)
+            switch (packet.Data)
             {
                 case XmovPacket xmov: MoveHandler(packet, xmov); break;
                 case LoclPacket locl: LocalChatHandler(packet, locl); break;
@@ -94,13 +95,13 @@ namespace MinesServer.Server
                 case DPBXPacket dpbx: Dpbx(packet, dpbx);break;
                 case SettPacket sett: Sett(packet, sett);break;
                 case ADMNPacket admn: ADMN(packet, admn);break;
-                case RespPacket res: Res(packet, res);break;
+                case RESPPacket res: Res(packet, res);break;
                 default:
                     // Invalid event type
                     break;
             }
         }
-        private void Res(TYPacket f, RespPacket p)
+        private void Res(TYPacket f, RESPPacket p)
         {
             player.health.Death();
         }
@@ -149,7 +150,7 @@ namespace MinesServer.Server
         {
             if (player != null && player.win == null)
             {
-                 player.dir = packet.direction;
+                 player.dir = packet.Direction;
                  player.Bz();
             }
         }
@@ -164,8 +165,8 @@ namespace MinesServer.Server
         {
             if (player != null && player.win == null)
             {
-                int x = (int)(parent.x + (packet.direction == 3 ? 1 : packet.direction == 1 ? -1 : 0));
-                int y = (int)(parent.y + (packet.direction == 0 ? 1 : packet.direction == 2 ? -1 : 0));
+                int x = (int)(parent.X + (packet.Direction == 3 ? 1 : packet.Direction == 1 ? -1 : 0));
+                int y = (int)(parent.Y + (packet.Direction == 0 ? 1 : packet.Direction == 2 ? -1 : 0));
                 if (World.W.ValidCoord(x, y))
                 {
                     //bld
@@ -181,36 +182,36 @@ namespace MinesServer.Server
         {
             if (player != null)
             {
-                var dir = packet.direction;
-                player.Move((int)parent.x, (int)parent.y, dir > 9 ? dir - 10 : dir);
+                var dir = packet.Direction;
+                player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
             }
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)
         {
-            SendU(new NickListPacket(packet.botIds.ToDictionary(x => x, x => MServer.GetPlayer(x)!.player.name)));
+            SendU(new NickListPacket(packet.BotIds.ToDictionary(x => x, x => MServer.GetPlayer(x)?.name)));
         }
         private void LocalChatHandler(TYPacket parent, LoclPacket packet)
         {
             if (player != null && player.win == null && packet.Length > 0)
             {
-                if (packet.message == "console")
+                if (packet.Message == "console")
                 {
                     MConsole.ShowConsole(player);
                 }
-                else if (packet.message[0] == '>' && packet.message.Length > 1)
+                else if (packet.Message[0] == '>' && packet.Message.Length > 1)
                 {
                     MConsole.ShowConsole(player);
                 }
-                else if (!string.IsNullOrWhiteSpace(packet.message))
+                else if (!string.IsNullOrWhiteSpace(packet.Message))
                 {
-                    this.player.SendLocalMsg(packet.message);
+                    this.player.SendLocalMsg(packet.Message);
                 }
             }
 
         }
         public void GUI(TYPacket p, GUI_Packet ty)
         {
-            var button = ty.button;
+            var button = ty.Button;
             if (button == null)
             {
                 return;
@@ -250,11 +251,11 @@ namespace MinesServer.Server
         {
             SendU(new GUIPacket(win));
         }
-        public void SendU(IDataPartBase data) => Send(new("U", data));
+        public void SendU(ITopLevelPacket data) => Send(new("U", data));
 
-        public void SendB(IDataPartBase data) => Send(new("B", data));
+        public void SendB(ITopLevelPacket data) => Send(new("B", data));
 
-        public void SendJ(IDataPartBase data) => Send(new("J", data));
+        public void SendJ(ITopLevelPacket data) => Send(new("J", data));
         public void Send(Packet p)
         {
             Span<byte> span = stackalloc byte[p.Length];
@@ -273,6 +274,7 @@ namespace MinesServer.Server
         public void CloseWindow()
         {
             player.win = null;
+            player.skillslist.selectedslot = -1;
             SendU(new GuPacket());
         }
         #endregion

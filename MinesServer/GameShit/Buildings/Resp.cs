@@ -8,11 +8,15 @@ using System.Text;
 using System.Threading.Tasks;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List.Rich;
-
+using System.ComponentModel.DataAnnotations.Schema;
 namespace MinesServer.GameShit.Buildings
 {
     public class Resp : Pack
     {
+        public Resp()
+        {
+
+        }
         public Resp(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Resp) {
             cost = 1000;
             charge = 100;
@@ -23,7 +27,30 @@ namespace MinesServer.GameShit.Buildings
         }
         public void OnRespawn(Player p)
         {
-
+            if (ownerid > 0)
+            {
+                if (p.money > cost) p.money -= cost;
+                else
+                { 
+                    p.RandomResp();
+                    p.GetCurrentResp()?.OnRespawn(p);
+                }
+                if (charge > 0) charge--;
+                else
+                {
+                    p.RandomResp();
+                    p.GetCurrentResp()?.OnRespawn(p);
+                }
+                p.SendMoney();
+                using var db = new DataBase();
+                db.SaveChanges();
+                World.W.GetChunk(x, y).ResendPacks();
+            }
+        }
+        [NotMapped]
+        public override int off
+        {
+            get => (charge > 0 ? 1 : 0);
         }
         public (int,int) GetRandompoint()
         {
@@ -51,12 +78,13 @@ namespace MinesServer.GameShit.Buildings
                     World.SetCell(xx, yy, 35, true);
                 }
             }
+            base.Build();
         }
         public int charge { get; set; }
         public int maxcharge { get; set; }
         public int cost { get; set; }
         public int cid { get; set; }
-        public int moneyinside { get; set; }
+        public long moneyinside { get; set; }
 
         public override Window? GUIWin(Player p)
         {
@@ -69,7 +97,7 @@ namespace MinesServer.GameShit.Buildings
                         Text = " ",
                         RichList = new RichListConfig()
                         {
-                            Entries = [new RichListEntry(RichListEntryType.Fill, "Заряд", $"{(charge * 100) / maxcharge}#{charge}/{maxcharge}#1#fill:b_100#fill:b_1000#fill:b_max", "", "fuck", new Button("h", "kill", (args) => { return; }))
+                            Entries = [new RichListEntry(RichListEntryType.Fill, "Заряд", $"{(charge * 100) / maxcharge}#{charge}/{maxcharge}#1#fill:b_100#fill:b_1000#fill:b_max", "", "fuck", [new Button("h", "kill", (args) => { return; })])
                             ]
                         },
                         Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { Console.WriteLine(args.RichList); })]

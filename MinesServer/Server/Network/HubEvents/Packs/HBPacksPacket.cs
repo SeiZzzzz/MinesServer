@@ -1,14 +1,15 @@
-﻿using System.Runtime.InteropServices;
+﻿using MinesServer.Network.Constraints;
+using System.Runtime.InteropServices;
 
 namespace MinesServer.Network.HubEvents.Packs
 {
-    public readonly record struct HBPacksPacket(int block, HBPack[] packs) : IDataPart<HBPacksPacket>
+    public readonly record struct HBPacksPacket(int Block, HBPack[] Packs) : IHubPacket, IDataPart<HBPacksPacket>
     {
         public const string packetName = "O";
 
         public string PacketName => packetName;
 
-        public int Length => sizeof(int) + sizeof(ushort) + packs.Sum(x => x.Length);
+        public int Length => sizeof(int) + sizeof(ushort) + Packs.Sum(x => x.Length);
 
         public static HBPacksPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -27,16 +28,16 @@ namespace MinesServer.Network.HubEvents.Packs
 
         public int Encode(Span<byte> output)
         {
-            var tmpblock = block;
-            MemoryMarshal.Write(output, ref tmpblock);
+            var tmpblock = Block;
+            MemoryMarshal.Write(output, in tmpblock);
             var bytesWritten = sizeof(int);
-            var tmplen = Convert.ToUInt16(packs.Length);
-            MemoryMarshal.Write(output[4..], ref tmplen);
+            var tmplen = Convert.ToUInt16(Packs.Length);
+            MemoryMarshal.Write(output[4..], in tmplen);
             bytesWritten += sizeof(ushort);
             var caret = 0;
-            for (int i = 0; i < packs.Length; i++)
+            for (int i = 0; i < Packs.Length; i++)
             {
-                var length = packs[i].Encode(output[(6 + caret)..]);
+                var length = Packs[i].Encode(output[(6 + caret)..]);
                 caret += length;
             }
             bytesWritten += caret;

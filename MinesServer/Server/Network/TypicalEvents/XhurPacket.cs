@@ -1,6 +1,8 @@
-﻿namespace MinesServer.Network.TypicalEvents
+﻿using MinesServer.Network.Constraints;
+
+namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct XhurPacket : IDataPart<XhurPacket>
+    public readonly struct XhurPacket : ITypicalPacket, IDataPart<XhurPacket>
     {
         public const string packetName = "Xhur";
 
@@ -10,13 +12,13 @@
 
         public static XhurPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
-            if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'_' })) throw new InvalidPayloadException("Invalid payload");
+            if (!decodeFrom.SequenceEqual([(byte)'_'])) throw new InvalidPayloadException("Invalid payload");
             return new();
         }
 
         public int Encode(Span<byte> output)
         {
-            Span<byte> span = stackalloc byte[1] { (byte)'_' };
+            Span<byte> span = [(byte)'_'];
             span.CopyTo(output);
             return span.Length;
         }

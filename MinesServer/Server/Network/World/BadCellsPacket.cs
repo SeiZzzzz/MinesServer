@@ -1,10 +1,11 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using MoreLinq;
 using System.Text;
 
 namespace MinesServer.Network.World
 {
-    public readonly struct BadCellsPacket : IDataPart<BadCellsPacket>
+    public readonly struct BadCellsPacket : ITopLevelPacket, IDataPart<BadCellsPacket>
     {
         public readonly (int x, int y)[] cells;
 

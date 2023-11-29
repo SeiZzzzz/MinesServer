@@ -2,7 +2,7 @@
 
 namespace MinesServer.Network.HubEvents.Packs
 {
-    public readonly record struct HBPack(char code, int x, int y, int clan, int off) : IDataPart<HBPack>
+    public readonly record struct HBPack(char Code, int X, int Y, int ClanId, int Off) : IDataPart<HBPack>
     {
         public string PacketName => throw new NotImplementedException();
 
@@ -20,18 +20,18 @@ namespace MinesServer.Network.HubEvents.Packs
 
         public int Encode(Span<byte> output)
         {
-            output[0] = Convert.ToByte(code);
+            output[0] = Convert.ToByte(Code);
             var bytesWritten = sizeof(char);
-            var tmpx = Convert.ToUInt16(x);
-            var tmpy = Convert.ToUInt16(y);
-            var tmpclan = Convert.ToUInt16(clan);
-            MemoryMarshal.Write(output[1..], ref tmpx);
+            var tmpx = Convert.ToUInt16(X);
+            var tmpy = Convert.ToUInt16(Y);
+            var tmpclan = Convert.ToUInt16(ClanId);
+            MemoryMarshal.Write(output[1..], in tmpx);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[3..], ref tmpy);
+            MemoryMarshal.Write(output[3..], in tmpy);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[5..], ref tmpclan);
+            MemoryMarshal.Write(output[5..], in tmpclan);
             bytesWritten += sizeof(ushort);
-            output[7] = Convert.ToByte(off);
+            output[7] = Convert.ToByte(Off);
             return ++bytesWritten;
         }
     }

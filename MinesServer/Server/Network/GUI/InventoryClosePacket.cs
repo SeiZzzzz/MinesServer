@@ -1,6 +1,8 @@
-﻿namespace MinesServer.Network.GUI
+﻿using MinesServer.Network.Constraints;
+
+namespace MinesServer.Network.GUI
 {
-    public readonly struct InventoryClosePacket : IDataPart<InventoryClosePacket>
+    public readonly struct InventoryClosePacket : IInventoryPacket, IDataPart<InventoryClosePacket>
     {
         public const string packetName = "close";
 

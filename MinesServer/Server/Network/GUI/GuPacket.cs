@@ -1,6 +1,8 @@
-﻿namespace MinesServer.Network.GUI
+﻿using MinesServer.Network.Constraints;
+
+namespace MinesServer.Network.GUI
 {
-    public readonly struct GuPacket : IDataPart<GuPacket>
+    public readonly struct GuPacket : ITopLevelPacket, IDataPart<GuPacket>
     {
         public const string packetName = "Gu";
 
@@ -10,13 +12,13 @@
 
         public static GuPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
-            if (!decodeFrom.SequenceEqual(stackalloc byte[1] { (byte)'_' })) throw new InvalidPayloadException("Invalid payload");
+            if (!decodeFrom.SequenceEqual([(byte)'_'])) throw new InvalidPayloadException("Invalid payload");
             return new();
         }
 
         public int Encode(Span<byte> output)
         {
-            Span<byte> span = stackalloc byte[1] { (byte)'_' };
+            Span<byte> span = [(byte)'_'];
             span.CopyTo(output);
             return span.Length;
         }

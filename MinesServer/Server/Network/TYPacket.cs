@@ -1,25 +1,21 @@
-﻿using MinesServer.Network.TypicalEvents;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Network.TypicalEvents;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MinesServer.Network
 {
-    public readonly struct TYPacket : IDataPart<TYPacket>
+    public readonly record struct TYPacket(uint EventTime, uint X, uint Y, ITypicalPacket Data) : ITopLevelPacket, IDataPart<TYPacket>
     {
         const int eventTypeLength = 4;
         const int eventTimeLength = sizeof(int);
         const int eventLocationLength = sizeof(uint);
 
-        public readonly uint eventTime;
-        public readonly uint x;
-        public readonly uint y;
-        public readonly IDataPartBase data;
-
         public const string packetName = "TY";
 
         public string PacketName => packetName;
 
-        public string EventType => data.PacketName;
+        public string EventType => Data.PacketName;
 
         private static PacketDecoder? GetDecoder(string packetName) => packetName switch
         {
@@ -73,15 +69,7 @@ namespace MinesServer.Network
             var eventTime = MemoryMarshal.Read<uint>(input[caret..(caret += eventTimeLength)]);
             var x = MemoryMarshal.Read<uint>(input[caret..(caret += eventLocationLength)]);
             var y = MemoryMarshal.Read<uint>(input[caret..(caret += eventLocationLength)]);
-            return new(eventTime, x, y, decoder(input[caret..]));
-        }
-
-        public TYPacket(uint eventTime, uint x, uint y, IDataPartBase data)
-        {
-            this.eventTime = eventTime;
-            this.x = x;
-            this.y = y;
-            this.data = data;
+            return new(eventTime, x, y, (ITypicalPacket)decoder(input[caret..]));
         }
 
         public int Encode(Span<byte> output)
@@ -90,19 +78,19 @@ namespace MinesServer.Network
             if (GetDecoder(EventType) is null) throw new InvalidPayloadException($"Invalid event type: {EventType}");
             var caret = eventTypeLength;
             var bytesWritten = Encoding.UTF8.GetBytes(EventType, output);
-            var et = eventTime;
+            var et = EventTime;
             MemoryMarshal.Write(output[caret..(caret += eventTimeLength)], in et);
             bytesWritten += eventTimeLength;
-            var tmpx = x;
+            var tmpx = X;
             MemoryMarshal.Write(output[caret..(caret += eventLocationLength)], in tmpx);
             bytesWritten += eventLocationLength;
-            var tmpy = y;
+            var tmpy = Y;
             MemoryMarshal.Write(output[caret..(caret += eventLocationLength)], in tmpy);
             bytesWritten += eventLocationLength;
-            bytesWritten += data.Encode(output[caret..(caret + data.Length)]);
+            bytesWritten += Data.Encode(output[caret..(caret + Data.Length)]);
             return bytesWritten;
         }
 
-        public int Length => eventTypeLength + eventTimeLength + eventLocationLength * 2 + data.Length;
+        public int Length => eventTypeLength + eventTimeLength + eventLocationLength * 2 + Data.Length;
     }
 }

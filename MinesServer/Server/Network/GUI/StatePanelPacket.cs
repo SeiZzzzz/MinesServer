@@ -1,9 +1,10 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.GUI
 {
-    public readonly struct StatePanelPacket : IDataPart<StatePanelPacket>
+    public readonly struct StatePanelPacket : ITopLevelPacket, IDataPart<StatePanelPacket>
     {
         public readonly bool isClear;
 
@@ -28,11 +29,11 @@ namespace MinesServer.Network.GUI
             isClear = false;
         }
 
-        public int Length => isClear ? 7 : 2 + Encoding.UTF8.GetByteCount(tag) + text.Length - 1 + text.Sum(Encoding.UTF8.GetByteCount) + color.Value.Digits();
+        public int Length => isClear ? 7 : 2 + Encoding.UTF8.GetByteCount(tag) + text.Length - 1 + text.Sum(Encoding.UTF8.GetByteCount) + color!.Value.Digits();
 
         public static StatePanelPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
-            if (decodeFrom.SequenceEqual(stackalloc byte[7] { (byte)'C', (byte)'L', (byte)'E', (byte)'A', (byte)'R', (byte)'#', (byte)'#' })) return new();
+            if (decodeFrom.SequenceEqual([(byte)'C', (byte)'L', (byte)'E', (byte)'A', (byte)'R', (byte)'#', (byte)'#'])) return new();
             var parts = Encoding.UTF8.GetString(decodeFrom).Split('#', StringSplitOptions.RemoveEmptyEntries);
             return new(parts[0], parts[1].Split('~').ToArray(), int.Parse(parts[2]));
         }
@@ -41,7 +42,7 @@ namespace MinesServer.Network.GUI
         {
             if (isClear)
             {
-                Span<byte> span = stackalloc byte[7] { (byte)'C', (byte)'L', (byte)'E', (byte)'A', (byte)'R', (byte)'#', (byte)'#' };
+                Span<byte> span = [(byte)'C', (byte)'L', (byte)'E', (byte)'A', (byte)'R', (byte)'#', (byte)'#'];
                 span.CopyTo(output);
                 return span.Length;
             }

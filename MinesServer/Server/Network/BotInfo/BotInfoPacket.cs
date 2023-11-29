@@ -1,16 +1,17 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using SimpleJSON;
 using System.Text;
 
 namespace MinesServer.Network.BotInfo
 {
-    public readonly record struct BotInfoPacket(string nickname, int x, int y, int bid) : IDataPart<BotInfoPacket>
+    public readonly record struct BotInfoPacket(string Nickname, int X, int Y, int BotID) : ITopLevelPacket, IDataPart<BotInfoPacket>
     {
         public const string packetName = "BI";
 
         public string PacketName => packetName;
 
-        public int Length => 27 + Encoding.UTF8.GetByteCount(nickname) + x.Digits() + y.Digits() + bid.Digits();
+        public int Length => 27 + Encoding.UTF8.GetByteCount(Nickname) + X.Digits() + Y.Digits() + BotID.Digits();
 
         public static BotInfoPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
@@ -18,6 +19,6 @@ namespace MinesServer.Network.BotInfo
             return new(obj["name"], obj["x"], obj["y"], obj["id"]);
         }
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($$"""{"x":{{x}},"y":{{y}},"id":{{bid}},"name":"{{nickname}}"}""", output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($$"""{"x":{{X}},"y":{{Y}},"id":{{BotID}},"name":"{{Nickname}}"}""", output);
     }
 }

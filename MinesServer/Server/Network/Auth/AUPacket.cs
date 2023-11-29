@@ -1,9 +1,10 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.Auth
 {
-    public readonly struct AUPacket : IDataPart<AUPacket>
+    public readonly struct AUPacket : ITopLevelPacket, IDataPart<AUPacket>
     {
         public enum AuthType
         {

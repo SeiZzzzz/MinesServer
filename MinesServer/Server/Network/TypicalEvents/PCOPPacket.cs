@@ -1,22 +1,19 @@
-﻿using MinesServer.Utils;
+﻿using MinesServer.Network.Constraints;
+using MinesServer.Utils;
 using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
 {
-    public readonly struct PCOPPacket : IDataPart<PCOPPacket>
+    public readonly record struct PCOPPacket(int Id) : ITypicalPacket, IDataPart<PCOPPacket>
     {
-        public readonly int id;
-
         public const string packetName = "PCOP";
 
         public string PacketName => packetName;
 
-        public PCOPPacket(int id) => this.id = id;
-
-        public int Length => id.Digits();
+        public int Length => Id.Digits();
 
         public static PCOPPacket Decode(ReadOnlySpan<byte> decodeFrom) => new(int.Parse(Encoding.UTF8.GetString(decodeFrom)));
 
-        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(id.ToString(), output);
+        public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes(Id.ToString(), output);
     }
 }
