@@ -96,7 +96,11 @@ namespace MinesServer.GameShit.GUI.Horb.List.Rich
 
         public static RichListEntry ButtonLine(string label, Button button) => new()
         {
+            Type = RichListEntryType.Button,
+            Action = "",
+            InitialValue = "",
             Label = label,
+            Values = button.Label,
             Buttons = [button]
         };
 

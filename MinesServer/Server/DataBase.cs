@@ -35,11 +35,7 @@ namespace MinesServer.Server
         {
             using var db = new DataBase();
             var p = db.players.SingleOrDefault(p => p.Id == id);
-            if (p != default(Player))
-            {
-                return p;
-            }
-            return null;
+            return p!;
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -55,7 +51,7 @@ namespace MinesServer.Server
             using var db = new DataBase();
             try
             {
-                foreach(var i in db.boxes)
+                foreach (var i in db.boxes)
                 {
                     World.W.GetChunk(i.x, i.y).Load();
                     World.SetCell(i.x, i.y, 90);

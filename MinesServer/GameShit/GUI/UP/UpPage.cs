@@ -58,7 +58,7 @@ namespace MinesServer.GameShit.GUI.UP
                     if (slot > SlotAmount) throw new InvalidPayloadException("Tried to install a skill into non-existent slot");
                     if (slot != SelectedSlot) throw new InvalidPayloadException("Tried to install a skill into a slot that is not currently selected");
                     var skill = Mines3Enums.SkillFromCode(match.Groups[1].Value);
-                    if(skill == SkillType.Unknown) throw new InvalidPayloadException("Invalid skill type: " + match.Groups[1].Value);
+                    if (skill == SkillType.Unknown) throw new InvalidPayloadException("Invalid skill type: " + match.Groups[1].Value);
                     OnInstall(slot, skill);
                     return true;
                 }

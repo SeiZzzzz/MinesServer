@@ -1,5 +1,4 @@
-﻿using Microsoft.Identity.Client;
-using RT.Util.Streams;
+﻿using RT.Util.Streams;
 
 namespace MinesServer.GameShit
 {
@@ -36,30 +35,30 @@ namespace MinesServer.GameShit
                 Buffer.BlockCopy(dur, 0, durbytes, 0, durbytes.Length);
                 dstream.Write(durbytes);
             }
-            
+
         }
         public void LoadChunk(Chunk ch)
         {
             stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-                stream.Read(ch.wcells);
-                rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-                rstream.Read(ch.rcells);
-                dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
-                var durbytes = new byte[ch.durcells.Length * 4];
-                dstream.Read(durbytes);
-                Buffer.BlockCopy(durbytes, 0, ch.durcells, 0, ch.durcells.Length);
+            stream.Read(ch.wcells);
+            rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+            rstream.Read(ch.rcells);
+            dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
+            var durbytes = new byte[ch.durcells.Length * 4];
+            dstream.Read(durbytes);
+            Buffer.BlockCopy(durbytes, 0, ch.durcells, 0, ch.durcells.Length);
         }
         public void SaveAllChunks()
         {
-                for (int x = 0; x < World.W.chunksCountW; x++)
-                {
+            for (int x = 0; x < World.W.chunksCountW; x++)
+            {
 
-                    for (int y = 0; y < World.W.chunksCountH; y++)
-                    {
-                        var ch = World.W.chunks[x, y];
-                        ch.Save();
-                    }
+                for (int y = 0; y < World.W.chunksCountH; y++)
+                {
+                    var ch = World.W.chunks[x, y];
+                    ch.Save();
                 }
+            }
         }
         private BinaryStream stream;
         private BinaryStream rstream;

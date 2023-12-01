@@ -34,12 +34,13 @@ namespace MinesServer.GameShit.GUI.Horb
                     return true;
 
             foreach (var i in RichList?.Entries ?? Enumerable.Empty<RichListEntry>())
-                switch (i.Type) {
+                switch (i.Type)
+                {
                     case RichListEntryType.Button: if (i.Buttons![0].ProcessButton(action)) return true; break;
                     case RichListEntryType.Fill: if (i.Buttons!.Any(btn => btn.ProcessButton(action))) return true; break;
                     case RichListEntryType.Card: if (i.Cards!.Any(e => e.Button.ProcessButton(action))) return true; break;
                     default: break;
-                }   
+                }
 
             foreach (var i in ClanList ?? Enumerable.Empty<ClanListEntry>())
                 if (i.Button.ProcessButton(action))
@@ -55,7 +56,7 @@ namespace MinesServer.GameShit.GUI.Horb
             if (OnInventory is not null && match.Success)
             {
                 if (int.TryParse(match.Groups[1].Value, out var code)) OnInventory?.Invoke(code);
-                OnInventory?.Invoke((int)Mines3Enums.SkillFromCode(match.Groups[1].Value));
+                else OnInventory?.Invoke((int)Mines3Enums.SkillFromCode(match.Groups[1].Value));
                 return true;
             }
 

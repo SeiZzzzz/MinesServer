@@ -1,11 +1,5 @@
 ﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using MinesServer.GameShit.GUI.Horb.List.Rich;
 using MinesServer.Network;
 using System.ComponentModel.DataAnnotations;
@@ -47,14 +41,15 @@ namespace MinesServer.GameShit
                             Entries = [new RichListEntry(RichListEntryType.DropDown, "хуй", "хуй", "хуй", "хуй")]
                         },
                         Text = "\nИспользуйте полосы прокрутки, чтобы выбрать сколько положить в бокс\",\r\n                    \"ВНИМАНИЕ! При создании бокса теряется нихуя кристаллов\n",
-                        Buttons = [new Button("<color=green>В БОКС</color>", $"hui", (args) => {  })]
+                        Buttons = [new Button("<color=green>В БОКС</color>", $"hui", (args) => { })]
                     }
-                },new Tab()
-                {
-                    Label = "хуй1",
-                    Action = "hots"
-                    
                 },
+                    new Tab()
+                    {
+                        Label = "хуй1",
+                        Action = "hots"
+
+                    },
                     new Tab()
                     {
                         Label = "хуй3",

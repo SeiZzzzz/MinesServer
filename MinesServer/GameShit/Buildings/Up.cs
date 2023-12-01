@@ -1,15 +1,7 @@
 ﻿using MinesServer.Enums;
 using MinesServer.GameShit.GUI;
-using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.UP;
-using MinesServer.Network;
 using MinesServer.Server;
-using RT.Util.ExtensionMethods;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinesServer.GameShit.Buildings
 {
@@ -19,7 +11,8 @@ namespace MinesServer.GameShit.Buildings
         public int hp { get; set; }
         public long moneyinside { get; set; }
         #endregion
-        public Up(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Up) {
+        public Up(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Up)
+        {
             using var db = new DataBase();
             hp = 100;
             db.ups.Add(this);
@@ -29,15 +22,17 @@ namespace MinesServer.GameShit.Buildings
         public override Window? GUIWin(Player p)
         {
             var onskill = (int arg) => { p.skillslist.selectedslot = arg; p.win = GUIWin(p); p.SendWindow(); };
-            var oninstall = (int slot, SkillType skilltype) => {
-                p.win.CurrentTab.Replace(new UpPage() {
+            var oninstall = (int slot, SkillType skilltype) =>
+            {
+                p.win?.CurrentTab.Replace(new UpPage()
+                {
                     Skills = p.skillslist.GetSkills(),
                     OnSkill = onskill,
                     SlotAmount = 25,
                     Title = "титле",
                     SkillIcon = skilltype,
                     Text = "описание и цена установки",
-                    Button = new Button("Установить", "confirm", (args) => { p.skillslist.InstallSkill(skilltype.GetCode(), p.skillslist.selectedslot, p);p.win = GUIWin(p);p.SendWindow(); })
+                    Button = new Button("Установить", "confirm", (args) => { p.skillslist.InstallSkill(skilltype.GetCode(), p.skillslist.selectedslot, p); p.win = GUIWin(p); p.SendWindow(); })
                 });
                 p.SendWindow();
             };
@@ -48,9 +43,9 @@ namespace MinesServer.GameShit.Buildings
                 SkillsToInstall = null,
                 SlotAmount = 25,
                 OnSkill = onskill,
-                Title = "титле",
-                Text = "четотам в начале у мячина",
-                Button = new Button("buyslot - cost", "buyslot", (args) => { }),
+                Title = "xxx",
+                Text = "Выберите скилл или пустой слот",
+                Button = new Button("buyslotcost", "buyslot", (args) => { }),
                 SkillIcon = SkillType.Unknown
             } : new UpPage()
             {
@@ -68,7 +63,8 @@ namespace MinesServer.GameShit.Buildings
             };
             return new Window()
             {
-                Tabs = [new Tab() {
+                Tabs = [new Tab()
+                {
                     Action = "хй",
                     Label = "хуху",
                     InitialPage = uppage

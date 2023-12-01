@@ -135,7 +135,6 @@ namespace MinesServer.Server
         }
         public void EndCreateAndInit(string passwd, Session initiator)
         {
-            complited = true;
             using var db = new DataBase();
             temp.CreatePlayer();
             db.players.Add(temp);
@@ -146,6 +145,7 @@ namespace MinesServer.Server
             initiator.player = temp;
             initiator.SendU(new AHPacket(temp.Id, temp.hash));
             initiator.player.Init();
+            complited = true;
         }
         public void TryToFindByNick(string name, Session initiator)
         {

@@ -43,7 +43,7 @@ namespace MinesServer.GameShit.GUI
                             args.PaintGrid = match.Groups[ind++].Value.Select(x => x != '0').ToArray();
                             break;
                         case ActionMacros.RichList:
-                            args.RichList = match.Groups[ind++].Value.Split('#').Select(x => x.Split(':')).ToDictionary(x => x[0], x => x[1]);
+                            args.RichList = match.Groups[ind++].Value.Split('#',StringSplitOptions.RemoveEmptyEntries).Select(x => x.Split(':')).ToDictionary(x => x[0], x => x[1]);
                             break;
                         default: throw new ArgumentOutOfRangeException("macros", $"После добавления макроса в {nameof(_macros)} нужно добавить его и в этот свитч тоже. Переделывай :)");
                     }

@@ -1,12 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore.ValueGeneration.Internal;
-using MinesServer.GameShit.Buildings;
+﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Generator;
-using MinesServer.Network;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
 using MinesServer.Server;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace MinesServer.GameShit
 {
@@ -62,14 +59,14 @@ namespace MinesServer.GameShit
                 {
                     var x = r.Next(width);
                     var y = 5;
-                    if (CanBuildPack(-2, 6, -2, 3, x, y, null,true))
-                        {
+                    if (CanBuildPack(-2, 6, -2, 3, x, y, null, true))
+                    {
                         new Resp(x, y, 0).Build();
 
-                            }
+                    }
                 }
             }
-            
+
         }
         public void CreateChunks()
         {
@@ -91,22 +88,22 @@ namespace MinesServer.GameShit
                 }
             }
         }
-        public bool CanBuildPack(int left,int right,int bottom,int top,int x,int y,Player player,bool ignoreplace = false)
+        public bool CanBuildPack(int left, int right, int bottom, int top, int x, int y, Player player, bool ignoreplace = false)
         {
             var h = 0;
             List<IHubPacket> packets = new();
-            for (int cx = left;cx <= right;cx++)
+            for (int cx = left; cx <= right; cx++)
             {
                 for (int cy = bottom; cy <= top; cy++)
                 {
                     var p = GetProp(GetCell(x + cx, y + cy));
-                    if (!ValidCoord(x + cx,y + cy) || (ignoreplace && (p.is_destructible || PackPart(x + cx, y + cy))) || ((PackPart(x + cx, y + cy) || !p.can_place_over || !p.isEmpty) && !ignoreplace))
+                    if (!ValidCoord(x + cx, y + cy) || (ignoreplace && (p.is_destructible || PackPart(x + cx, y + cy))) || ((PackPart(x + cx, y + cy) || !p.can_place_over || !p.isEmpty) && !ignoreplace))
                     {
                         if (player != null)
                         {
-                                packets.Add(new HBFXPacket(x + cx, y + cy, 0));
+                            packets.Add(new HBFXPacket(x + cx, y + cy, 0));
                         }
-                        
+
                         h++;
                     }
                 }
@@ -115,7 +112,7 @@ namespace MinesServer.GameShit
             {
                 if (packets.Count > 0)
                 {
-                        player.connection.SendB(new HBPacket(packets.ToArray()));
+                    player.connection.SendB(new HBPacket(packets.ToArray()));
                 }
                 return false;
             }
@@ -127,7 +124,7 @@ namespace MinesServer.GameShit
             Road,
             CellAndRoad
         }
-        public static bool DamageCell(int x,int y,float dmg)
+        public static bool DamageCell(int x, int y, float dmg)
         {
             var d = GetDurability(x, y);
             if ((d - dmg) <= 0)
@@ -190,8 +187,20 @@ namespace MinesServer.GameShit
         {
             return CellsSerializer.cells[type];
         }
-        public static void MoveCell(int x,int y,int plusx,int plusy)
+        public static bool IsEmpty(int x, int y)
         {
+            return GetProp(x, y).isEmpty && !PackPart(x, y);
+        }
+        public static Cell GetProp(int x, int y)
+        {
+            return CellsSerializer.cells[GetCell(x, y)];
+        }
+        public static void MoveCell(int x, int y, int plusx, int plusy)
+        {
+            if (!W.ValidCoord(x + plusx, y + plusy))
+            {
+                return;
+            }
             var cell = GetCell(x, y);
             var durability = GetDurability(x, y);
             Destroy(x, y, destroytype.Cell);
@@ -205,9 +214,9 @@ namespace MinesServer.GameShit
                 return;
             }
             var ch = W.GetChunk(x, y);
-            ch.SetCell(x - ch.WorldX, y - ch.WorldY, cell,packmesh);
+            ch.SetCell(x - ch.WorldX, y - ch.WorldY, cell, packmesh);
         }
-        public static bool PackPart(int x,int y)
+        public static bool PackPart(int x, int y)
         {
             if (!W.ValidCoord(x, y))
             {
@@ -220,16 +229,16 @@ namespace MinesServer.GameShit
             }
             return ch.packsprop[(x - ch.WorldX) + (y - ch.WorldY) * 32];
         }
-        public static void AddPack(int x,int y,Pack p)
+        public static void AddPack(int x, int y, Pack p)
         {
             if (!W.ValidCoord(x, y))
             {
                 return;
             }
             var ch = W.GetChunk(x, y);
-            ch.SetPack(x - ch.WorldX, y - ch.WorldY,p);
+            ch.SetPack(x - ch.WorldX, y - ch.WorldY, p);
         }
-        public static void RemovePack(int x,int y,Player p = null)
+        public static void RemovePack(int x, int y, Player p = null)
         {
 
         }
@@ -268,6 +277,63 @@ namespace MinesServer.GameShit
             }
             return st;
         }
+        public static void C190Shot(int x, int y, Player p)
+        {
+            int shotx = 0;
+            int shoty = 0;
+            switch (p.dir)
+            {
+                case 0:
+                    shoty = y + 9;
+                    p.SendDFToBots(7, x, shoty, 0, 1);
+                    for (; y <= shoty; y++)
+                    {
+                        var c = GetCell(x, y);
+                        if (!isAlive(c) && GetProp(c).is_diggable)
+                        {
+                            DamageCell(x, y, 50);
+                        }
+                    }
+                    break;
+                case 1:
+                    shotx = x - 9;
+                    p.SendDFToBots(7, shotx, y, 0, 1);
+                    for (; x >= shotx; x--)
+                    {
+                        var c = GetCell(x, y);
+                        if (!isAlive(c) && GetProp(c).is_diggable)
+                        {
+                            DamageCell(x, y, 50);
+                        }
+                    }
+                    break;
+                case 2:
+                    shoty = y - 9;
+                    p.SendDFToBots(7, x, shoty, 0, 1);
+                    for (; y >= shoty; y--)
+                    {
+                        var c = GetCell(x, y);
+                        if (!isAlive(c) && GetProp(c).is_diggable)
+                        {
+                            DamageCell(x, y, 50);
+                        }
+                    }
+                    break;
+                case 3:
+                    shotx = x + 9;
+                    p.SendDFToBots(7, shotx, y, 0, 1);
+                    for (; x <= shotx; x++)
+                    {
+                        var c = GetCell(x, y);
+                        if (!isAlive(c) && GetProp(c).is_diggable)
+                        {
+                            DamageCell(x, y, 50);
+                        }
+                    }
+                    break;
+
+            }
+        }
         public static void Boom(int x, int y)
         {
             var ch = W.GetChunk(x, y);
@@ -287,7 +353,7 @@ namespace MinesServer.GameShit
                             var c = GetCell(x + _x, y + _y);
                             if (GetProp(c).is_destructible && !PackPart(x + _x, y + _y))
                             {
-                                Destroy(x + _x, y + _y,destroytype.CellAndRoad);
+                                Destroy(x + _x, y + _y, destroytype.CellAndRoad);
                             }
                         }
                     }
@@ -338,6 +404,41 @@ namespace MinesServer.GameShit
                 ch.Update();
             }
         }
+        public static void Update()
+        {
+            if (DateTime.Now - lastcryupdate >= TimeSpan.FromSeconds(30))
+            {
+                for (int i = 0; i < W.cryscostmod.Length; i++)
+                {
+                    var p = ((W.summary[i] * W.summary.Sum()) / 100);
+                    if (p > 0)
+                    {
+                        if (p > 20 && (W.cryscostbase[i] + W.cryscostmod[i]) > W.cryscostbase[i])
+                        {
+                            W.cryscostmod[i] -= 1;
+                        }
+                        else if (p < 10 && (W.cryscostbase[i] + W.cryscostmod[i]) < 70)
+                        {
+                            W.cryscostmod[i] += 1;
+                        }
+                    }
+                }
+                W.summary = new long[6];
+                lastcryupdate = DateTime.Now;
+            }
+        }
+        public static DateTime lastcryupdate = DateTime.MinValue;
+        public static int GetCrysCost(int i)
+        {
+            return W.cryscostbase[i] + W.cryscostmod[i];
+        }
+        public static void AddDob(int t, long dob)
+        {
+            W.summary[t] += dob;
+        }
+        public int[] cryscostmod = new int[6];
+        public int[] cryscostbase = { 8, 16, 22, 26, 24, 40 };
+        public long[] summary = new long[6];
         public Chunk GetChunk(int x, int y)
         {
             var pos = GetChunkPosByCoords(x, y);

@@ -34,7 +34,8 @@ namespace MinesServer
         }
         private static void Loop()
         {
-            commands.Add("save", () => {
+            commands.Add("save", () =>
+            {
                 using var db = new DataBase();
                 db.SaveChanges();
                 World.W.map.SaveAllChunks();

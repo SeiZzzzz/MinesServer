@@ -1,6 +1,5 @@
 ﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
-using MinesServer.Network;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
@@ -16,7 +15,7 @@ namespace MinesServer.GameShit
             {
                 if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1], out var i) && int.TryParse(arg.Split(" ")[2], out var c))
                 {
-                    p.inventory.SetItem(i, c);
+                    p.inventory[i] = c;
                     AddConsoleLine(p, "ok");
                     p.SendInventory();
                 }

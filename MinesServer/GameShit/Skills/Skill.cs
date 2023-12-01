@@ -1,6 +1,5 @@
 ﻿using MinesServer.Enums;
 using MinesServer.Network.GUI;
-using MinesServer.Server;
 
 namespace MinesServer.GameShit.Skills
 {
@@ -12,17 +11,17 @@ namespace MinesServer.GameShit.Skills
         public float GetEffect()
         {
             effectfunc ??= PlayerSkills.skillz.First(i => i.type == type).effectfunc;
-            return (float)Math.Round(effectfunc(lvl, this),2);
+            return (float)Math.Round(effectfunc(lvl), 2);
         }
         public float GetExp()
         {
             expfunc ??= PlayerSkills.skillz.First(i => i.type == type).expfunc;
-            return expfunc(lvl, this);
+            return expfunc(lvl);
         }
         public float GetCost()
         {
             costfunc ??= PlayerSkills.skillz.First(i => i.type == type).costfunc;
-            return costfunc(lvl, this);
+            return costfunc(lvl);
         }
         public Skill Clone()
         {
@@ -91,10 +90,10 @@ namespace MinesServer.GameShit.Skills
         [NonSerialized]
         public SkillEffectType effecttype;
         [NonSerialized]
-        public Func<int, Skill, float> expfunc;
+        public Func<int, float> expfunc;
         [NonSerialized]
-        public Func<int, Skill, float> effectfunc;
+        public Func<int, float> effectfunc;
         [NonSerialized]
-        public Func<int, Skill, float> costfunc;
+        public Func<int, float> costfunc;
     }
 }

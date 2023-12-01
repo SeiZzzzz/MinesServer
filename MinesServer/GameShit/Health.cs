@@ -1,7 +1,5 @@
-﻿using MinesServer.GameShit.Buildings;
-using MinesServer.GameShit.Skills;
+﻿using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
-using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit
@@ -67,13 +65,13 @@ namespace MinesServer.GameShit
                 }
                 else if (c != null && c.UseSkill(SkillEffectType.OnHurt, player))
                 {
-                     c.AddExp(player);
+                    c.AddExp(player);
                 }
             }
             if (HP - d > 0)
             {
                 HP -= d;
-                player.SendDFToBots(6, 0, 0, 0, 0);
+                player.SendDFToBots(6, 0, 0, player.Id, 0);
             }
             else
             {

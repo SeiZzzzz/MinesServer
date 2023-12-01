@@ -1,9 +1,4 @@
 ﻿using MinesServer.Server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinesServer.GameShit.Marketext
 {
@@ -15,7 +10,7 @@ namespace MinesServer.GameShit.Marketext
         public int num { get; set; }
         public long cost { get; set; }
         public DateTime bettime { get; set; }
-        public void Bet(Player p,long money)
+        public void Bet(Player p, long money)
         {
             if ((buyerid > 0 ? Math.Ceiling(cost + (cost * 0.01f)) : cost) > money || p.money < cost)
             {
@@ -44,11 +39,11 @@ namespace MinesServer.GameShit.Marketext
                 var buyer = MServer.GetPlayer(buyerid);
                 if (buyer != null && buyer.inventory != null)
                 {
-                    buyer.inventory.items[itemid] += num;
+                    buyer.inventory[itemid] += num;
                 }
                 else
                 {
-                    db.inventories.First(i => i.Id == buyerid).items[itemid] += num;
+                    db.inventories.First(i => i.Id == buyerid)[itemid] += num;
                 }
                 var initiator = MServer.GetPlayer(initiatorid);
                 if (initiator != null)

@@ -92,10 +92,10 @@ namespace MinesServer.Server
                 case INCLPacket incl: Incl(packet, incl); break;
                 case INUSPacket inus: Inus(packet, inus); break;
                 case PongPacket pi: Ping(packet, pi); break;
-                case DPBXPacket dpbx: Dpbx(packet, dpbx);break;
-                case SettPacket sett: Sett(packet, sett);break;
-                case ADMNPacket admn: ADMN(packet, admn);break;
-                case RESPPacket res: Res(packet, res);break;
+                case DPBXPacket dpbx: Dpbx(packet, dpbx); break;
+                case SettPacket sett: Sett(packet, sett); break;
+                case ADMNPacket admn: ADMN(packet, admn); break;
+                case RESPPacket res: Res(packet, res); break;
                 default:
                     // Invalid event type
                     break;
@@ -148,29 +148,41 @@ namespace MinesServer.Server
         }
         private void DigHandler(TYPacket parent, XdigPacket packet)
         {
-            if (player != null && player.win == null)
+            player.AddAciton(() =>
             {
-                 player.dir = packet.Direction;
-                 player.Bz();
-            }
+                if (player != null && player.win == null)
+                {
+                    player.dir = packet.Direction;
+                    player.Bz();
+                    player.AddDelay(1);
+                }
+            });
         }
         private void GeoHandler(TYPacket parent, XgeoPacket packet)
         {
-            if (player != null && player.win == null)
+            player.AddAciton(() =>
             {
+                if (player != null && player.win == null)
+                {
                     player.Geo();
-            }
+                    player.AddDelay(1);
+                }
+            });
         }
         private void BuildHandler(TYPacket parent, XbldPacket packet)
         {
             if (player != null && player.win == null)
             {
-                int x = (int)(parent.X + (packet.Direction == 3 ? 1 : packet.Direction == 1 ? -1 : 0));
-                int y = (int)(parent.Y + (packet.Direction == 0 ? 1 : packet.Direction == 2 ? -1 : 0));
-                if (World.W.ValidCoord(x, y))
+                player.AddAciton(() =>
                 {
-                    //bld
-                }
+                    int x = (int)(parent.X + (packet.Direction == 3 ? 1 : packet.Direction == 1 ? -1 : 0));
+                    int y = (int)(parent.Y + (packet.Direction == 0 ? 1 : packet.Direction == 2 ? -1 : 0));
+                    if (World.W.ValidCoord(x, y))
+                    {
+                        //bld
+                    }
+                    player.AddDelay(1);
+                });
             }
         }
         private void AutoDiggHandler(TYPacket parent, TADGPacket packet)
@@ -182,8 +194,12 @@ namespace MinesServer.Server
         {
             if (player != null)
             {
-                var dir = packet.Direction;
-                player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
+                player.AddAciton(() =>
+                {
+                    var dir = packet.Direction;
+                    player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
+                    player.AddDelay(0.0001);
+                });
             }
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)

@@ -4,7 +4,6 @@ using MinesServer.GameShit.GUI.Horb;
 using MinesServer.Network.GUI;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Runtime.CompilerServices;
 
 namespace MinesServer.GameShit
 {
@@ -86,16 +85,20 @@ namespace MinesServer.GameShit
             {
                 ShowTabs = false,
                 Title = "Создание бокса",
-                Tabs = [new Tab() {
+                Tabs = [new Tab()
+                {
                     Label = "хуй",
                     Action = "dropbox",
                     InitialPage = new Page()
                     {
-                        CrystalConfig = new CrystalConfig("  останется", "будет в боксе", [new CrysLine("", 0, 0, cry[0],0), new CrysLine("", 0, 0, cry[1], 0),
-                            new CrysLine("", 0, 0, cry[2], 0), new CrysLine("", 0, 0, cry[3], 0),
-                            new CrysLine("", 0, 0, cry[4], 0),new CrysLine("", 0, 0, cry[5], 0)]),
+                        CrystalConfig = new CrystalConfig("  останется", "будет в боксе", [new CrysLine("", 0, 0, cry[0], 0),
+                            new CrysLine("", 0, 0, cry[1], 0),
+                            new CrysLine("", 0, 0, cry[2], 0),
+                            new CrysLine("", 0, 0, cry[3], 0),
+                            new CrysLine("", 0, 0, cry[4], 0),
+                            new CrysLine("", 0, 0, cry[5], 0)]),
                         Text = "\nИспользуйте полосы прокрутки, чтобы выбрать сколько положить в бокс\",\r\n                    \"ВНИМАНИЕ! При создании бокса теряется нихуя кристаллов\n",
-                        Buttons = [new Button("<color=green>В БОКС</color>", $"dropbox:{ActionMacros.CrystalSliders}",(args) => { player.BBox(args.CrystalSliders); })]
+                        Buttons = [new Button("<color=green>В БОКС</color>", $"dropbox:{ActionMacros.CrystalSliders}", (args) => { player.BBox(args.CrystalSliders); })]
                     }
                 }]
             };

@@ -1,10 +1,8 @@
 ﻿using MinesServer.GameShit.Buildings;
-using MinesServer.Network;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Windows.Controls;
 namespace MinesServer.GameShit
 {
     public class Inventory
@@ -67,26 +65,52 @@ namespace MinesServer.GameShit
                     World.Boom((int)p.GetDirCord().X,(int)p.GetDirCord().Y);
                         return true;
                         }
+                },
+                {
+                    40,(p) =>{
+                    World.C190Shot((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
+                        return true;
+                        }
                 }
             };
         }
-        public void SetItem(int id, int col)
+        public int this[int index]
         {
-            var x = items;
-            x[id] = col;
-            items = x;
-            using var db = new DataBase();
-            db.SaveChanges();
+            get
+            {
+                if (items == null)
+                {
+                    var splited = itemstobd.Split(";");
+                    items = new int[49];
+                    if (splited.Length > 1)
+                    {
+                        for (var it = 0; it < splited.Length; it++)
+                        {
+                            items[it] = int.Parse(splited[it]);
+                        }
+                    }
+                }
+                return items[index];
+            }
+            set
+            {
+                using var db = new DataBase();
+                db.Attach(this);
+                items[index] = value;
+                itemstobd = string.Join(';', items);
+                db.players.FirstOrDefault(i => i.Id == Id)?.SendInventory();
+                db.SaveChanges();
+            }
         }
         private Dictionary<int, int> getinv()
         {
             var dick = new Dictionary<int, int>();
             var t = "";
-            for (int i = 0; i < items.Length; i++)
+            for (int i = 0; i < 49; i++)
             {
-                if (items[i] > 0)
+                if (this[i] > 0)
                 {
-                    dick[i] = items[i];
+                    dick[i] = this[i];
                 }
             }
             return dick;
@@ -95,14 +119,20 @@ namespace MinesServer.GameShit
         {
             return new InventoryPacket(new InventoryShowPacket(getinv(), selected, Lenght));
         }
+        public DateTime time = DateTime.Now;
         public void Use(Player p)
         {
-            if (typeditems.ContainsKey(selected) && World.GetProp(World.GetCell((int)p.GetDirCord().X, (int)p.GetDirCord().Y)).can_place_over && items[selected] > 0)
+            if (DateTime.Now - time >= TimeSpan.FromMilliseconds(400))
             {
-                if (typeditems[selected](p))
+                if (typeditems.ContainsKey(selected) && (World.GetProp((int)p.GetDirCord().X, (int)p.GetDirCord().Y).can_place_over || selected == 40) && this[selected] > 0)
                 {
-                    items[selected]--;
+                    if (typeditems[selected](p))
+                    {
+                        this[selected]--;
+                        p.SendInventory();
+                    }
                 }
+                time = DateTime.Now;
             }
         }
         public Dictionary<int, ItemUsage> typeditems;
@@ -135,37 +165,8 @@ namespace MinesServer.GameShit
                 return l;
             }
         }
-        public string itemstobd { get; set; }
+        public string itemstobd { get; set; } = "";
         [NotMapped]
-        private int[] iret = null;
-        [NotMapped]
-        public int[] items
-        {
-            get
-            {
-                if (iret == null)
-                {
-                    var splited = itemstobd.Split(";");
-                    var i = new int[49];
-                    if (splited.Length > 0)
-                    {
-                        for (var it = 0; it < splited.Length; it++)
-                        {
-                            i[it] = int.Parse(splited[it]);
-                        }
-                    }
-                    iret = i;
-                }
-                return iret;
-            }
-            set
-            {
-                itemstobd = string.Join(';', value);
-                using var db = new DataBase();
-                db.players.First(i => i.Id == Id).SendInventory();
-                db.SaveChanges();
-                
-            }
-        }
+        public int[] items { get; set; } = null;
     }
 }

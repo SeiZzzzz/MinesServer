@@ -208,7 +208,7 @@ namespace MinesServer.GameShit.GUI
                         if (i.Type is CanvasElementType.Button or CanvasElementType.TPButton or CanvasElementType.MicroButton) obj["canvas"].Add(i.Content!.Value.ActionFormat);
                     }
                 }
-                if(horb.Inventory is not null)
+                if (horb.Inventory is not null)
                     obj["inv"] = string.Join(":", horb.Inventory!.Select(x =>
                     {
                         if (x.Id == -1) return "-1:f";
@@ -230,6 +230,7 @@ namespace MinesServer.GameShit.GUI
                     obj["ba"] = up.Button!.Value.ActionFormat;
                 }
                 if (up.SkillsToInstall is not null) obj["i"] = string.Join(":", up.SkillsToInstall!.Select(x => (x.Value ? "" : "_") + x.Key.GetCode()));
+                else obj["i"] = "";
                 if (up.OnDelete is not null) obj["del"] = 1;
                 if (up.SelectedSlot is not null) obj["sl"] = up.SelectedSlot!.Value;
                 else obj["sl"] = -1;

@@ -1,13 +1,8 @@
 ﻿using MinesServer.GameShit.GUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List.Rich;
-using MinesServer.Server;
 using MinesServer.GameShit.Marketext;
+using MinesServer.Server;
 namespace MinesServer.GameShit.Buildings
 {
     public class Market : Pack
@@ -17,7 +12,7 @@ namespace MinesServer.GameShit.Buildings
         public long moneyinside { get; set; }
         #endregion;
         public Market() { }
-        public Market(int ownerid,int x,int y) : base(ownerid,x,y,PackType.Market)
+        public Market(int ownerid, int x, int y) : base(ownerid, x, y, PackType.Market)
         {
             using var db = new DataBase();
             hp = 100;
@@ -27,7 +22,7 @@ namespace MinesServer.GameShit.Buildings
         public override void Build()
         {
             World.SetCell(x, y, 37, true);
-            for(int xx = -2; xx < 3;xx++)
+            for (int xx = -2; xx < 3; xx++)
             {
                 for (int yy = -2; yy < 3; yy++)
                 {
@@ -46,16 +41,78 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x - 2, y - 2, 38, true);
             base.Build();
         }
+        public Action<Player,Market> onadmn = (p,m) =>
+        {
+            if (p.Id == m.ownerid)
+            {
+                p.win.CurrentTab.Open(new Page()
+                {
+                    Text = " ",
+                    RichList = new RichListConfig()
+                    {
+                        Entries = [RichListEntry.Text("hp"),
+                            RichListEntry.ButtonLine($"прибыль {m.moneyinside}$", m.moneyinside == 0 ? new Button() : new Button("Получить", "getprofit",(args) => { using var db = new DataBase(); p.money += m.moneyinside;m.moneyinside = 0;p.SendMoney();db.SaveChanges();m.onadmn(p, m);p.SendWindow(); })),
+                        ]
+                    },
+                    Buttons = []
+
+                });
+            }
+        };
         public override Window? GUIWin(Player p)
         {
+            Action adminaction = (p.Id != ownerid ? null : () => onadmn(p,this));
             return new Window()
             {
+                ShowTabs = true,
+                Title = "Market",
                 Tabs = [new Tab()
                 {
-                    InitialPage = MarketSystem.GlobalFirstPage(p)!,
-                    Action = "sa",
-                    Label = "penis"
-                }]
+                    Label = "ПРОДАЖА",
+                    Action = "sellcrys",
+                    InitialPage = new Page()
+                    {
+                        OnAdmin = adminaction,
+                        CrystalConfig = new CrystalConfig(" ", "цена",
+                            [new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0)}$</color>", 0, 0, p.crys[Enums.CrystalType.Green], 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1)}$</color>", 0, 0, p.crys[Enums.CrystalType.Blue], 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2)}$</color>", 0, 0, p.crys[Enums.CrystalType.Red], 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(3)}$</color>", 0, 0, p.crys[Enums.CrystalType.Violet], 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4)}$</color>", 0, 0, p.crys[Enums.CrystalType.White], 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5)}$</color>", 0, 0, p.crys[Enums.CrystalType.Cyan], 0)]
+                                ),
+                        Text = "Продажа кри",
+                        Buttons = [new Button("sellall", $"sellall", (args) => MarketSystem.Sell(p.crys.cry, p, this)),
+                            new Button("sell", $"sell:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Sell(args.CrystalSliders, p,this))]
+                    }
+                },
+                    new Tab()
+                    {
+                        Label = "Покупка",
+                        Action = "buycrys",
+                        InitialPage = new Page()
+                        {
+                            OnAdmin = adminaction,
+                            CrystalConfig =  new CrystalConfig(" ", "цена", [
+                            new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(0)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(1)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(2)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(3)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(3)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(4)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(5)), 0)
+
+                            ],true),
+                            Text = "Покупка",
+                            Buttons = [new Button("buy", $"buy:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Buy(args.CrystalSliders, p, this))
+                        ]
+                        }
+                    },
+                    new Tab()
+                    {
+                        InitialPage = MarketSystem.GlobalFirstPage(p)!,
+                        Action = "auc",
+                        Label = "Auc"
+                    }]
             };
         }
     }

@@ -1,13 +1,7 @@
-﻿using MinesServer.Server;
-using MinesServer.GameShit.GUI;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List.Rich;
+using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace MinesServer.GameShit.Buildings
 {
@@ -25,7 +19,8 @@ namespace MinesServer.GameShit.Buildings
         {
 
         }
-        public Resp(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Resp) {
+        public Resp(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Resp)
+        {
             cost = 1000;
             charge = 100;
             maxcharge = 1000;
@@ -40,9 +35,13 @@ namespace MinesServer.GameShit.Buildings
             db.Attach(this);
             if (ownerid > 0)
             {
-                if (p.money > cost) p.money -= cost;
+                if (p.money > cost)
+                {
+                    p.money -= cost;
+                    moneyinside += cost;
+                }
                 else
-                { 
+                {
                     p.RandomResp();
                     p.GetCurrentResp()?.OnRespawn(p);
                 }
@@ -62,14 +61,14 @@ namespace MinesServer.GameShit.Buildings
         {
             get => (charge > 0 ? 1 : 0);
         }
-        public (int,int) GetRandompoint()
+        public (int, int) GetRandompoint()
         {
             var r = new Random();
             return (r.Next(x + 2, x + 5), r.Next(y - 1, y + 3));
         }
         public override void Build()
         {
-            World.SetCell(x, y, 37,true);
+            World.SetCell(x, y, 37, true);
             World.SetCell(x + 1, y, 37, true);
             World.SetCell(x - 1, y, 106, true);
             World.SetCell(x, y - 1, 106, true);
@@ -81,7 +80,7 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x + 1, y + 2, 106, true);
             World.SetCell(x - 1, y + 2, 106, true);
             World.SetCell(x, y + 2, 37);
-            for(int xx = x + 2;xx < x + 6;xx++)
+            for (int xx = x + 2; xx < x + 6; xx++)
             {
                 for (int yy = y - 1; yy < y + 3; yy++)
                 {
@@ -90,50 +89,76 @@ namespace MinesServer.GameShit.Buildings
             }
             base.Build();
         }
-        public void Fill(Player p,int num)
+        public void Fill(Player p, long num)
         {
             using var db = new DataBase();
+            if (p.crys[Enums.CrystalType.Blue] < num)
+            {
+                num = p.crys[Enums.CrystalType.Blue];
+            }
             db.Attach(this);
             if (p.crys.RemoveCrys((int)Enums.CrystalType.Blue, num))
             {
-                charge += num;
+                charge += (int)num;
             }
+            p.win?.CurrentTab.Replace(AdmnPage(p));
+            p.SendWindow();
             db.SaveChanges();
         }
-        public void AdminSaveChanges(Dictionary<string,string> d)
+        public void AdminSaveChanges(Player p,Dictionary<string, string> d)
         {
+            if (bool.TryParse(d["clan"], out var clan))
+            {
+                if (MServer.GetPlayer(ownerid) != null)
+                {
+                    cid = clan ? MServer.GetPlayer(ownerid).clanid : 0;
+                }
+            }
+            if (int.TryParse(d["cost"], out var costs))
+            {
+                cost = costs;
+            }
+            if (int.TryParse(d["clanzone"],out var clanz))
+            {
+                clanzone = clanz;
+            }
         }
-        public override Window? GUIWin(Player p)
+        public int clanzone { get; set; }
+        private IPage AdmnPage(Player p)
         {
             Button[] fillbuttons = [p.crys[Enums.CrystalType.Blue] >= 100 ? new Button("+100", "fill:100", (args) => Fill(p, 100)) : new Button("+100", "fill:100"),
                 p.crys[Enums.CrystalType.Blue] >= 1000 ? new Button("+1000", "fill:1000", (args) => Fill(p, 1000)) : new Button("+1000", "fill:1000"),
-                p.crys[Enums.CrystalType.Blue] >= maxcharge - charge ? new Button("max", "fill:max", (args) => Fill(p, maxcharge - charge)) : new Button("max", "fill:max")
-                ];
+                p.crys[Enums.CrystalType.Blue] >= 0 ? new Button("max", "fill:max", (args) => Fill(p, maxcharge - charge)) : new Button("max", "fill:max")
+               ];
+            return new Page()
+            {
+                Text = " ",
+                RichList = new RichListConfig()
+                {
+                    Entries = [RichListEntry.Fill("заряд", charge, maxcharge, Enums.CrystalType.Blue, fillbuttons[0], fillbuttons[1], fillbuttons[2]),
+                        RichListEntry.Text("hp"),
+                        RichListEntry.UInt32("cost", "cost", (uint)cost),
+                        RichListEntry.ButtonLine($"прибыль {moneyinside}$", moneyinside == 0 ? new Button() : new Button("Получить", "getprofit", (args) => { using var db = new DataBase(); p.money += moneyinside; moneyinside = 0; p.SendMoney(); db.SaveChanges();p.win?.CurrentTab.Replace(AdmnPage(p)); p.SendWindow(); })),
+                        RichListEntry.Bool("Клановый респ", "clan", cid > 0),
+                        RichListEntry.UInt32("clanzone", "clanzone", (uint)clanzone)
+                            ]
+                },
+                Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { AdminSaveChanges(p,args.RichList); })]
+            };
+        }
+        public override Window? GUIWin(Player p)
+        {
             Action adminaction = (p.Id != ownerid && p.clanid != cid ? null : () =>
             {
                 if (p.Id == ownerid)
                 {
-                    p.win.CurrentTab.Replace(new Page()
-                    {
-                        Text = " ",
-                        RichList = new RichListConfig()
-                        {
-                            Entries = [RichListEntry.Fill("заряд", charge, maxcharge, Enums.CrystalType.Blue, fillbuttons[0], fillbuttons[1], fillbuttons[2]),
-                                RichListEntry.Text("hp"),
-                                RichListEntry.UInt32("cost", "cost", (uint)cost),
-                                RichListEntry.ButtonLine("прибыль", new Button()),
-                                RichListEntry.Bool("Клановый респ", "clan", cid > 0),
-                                RichListEntry.DropDown("зона", "clanzone", [], 1)
-                            ]
-                        },
-                        Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { AdminSaveChanges(args.RichList); })]
-                    });
+                    p.win?.CurrentTab.Open(AdmnPage(p));
                 }
             })!;
             Page page = p.respid != id ? new Page()
             {
                 OnAdmin = adminaction,
-                
+
                 Text = $"@@Респ - это место, где будет появляться ваш робот\nпосле уничтожения (HP = 0)\n\nЦена восстановления: <color=green>${cost}</color>\n\n<color=#f88>Привязать робота к респу?</color>",
                 Buttons = [new Button("ПРИВЯЗАТЬ", "bind", (args) =>
                 {
