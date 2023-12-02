@@ -60,7 +60,7 @@ namespace MinesServer.Server
                     {
                         action();
                     }
-               }
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);

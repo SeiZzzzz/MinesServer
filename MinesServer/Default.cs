@@ -1,13 +1,19 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.Server;
 using Newtonsoft.Json;
+using System.Reflection;
 
 namespace MinesServer
 {
     // <image src="a.jpg"/>
     public static class Default
     {
-
+        static public bool HasProperty(this Type type, string name)
+        {
+            return type
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Any(p => p.Name == name);
+        }
         /*public static Form mf = new Form();*/
         public static int port = 8090;
         private static Dictionary<string, Action> commands = new Dictionary<string, Action>();

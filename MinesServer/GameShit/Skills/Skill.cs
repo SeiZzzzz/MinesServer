@@ -39,7 +39,7 @@ namespace MinesServer.GameShit.Skills
                 exp -= GetExp();
                 p.skillslist.Save();
                 v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
-                p.connection.SendU(new SkillsPacket(v));
+                p.connection?.SendU(new SkillsPacket(v));
                 p.SendLvl();
                 p.health.SendHp();
                 p.skillslist.Save();
@@ -48,7 +48,7 @@ namespace MinesServer.GameShit.Skills
         public void AddExp(Player p, float expv = 1)
         {
             Dictionary<string, int> v = new();
-            foreach (var i in p.skillslist.skills)
+            foreach (var i in p.skillslist.skills.Values)
             {
                 if (UseSkill(SkillEffectType.OnExp, p))
                 {
@@ -61,7 +61,7 @@ namespace MinesServer.GameShit.Skills
             exp += expv;
             p.skillslist.Save();
             v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
-            p.connection.SendU(new SkillsPacket(v));
+            p.connection?.SendU(new SkillsPacket(v));
             p.skillslist.Save();
         }
         public bool UseSkill(SkillEffectType e, Player p)

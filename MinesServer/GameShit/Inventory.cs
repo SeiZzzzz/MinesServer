@@ -1,4 +1,5 @@
 ﻿using MinesServer.GameShit.Buildings;
+using MinesServer.GameShit.Consumables;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Server;
@@ -62,13 +63,19 @@ namespace MinesServer.GameShit
                 },
                 {
                     5,(p) =>{
-                    World.Boom((int)p.GetDirCord().X,(int)p.GetDirCord().Y);
+                  ShitClass.Boom((int)p.GetDirCord().X,(int)p.GetDirCord().Y);
+                        return true;
+                        }
+                },
+                 {
+                    7,(p) =>{
+                    ShitClass.Raz((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
                         return true;
                         }
                 },
                 {
                     40,(p) =>{
-                    World.C190Shot((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
+                    ShitClass.C190Shot((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
                         return true;
                         }
                 }
@@ -98,7 +105,7 @@ namespace MinesServer.GameShit
                 db.Attach(this);
                 items[index] = value;
                 itemstobd = string.Join(';', items);
-                db.players.FirstOrDefault(i => i.Id == Id)?.SendInventory();
+                MServer.GetPlayer(Id)?.SendInventory();
                 db.SaveChanges();
             }
         }

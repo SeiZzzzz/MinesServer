@@ -1,11 +1,13 @@
 ﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List.Rich;
+using MinesServer.Network.HubEvents;
+using MinesServer.Network.World;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace MinesServer.GameShit.Buildings
 {
-    public class Resp : Pack
+    public class Resp : Pack, IDamagable
     {
         #region fields
         public int charge { get; set; }
@@ -14,6 +16,7 @@ namespace MinesServer.GameShit.Buildings
         public override int cid { get; set; }
         public long moneyinside { get; set; }
         public int hp { get; set; }
+        public DateTime brokentimer { get; set; }
         #endregion
         public Resp()
         {
@@ -79,7 +82,7 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x - 1, y - 1, 106, true);
             World.SetCell(x + 1, y + 2, 106, true);
             World.SetCell(x - 1, y + 2, 106, true);
-            World.SetCell(x, y + 2, 37);
+            World.SetCell(x, y + 2, 37,true);
             for (int xx = x + 2; xx < x + 6; xx++)
             {
                 for (int yy = y - 1; yy < y + 3; yy++)
@@ -104,6 +107,41 @@ namespace MinesServer.GameShit.Buildings
             p.win?.CurrentTab.Replace(AdmnPage(p));
             p.SendWindow();
             db.SaveChanges();
+        }
+        public void ClearBuilding()
+        {
+            World.SetCell(x, y, 32, false);
+            World.SetCell(x + 1, y, 32, false);
+            World.SetCell(x - 1, y, 32, false);
+            World.SetCell(x, y - 1, 32, false);
+            World.SetCell(x, y + 1, 32, false);
+            World.SetCell(x + 1, y + 1, 32, false);
+            World.SetCell(x - 1, y + 1, 32, false);
+            World.SetCell(x + 1, y - 1, 32, false);
+            World.SetCell(x - 1, y - 1, 32, false);
+            World.SetCell(x + 1, y + 2, 32, false);
+            World.SetCell(x - 1, y + 2, 32, false);
+            World.SetCell(x, y + 2, 32, false);
+            for (int xx = x + 2; xx < x + 6; xx++)
+            {
+                for (int yy = y - 1; yy < y + 3; yy++)
+                {
+                    World.SetCell(xx, yy, 35, false);
+                }
+            }
+        }
+        public void Destroy(Player p)
+        {
+            ClearBuilding();
+            World.RemovePack(x, y);
+            using var db = new DataBase();
+            db.resps.Remove(this);
+            db.SaveChanges();
+            if (Physics.r.Next(1, 101) < 40)
+            {
+                p.connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "ШПАААК ВЫПАЛ")]));
+                p.inventory[1]++;
+            }
         }
         public void AdminSaveChanges(Player p,Dictionary<string, string> d)
         {

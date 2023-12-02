@@ -14,28 +14,28 @@ namespace MinesServer.GameShit
         {
             if (!string.IsNullOrWhiteSpace(ser))
             {
-                skills = Newtonsoft.Json.JsonConvert.DeserializeObject<Skill[]>(ser);
+                skills = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<int,Skill?>>(ser);
             }
             else
             {
                 ser = "";
             }
         }
-        public void SelectSlot(Player p)
-        {
-
-        }
         [NotMapped]
         public int selectedslot = -1;
         public void DeletetSkill(Player p)
         {
+            if (!skills.ContainsKey(selectedslot))
+            {
+                return;
+            }
             skills[selectedslot] = null;
             p.SendLvl();
             Save();
         }
         public void InstallSkill(string type, int slot, Player p)
         {
-            if (skills.FirstOrDefault(i => i?.type.GetCode() == type) != null)
+            if ((skills.ContainsKey(slot) && skills[slot] != null) || slot > slots || slot < 0)
             {
                 return;
             }
@@ -55,29 +55,29 @@ namespace MinesServer.GameShit
             Dictionary<SkillType, bool> d = new();
             foreach (var sk in skillz)
             {
-                if (skills.FirstOrDefault(skill => skill?.type == sk.type) == null)
+                if (skills.FirstOrDefault(skill => skill.Value?.type == sk.type).Value == null)
                 {
                     d.Add(sk.type, true);
                 }
             }
             return d;
         }
-        public int lvlsummary() => skills.Sum(i => i?.lvl ?? 0);
+        public int lvlsummary() => skills.Sum(i => i.Value?.lvl ?? 0);
         public UpSkill[] GetSkills()
         {
             List<UpSkill> ski = new();
-            for (int i = 0; i < skills.Length; i++)
+            foreach(var i in skills)
             {
-                if (skills[i] != null)
+                if (i.Value != null)
                 {
-                    ski.Add(new UpSkill(i, skills[i].lvl, skills[i].isUpReady(), skills[i].type));
-                    continue;
+                    ski.Add(new UpSkill(i.Key, i.Value.lvl, i.Value.isUpReady(), i.Value.type));
                 }
             }
             return ski.ToArray();
         }
+        public int slots { get; set; } = 20;
         [NotMapped]
-        public Skill?[] skills = new Skill[35];
+        public Dictionary<int,Skill?> skills = new();
         [NotMapped]
         public static List<Skill> skillz = new List<Skill>()
         {

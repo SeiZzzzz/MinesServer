@@ -4,6 +4,8 @@ using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using MoreLinq.Extensions;
+using System.IO.Pipes;
 
 namespace MinesServer.GameShit
 {
@@ -238,9 +240,14 @@ namespace MinesServer.GameShit
             var ch = W.GetChunk(x, y);
             ch.SetPack(x - ch.WorldX, y - ch.WorldY, p);
         }
-        public static void RemovePack(int x, int y, Player p = null)
+        public static void RemovePack(int x, int y)
         {
-
+            if (!W.ValidCoord(x, y))
+            {
+                return;
+            }
+            var ch = W.GetChunk(x, y);
+            ch.RemovePack(x - ch.WorldX, y - ch.WorldY);
         }
         public static byte GetCell(int x, int y)
         {
@@ -276,91 +283,6 @@ namespace MinesServer.GameShit
 
             }
             return st;
-        }
-        public static void C190Shot(int x, int y, Player p)
-        {
-            int shotx = 0;
-            int shoty = 0;
-            switch (p.dir)
-            {
-                case 0:
-                    shoty = y + 9;
-                    p.SendDFToBots(7, x, shoty, 0, 1);
-                    for (; y <= shoty; y++)
-                    {
-                        var c = GetCell(x, y);
-                        if (!isAlive(c) && GetProp(c).is_diggable)
-                        {
-                            DamageCell(x, y, 50);
-                        }
-                    }
-                    break;
-                case 1:
-                    shotx = x - 9;
-                    p.SendDFToBots(7, shotx, y, 0, 1);
-                    for (; x >= shotx; x--)
-                    {
-                        var c = GetCell(x, y);
-                        if (!isAlive(c) && GetProp(c).is_diggable)
-                        {
-                            DamageCell(x, y, 50);
-                        }
-                    }
-                    break;
-                case 2:
-                    shoty = y - 9;
-                    p.SendDFToBots(7, x, shoty, 0, 1);
-                    for (; y >= shoty; y--)
-                    {
-                        var c = GetCell(x, y);
-                        if (!isAlive(c) && GetProp(c).is_diggable)
-                        {
-                            DamageCell(x, y, 50);
-                        }
-                    }
-                    break;
-                case 3:
-                    shotx = x + 9;
-                    p.SendDFToBots(7, shotx, y, 0, 1);
-                    for (; x <= shotx; x++)
-                    {
-                        var c = GetCell(x, y);
-                        if (!isAlive(c) && GetProp(c).is_diggable)
-                        {
-                            DamageCell(x, y, 50);
-                        }
-                    }
-                    break;
-
-            }
-        }
-        public static void Boom(int x, int y)
-        {
-            var ch = W.GetChunk(x, y);
-            ch.SendPack('B', x, y, 0, 0);
-            W.AsyncAction(10, () =>
-            {
-                for (int _x = -4; _x < 4; _x++)
-                {
-                    for (int _y = -4; _y < 4; _y++)
-                    {
-                        if (W.ValidCoord(x + _x, y + _y) && System.Numerics.Vector2.Distance(new System.Numerics.Vector2(x, y), new System.Numerics.Vector2(x + _x, y + _y)) <= 3.5f)
-                        {
-                            foreach (var p in W.GetPlayersFromPos(x + _x, y + _y))
-                            {
-                                p.health.Hurt(40);
-                            }
-                            var c = GetCell(x + _x, y + _y);
-                            if (GetProp(c).is_destructible && !PackPart(x + _x, y + _y))
-                            {
-                                Destroy(x + _x, y + _y, destroytype.CellAndRoad);
-                            }
-                        }
-                    }
-                }
-                ch.SendDirectedFx(1, x, y, 3, 0, 0);
-                ch.ClearPack(x, y);
-            });
         }
         public static bool ContainsPack(int x, int y, out Pack p)
         {
@@ -404,8 +326,56 @@ namespace MinesServer.GameShit
                 ch.Update();
             }
         }
+        public static DateTime lastpackupd = DateTime.Now;
+        public static DateTime lastpackeffect = DateTime.Now;
         public static void Update()
         {
+            if (DateTime.Now - lastpackupd >= TimeSpan.FromHours(1))
+            {
+                using var db = new DataBase();
+                for (int chx = 0; chx < W.chunksCountW; chx++)
+                {
+                    for (int chy = 0; chy < W.chunksCountH; chy++)
+                    {
+                        foreach(var pack in W.chunks[chx, chy].packs)
+                        {
+                            if (pack.Value != null && pack.Value is IDamagable)
+                            {
+                                db.Attach(pack.Value);
+                                var damagable = pack.Value as IDamagable;
+                                damagable?.Damage(2);
+                                if (damagable.CanDestroy())
+                                {
+                                    damagable.SendBrokenEffect();
+                                }
+                            }
+                        }
+                    }
+                }
+                db.SaveChanges();
+                lastpackupd = DateTime.Now;
+            }
+            if (DateTime.Now - lastpackeffect >= TimeSpan.FromSeconds(3))
+            {
+                for (int chx = 0; chx < W.chunksCountW; chx++)
+                {
+                    for (int chy = 0; chy < W.chunksCountH; chy++)
+                    {
+                        foreach (var pack in W.chunks[chx, chy].packs)
+                        {
+                            if (pack.Value != null && pack.Value is IDamagable)
+                            {
+                                var damagable = pack.Value as IDamagable;
+                                if (damagable.CanDestroy())
+                                {
+                                    damagable.SendBrokenEffect();
+                                }
+                            }
+                        }
+                    }
+                }
+                lastpackeffect = DateTime.Now;
+            }
             if (DateTime.Now - lastcryupdate >= TimeSpan.FromSeconds(30))
             {
                 for (int i = 0; i < W.cryscostmod.Length; i++)

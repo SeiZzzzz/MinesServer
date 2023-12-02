@@ -1,38 +1,27 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using MinesServer.Server;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Windows.Controls;
 
 namespace MinesServer.GameShit.ClanSystem
 {
     public class Clan
     {
         [NotMapped]
-        public List<int> members
-        {
-            get
-            {
-                if (memberlist == null)
-                {
-                    memberlist = new();
-                    foreach (var i in membersbd.Split(","))
-                    {
-                        memberlist.Add(int.Parse(i));
-                    }
-                }
-                return memberlist;
-            }
-            set
-            {
-                membersbd = string.Join(',', memberlist.Select(i => i));
-            }
-        }
-        [NotMapped]
         private List<int> memberlist = null;
         public string membersbd { get; set; }
         public Clan()
         {
         }
+        public List<int> GetMemberlist()
+        {
+            if (memberlist == null)
+            {
+                memberlist = Newtonsoft.Json.JsonConvert.DeserializeObject<List<int>>(membersbd);
+            }
+            return memberlist;
+        }
         public void Create()
         {
-
         }
     }
 }

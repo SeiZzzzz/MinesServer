@@ -15,7 +15,7 @@ namespace MinesServer.GameShit
         {
             MaxHP = 100;
             player = p;
-            foreach (var c in p.skillslist.skills)
+            foreach (var c in p.skillslist.skills.Values)
             {
                 if (c != null && c.UseSkill(SkillEffectType.OnHealth, p))
                 {
@@ -54,7 +54,7 @@ namespace MinesServer.GameShit
         }
         public void Hurt(int d, DamageType t = DamageType.Pure)
         {
-            foreach (var c in player.skillslist.skills)
+            foreach (var c in player.skillslist.skills.Values)
             {
                 if (c != null && c.UseSkill(SkillEffectType.OnHealth, player))
                 {

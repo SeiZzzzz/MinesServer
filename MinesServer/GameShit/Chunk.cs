@@ -68,11 +68,7 @@ namespace MinesServer.GameShit
                 durcells[x + y * 32] = World.GetProp(cell).durability;
                 this[x, y] = cell;
             }
-
-            if (packmesh)
-            {
-                packsprop[x + y * 32] = true;
-            }
+            packsprop[x + y * 32] = packmesh ? true : false;
             if (active)
             {
                 SendCellToBots(WorldX + x, WorldY + y, this[x, y]);
@@ -151,6 +147,25 @@ namespace MinesServer.GameShit
                 }
             }
         }
+        public void SendFx(int x, int y, int fx)
+        {
+            for (var xxx = -2; xxx <= 2; xxx++)
+            {
+                for (var yyy = -2; yyy <= 2; yyy++)
+                {
+                    var cx = (pos.Item1 + xxx);
+                    var cy = (pos.Item2 + yyy);
+                    if (valid(cx, cy))
+                    {
+                        var ch = World.W.chunks[cx, cy];
+                        foreach (var id in ch.bots)
+                        {
+                            MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBFXPacket(x,y,fx)]));
+                        }
+                    }
+                }
+            }
+        }
         public void ResendPacks()
         {
             foreach (var p in packs.Values)
@@ -211,6 +226,7 @@ namespace MinesServer.GameShit
             if (packs.ContainsKey(x + y * 32))
             {
                 packs.Remove(x + y * 32);
+                ClearPack(WorldX + x, WorldY + y);
             }
         }
         private void UpdateCells()

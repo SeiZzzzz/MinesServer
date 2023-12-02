@@ -152,7 +152,7 @@ namespace MinesServer.GameShit
             cb -= (float)Math.Truncate(cb);
             long odob = (long)Math.Truncate(dob);
             var type = ParseCryType((CellType)cell);
-            foreach (var c in skillslist.skills)
+            foreach (var c in skillslist.skills.Values)
             {
                 if (c != null && c.UseSkill(SkillEffectType.OnDigCrys, this))
                 {
@@ -180,11 +180,11 @@ namespace MinesServer.GameShit
             using var db = new DataBase();
             db.Remove(b);
             db.SaveChanges();
-            connection?.SendB(new HBPacket([new HBChatPacket(Id, x, y, "+" + b.AllCrys)]));
+            connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "+" + b.AllCrys)]));
         }
         private void OnDestroy(byte type)
         {
-            foreach (var c in skillslist.skills)
+            foreach (var c in skillslist.skills.Values)
             {
                 if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
                 {
@@ -219,7 +219,7 @@ namespace MinesServer.GameShit
             }
             else
             {
-                foreach (var c in skillslist.skills)
+                foreach (var c in skillslist.skills.Values)
                 {
                     if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
                     {
@@ -239,7 +239,7 @@ namespace MinesServer.GameShit
                 if (World.GetProp(World.GetCell(x + plusx, y + plusy)).isEmpty)
                 {
                     World.MoveCell(x, y, plusx, plusy);
-                    foreach (var c in skillslist.skills)
+                    foreach (var c in skillslist.skills.Values)
                     {
                         if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
                         {
@@ -258,7 +258,7 @@ namespace MinesServer.GameShit
         }
         public void Move(int x, int y, int dir)
         {
-            foreach (var c in skillslist.skills)
+            foreach (var c in skillslist.skills.Values)
             {
                 if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
                 {

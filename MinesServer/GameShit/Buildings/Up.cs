@@ -1,14 +1,18 @@
 ﻿using MinesServer.Enums;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.UP;
+using MinesServer.Network.HubEvents;
+using MinesServer.Network.World;
 using MinesServer.Server;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace MinesServer.GameShit.Buildings
 {
-    public class Up : Pack
+    public class Up : Pack, IDamagable
     {
         #region fields
         public int hp { get; set; }
+        public DateTime brokentimer { get; set; }
         public long moneyinside { get; set; }
         #endregion
         public Up(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Up)
@@ -28,7 +32,7 @@ namespace MinesServer.GameShit.Buildings
                 {
                     Skills = p.skillslist.GetSkills(),
                     OnSkill = onskill,
-                    SlotAmount = 25,
+                    SlotAmount = p.skillslist.slots,
                     Title = "титле",
                     SkillIcon = skilltype,
                     Text = "описание и цена установки",
@@ -36,23 +40,23 @@ namespace MinesServer.GameShit.Buildings
                 });
                 p.SendWindow();
             };
-            var skillfromslot = p.skillslist.selectedslot > -1 ? p.skillslist.skills[p.skillslist.selectedslot] : null;
+            var skillfromslot = p.skillslist.selectedslot > -1 ? (p.skillslist.skills.ContainsKey(p.skillslist.selectedslot) ? p.skillslist.skills[p.skillslist.selectedslot] : null) : null;
             var uppage = p.skillslist.selectedslot == -1 ? new UpPage()
             {
                 Skills = p.skillslist.GetSkills(),
                 SkillsToInstall = null,
-                SlotAmount = 25,
+                SlotAmount = p.skillslist.slots,
                 OnSkill = onskill,
                 Title = "xxx",
                 Text = "Выберите скилл или пустой слот",
-                Button = new Button("buyslotcost", "buyslot", (args) => { }),
+                Button = new Button("buyslotcost", "buyslot", (args) => { if (p.creds > 1000) { p.skillslist.slots++; } p.win = GUIWin(p);p.SendWindow(); }),
                 SkillIcon = SkillType.Unknown
             } : new UpPage()
             {
                 SelectedSlot = p.skillslist.selectedslot,
                 Skills = p.skillslist.GetSkills(),
                 SkillsToInstall = skillfromslot == null ? p.skillslist.SkillToInstall() : null,
-                SlotAmount = 25,
+                SlotAmount = p.skillslist.slots,
                 OnInstall = skillfromslot == null ? oninstall : null,
                 OnSkill = onskill,
                 Title = "penis",
@@ -86,6 +90,34 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x - 1, y + 1, 106, true);
             World.SetCell(x, y + 1, 37, true);
             base.Build();
+        }
+        public void ClearBuilding()
+        {
+            World.SetCell(x - 1, y - 2, 32, false);
+            World.SetCell(x + 1, y - 2, 32, false);
+            World.SetCell(x, y - 2, 32, false);
+            World.SetCell(x - 1, y - 1, 32, false);
+            World.SetCell(x, y - 1, 32, false);
+            World.SetCell(x + 1, y - 1, 32, false);
+            World.SetCell(x + 1, y, 32, false);
+            World.SetCell(x, y, 32, false);
+            World.SetCell(x - 1, y, 32, false);
+            World.SetCell(x + 1, y + 1, 32, false);
+            World.SetCell(x - 1, y + 1, 32, false);
+            World.SetCell(x, y + 1, 32, false);
+        }
+            public void Destroy(Player p)
+        {
+            ClearBuilding();
+            World.RemovePack(x, y);
+            using var db = new DataBase();
+            db.ups.Remove(this);
+            db.SaveChanges();
+            if (Physics.r.Next(1,101) < 40)
+            {
+                p.connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "ШПАААК ВЫПАЛ")]));
+                p.inventory[2]++;
+            }
         }
     }
 }

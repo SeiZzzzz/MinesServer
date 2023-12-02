@@ -2,14 +2,17 @@
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List.Rich;
 using MinesServer.GameShit.Marketext;
+using MinesServer.Network.HubEvents;
+using MinesServer.Network.World;
 using MinesServer.Server;
 namespace MinesServer.GameShit.Buildings
 {
-    public class Market : Pack
+    public class Market : Pack,IDamagable
     {
         #region fields
         public int hp { get; set; }
         public long moneyinside { get; set; }
+        public DateTime brokentimer { get; set; }
         #endregion;
         public Market() { }
         public Market(int ownerid, int x, int y) : base(ownerid, x, y, PackType.Market)
@@ -50,7 +53,7 @@ namespace MinesServer.GameShit.Buildings
                     Text = " ",
                     RichList = new RichListConfig()
                     {
-                        Entries = [RichListEntry.Text("hp"),
+                        Entries = [RichListEntry.Text($"hp {m.hp}"),
                             RichListEntry.ButtonLine($"прибыль {m.moneyinside}$", m.moneyinside == 0 ? new Button() : new Button("Получить", "getprofit",(args) => { using var db = new DataBase(); p.money += m.moneyinside;m.moneyinside = 0;p.SendMoney();db.SaveChanges();m.onadmn(p, m);p.SendWindow(); })),
                         ]
                     },
@@ -114,6 +117,40 @@ namespace MinesServer.GameShit.Buildings
                         Label = "Auc"
                     }]
             };
+        }
+        public void ClearBuilding()
+        {
+            World.SetCell(x, y, 32, false);
+            for (int xx = -2; xx < 3; xx++)
+            {
+                for (int yy = -2; yy < 3; yy++)
+                {
+                    int px = x + xx, py = y + yy;
+                    if (px == x || py == y)
+                    {
+                        World.SetCell(px, py, 32, false);
+                        continue;
+                    }
+                    World.SetCell(px, py, 32, false);
+                }
+            }
+            World.SetCell(x + 2, y + 2, 32, false);
+            World.SetCell(x - 2, y + 2, 32, false);
+            World.SetCell(x + 2, y - 2, 32, false);
+            World.SetCell(x - 2, y - 2, 32, false);
+        }
+        public void Destroy(Player p)
+        {
+            ClearBuilding();
+            World.RemovePack(x, y);
+            using var db = new DataBase();
+            db.markets.Remove(this);
+            db.SaveChanges();
+            if (Physics.r.Next(1, 101) < 40)
+            {
+                p.connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "ШПАААК ВЫПАЛ")]));
+                p.inventory[3]++;
+            }
         }
     }
 }

@@ -1,16 +1,16 @@
 ﻿using MinesServer.GameShit.GUI;
-using System.Runtime.CompilerServices;
 
 namespace MinesServer.GameShit.Buildings
 {
-    public class Storage : Pack
+    public class Storage : Pack,IDamagable
     {
-        public int hp { get; set; }
         public long this[int index]
         {
             get => crysinside[index];
             set => crysinside[index] = value;
         }
+        public DateTime brokentimer { get; set; }
+        public int hp { get; set; }
 
         public long[] crysinside = new long[6];
         public Storage()
@@ -21,7 +21,10 @@ namespace MinesServer.GameShit.Buildings
         {
 
         }
+        public void Destroy(Player p)
+        {
 
+        }
         public override Window? GUIWin(Player p)
         {
             return null;
