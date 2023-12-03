@@ -37,6 +37,8 @@ namespace MinesServer.GameShit
         public int clanid { get; set; }
         public bool autoDig { get; set; }
         public Vector2 pos = Vector2.Zero;
+        public int c190stacks = 1;
+        public DateTime lastc190hit = DateTime.Now;
         public Basket crys { get; set; }
         public Inventory inventory { get; set; }
         public Health health { get; set; }
@@ -317,7 +319,7 @@ namespace MinesServer.GameShit
             health = new Health();
             inventory = new Inventory();
             inventory.items = new int[49];
-            settings = new Settings();
+            settings = new Settings(true);
             crys = new Basket(this);
             skillslist = new PlayerSkills();
             AddBasicSkills();
@@ -402,6 +404,8 @@ namespace MinesServer.GameShit
                 MConsole.AddConsoleLine(this);
             }
             SendMap();
+            settings.SendSettings(this);
+            SendClan();
 
         }
         #endregion
@@ -448,6 +452,14 @@ namespace MinesServer.GameShit
                 return;
             }
             connection?.SendU(new GeoPacket(""));
+        }
+        public void SendClan()
+        {
+            if (clanid == 0)
+                connection?.SendU(new ClanHidePacket());
+            else
+                connection?.SendU(new ClanShowPacket(clanid));
+
         }
         public void SendCrys()
         {
@@ -504,6 +516,11 @@ namespace MinesServer.GameShit
         }
         public void Update()
         {
+            if (DateTime.Now - lastc190hit > TimeSpan.FromMinutes(1))
+            {
+                c190stacks = 1;
+                lastc190hit = DateTime.Now;
+            }
             if (DateTime.Now - lastPlayersend > TimeSpan.FromSeconds(4))
             {
                 ReSendBots();

@@ -14,6 +14,7 @@ namespace MinesServer
                 .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                 .Any(p => p.Name == name);
         }
+        public static bool ToBool(this string s) => s != "0"; 
         /*public static Form mf = new Form();*/
         public static int port = 8090;
         private static Dictionary<string, Action> commands = new Dictionary<string, Action>();

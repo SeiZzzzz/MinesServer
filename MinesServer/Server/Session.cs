@@ -116,7 +116,7 @@ namespace MinesServer.Server
         }
         private void Sett(TYPacket f, SettPacket p)
         {
-            player.settings.SendSettings(player);
+            player.settings.SendSettingsGUI(player);
         }
         private void Dpbx(TYPacket f, DPBXPacket p)
         {

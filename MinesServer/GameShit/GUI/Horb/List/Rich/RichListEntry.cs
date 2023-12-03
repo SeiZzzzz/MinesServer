@@ -58,7 +58,7 @@ namespace MinesServer.GameShit.GUI.Horb.List.Rich
             {
                 Label = label,
                 Type = RichListEntryType.DropDown,
-                Values = string.Join("#", values.Select((x, i) => i + ":" + x)),
+                Values = string.Join("#", values.Select((x, i) => i + ":" + x)) + "#",
                 Action = id,
                 InitialValue = index.ToString()
             };

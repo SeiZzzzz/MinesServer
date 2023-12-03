@@ -17,6 +17,10 @@ namespace MinesServer.GameShit.Consumables
             {
                 case 0:
                     shoty = y + 9;
+                    if (!World.W.ValidCoord(0,shoty))
+                    {
+                        break;
+                    }
                     p.SendDFToBots(7, x, shoty, 0, 1);
                     for (; y <= shoty; y++)
                     {
@@ -24,11 +28,21 @@ namespace MinesServer.GameShit.Consumables
                         if (!World.isAlive(c) && World.GetProp(c).is_diggable)
                         {
                             World.DamageCell(x, y, 50);
+                            foreach(var player in World.W.GetPlayersFromPos(x, y))
+                            {
+                                player.health.Hurt(20 + 60 * player.c190stacks);
+                                player.c190stacks++;
+                                player.lastc190hit = DateTime.Now;
+                            }
                         }
                     }
                     break;
                 case 1:
                     shotx = x - 9;
+                    if (!World.W.ValidCoord(shotx, 0))
+                    {
+                        break;
+                    }
                     p.SendDFToBots(7, shotx, y, 0, 1);
                     for (; x >= shotx; x--)
                     {
@@ -36,11 +50,21 @@ namespace MinesServer.GameShit.Consumables
                         if (!World.isAlive(c) && World.GetProp(c).is_diggable)
                         {
                             World.DamageCell(x, y, 50);
+                            foreach (var player in World.W.GetPlayersFromPos(x, y))
+                            {
+                                player.health.Hurt(20 + 60 * player.c190stacks);
+                                player.c190stacks++;
+                                player.lastc190hit = DateTime.Now;
+                            }
                         }
                     }
                     break;
                 case 2:
                     shoty = y - 9;
+                    if (!World.W.ValidCoord(0, shoty))
+                    {
+                        break;
+                    }
                     p.SendDFToBots(7, x, shoty, 0, 1);
                     for (; y >= shoty; y--)
                     {
@@ -48,11 +72,21 @@ namespace MinesServer.GameShit.Consumables
                         if (!World.isAlive(c) && World.GetProp(c).is_diggable)
                         {
                             World.DamageCell(x, y, 50);
+                            foreach (var player in World.W.GetPlayersFromPos(x, y))
+                            {
+                                player.health.Hurt(20 + 60 * player.c190stacks);
+                                player.c190stacks++;
+                                player.lastc190hit = DateTime.Now;
+                            }
                         }
                     }
                     break;
                 case 3:
                     shotx = x + 9;
+                    if (!World.W.ValidCoord(shotx, 0))
+                    {
+                        break;
+                    }
                     p.SendDFToBots(7, shotx, y, 0, 1);
                     for (; x <= shotx; x++)
                     {
@@ -60,6 +94,12 @@ namespace MinesServer.GameShit.Consumables
                         if (!World.isAlive(c) && World.GetProp(c).is_diggable)
                         {
                             World.DamageCell(x, y, 50);
+                            foreach (var player in World.W.GetPlayersFromPos(x, y))
+                            {
+                                player.health.Hurt(20 + 60 * player.c190stacks);
+                                player.c190stacks++;
+                                player.lastc190hit = DateTime.Now;
+                            }
                         }
                     }
                     break;

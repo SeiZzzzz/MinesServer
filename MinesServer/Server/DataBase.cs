@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MinesServer.GameShit;
 using MinesServer.GameShit.Buildings;
+using MinesServer.GameShit.ClanSystem;
 using MinesServer.GameShit.Marketext;
 
 namespace MinesServer.Server
@@ -18,14 +19,11 @@ namespace MinesServer.Server
         public DbSet<Market> markets { get; set; }
         public DbSet<Up> ups { get; set; }
         public DbSet<Order> orders { get; set; }
+        public DbSet<Clan> clans { get; set; }
         public static bool created = false;
         public DataBase()
         {
-            if (!created)
-            {
-                Database.EnsureCreated();
-                created = true;
-            }
+            Database.EnsureCreated();
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
