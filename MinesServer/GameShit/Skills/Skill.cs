@@ -32,12 +32,8 @@ namespace MinesServer.GameShit.Skills
             if (isUpReady())
             {
                 Dictionary<string, int> v = new();
-                lastexp = GetExp();
-                lasteff = GetEffect();
-                lastcost = GetCost();
                 lvl += 1;
                 exp -= GetExp();
-                p.skillslist.Save();
                 v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
                 p.connection?.SendU(new SkillsPacket(v));
                 p.SendLvl();
@@ -59,7 +55,6 @@ namespace MinesServer.GameShit.Skills
                 }
             }
             exp += expv;
-            p.skillslist.Save();
             v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
             p.connection?.SendU(new SkillsPacket(v));
             p.skillslist.Save();
@@ -84,9 +79,6 @@ namespace MinesServer.GameShit.Skills
         {
             return PlayerSkills.skillz.First(i => i.type == type).effecttype;
         }
-        public float lastexp;
-        public float lasteff;
-        public float lastcost;
         [NonSerialized]
         public SkillEffectType effecttype;
         [NonSerialized]

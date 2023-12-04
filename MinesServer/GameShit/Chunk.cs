@@ -3,12 +3,13 @@ using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.HubEvents.Packs;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using System.Collections.Concurrent;
 
 namespace MinesServer.GameShit
 {
     public class Chunk
     {
-        public Dictionary<int, Player> bots = new();
+        public ConcurrentDictionary<int, Player> bots = new();
         public (int, int) pos;
         private byte[] cells;
         public byte[] wcells;
@@ -267,9 +268,9 @@ namespace MinesServer.GameShit
         private bool updlasttick = false;
         public void AddBot(Player player)
         {
-            if (this != null)
+            if (this != null && !bots.ContainsKey(player.Id))
             {
-                this.bots[player.Id] = player;
+                bots[player.Id] = player;
             }
         }
         public bool shouldbeloaded()

@@ -46,7 +46,7 @@ namespace MinesServer.Server
             Player player = null;
             if (p.user_id.HasValue)
             {
-                player = DataBase.GetPlayerClassFromBD(p.user_id.Value);
+                player = MServer.GetPlayer(p.user_id.Value)!;
             }
             if (player == null)
             {
@@ -113,7 +113,7 @@ namespace MinesServer.Server
                     IsConsole = true,
                     Placeholder = " "
                 },
-                Buttons = [new("OK", $"newnick:{ActionMacros.Input}", (args) => SetPasswdForNew(args.Input!, initiator))]
+                Buttons = [new("OK", $"newnick:{ActionMacros.Input}", (args) => { using var db = new DataBase(); if (db.players.FirstOrDefault(i => i.name == args.Input) == null) { SetPasswdForNew(args.Input!, initiator); } else { initiator.SendU(new OKPacket("auth", "Ник занят")); CreateNew(initiator); } })]
             });
             initiator.SendWin(authwin.ToString());
         }
@@ -141,6 +141,7 @@ namespace MinesServer.Server
             temp.passwd = passwd;
             temp.name = nick;
             temp.connection = initiator;
+            db.Attach(temp.resp);
             db.SaveChanges();
             initiator.player = temp;
             initiator.SendU(new AHPacket(temp.Id, temp.hash));
@@ -150,7 +151,7 @@ namespace MinesServer.Server
         public void TryToFindByNick(string name, Session initiator)
         {
             using var db = new DataBase();
-            Player player = db.players.FirstOrDefault(p => p.name == name)!;
+            Player player = MServer.GetPlayer(name);
             if (player != default(Player))
             {
                 temp = player;

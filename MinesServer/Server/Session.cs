@@ -96,10 +96,15 @@ namespace MinesServer.Server
                 case SettPacket sett: Sett(packet, sett); break;
                 case ADMNPacket admn: ADMN(packet, admn); break;
                 case RESPPacket res: Res(packet, res); break;
+                case ClanPacket clan: Clan(packet, clan);break;
                 default:
                     // Invalid event type
                     break;
             }
+        }
+        private void Clan(TYPacket f, ClanPacket p)
+        {
+            player.OpenClan();
         }
         private void Res(TYPacket f, RESPPacket p)
         {
@@ -279,10 +284,6 @@ namespace MinesServer.Server
             SendAsync(span);
         }
 
-        public void SendLocalChat(string msg)
-        {
-            SendB(new HBPacket([new HBChatPacket(player.Id, player.x, player.y, msg)]));
-        }
         public void SendCell(int x, int y, byte cell)
         {
             SendB(new HBPacket([new HBMapPacket(x, y, 1, 1, [cell])]));

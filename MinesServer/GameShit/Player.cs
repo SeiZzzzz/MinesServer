@@ -1,5 +1,6 @@
 ﻿using MinesServer.Enums;
 using MinesServer.GameShit.Buildings;
+using MinesServer.GameShit.ClanSystem;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
@@ -13,6 +14,8 @@ using MinesServer.Network.Movement;
 using MinesServer.Network.World;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Numerics;
 
 namespace MinesServer.GameShit
@@ -22,19 +25,23 @@ namespace MinesServer.GameShit
         #region fields
         [NotMapped]
         public Session? connection { get; set; }
+        public List<Request> ClanReqs { get; set; } = new List<Request>();
         public Player() => Delay = DateTime.Now;
         public DateTime lastPlayersend = DateTime.Now;
         public Queue<Action> playerActions = new();
         public int Id { get; set; }
         public string name { get; set; }
-        public int respid { get; set; }
+        public Clan? clan { get; set; }
+        public Rank? clanrank { get; set; }
+        [NotMapped]
+        public int cid { get { return clan == null ? 0 : clan.id; } }
+        public Resp resp { get; set; }
         public long money { get; set; }
         public long creds { get; set; }
         public string hash { get; set; }
         public string passwd { get; set; }
         public int tail { get; set; }
         public int skin { get; set; }
-        public int clanid { get; set; }
         public bool autoDig { get; set; }
         public Vector2 pos = Vector2.Zero;
         public int c190stacks = 1;
@@ -77,7 +84,7 @@ namespace MinesServer.GameShit
         #region actions
         public void SetResp(Resp r)
         {
-            respid = r.id;
+            resp = r;
         }
         public void AddDelay(double ms) //delay on action
         {
@@ -110,7 +117,7 @@ namespace MinesServer.GameShit
         public void Geo()
         {
             int x = (int)GetDirCord().X, y = (int)GetDirCord().Y;
-            if (!World.W.ValidCoord(x, y))
+            if (!World.W.ValidCoord(x, y) || World.GunRadius(x,y,this))
             {
                 return;
             }
@@ -168,7 +175,7 @@ namespace MinesServer.GameShit
             cb += dob - odob;
             crys.AddCrys(type, odob);
             World.AddDob(type, odob);
-            SendDFToBots(2, x, y, this.Id, (int)odob, (type == 1 ? 3 : type == 2 ? 1 : type == 3 ? 2 : type));
+            SendDFToBots(2, x, y, this.Id, (int)(odob < 255 ? odob : 255), (type == 1 ? 3 : type == 2 ? 1 : type == 3 ? 2 : type));
         }
         public void GetBox(int x, int y)
         {
@@ -182,7 +189,7 @@ namespace MinesServer.GameShit
             using var db = new DataBase();
             db.Remove(b);
             db.SaveChanges();
-            connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "+" + b.AllCrys)]));
+            connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "+ " + b.AllCrys)]));
         }
         private void OnDestroy(byte type)
         {
@@ -197,7 +204,11 @@ namespace MinesServer.GameShit
         public void Bz()
         {
             int x = (int)GetDirCord().X, y = (int)GetDirCord().Y;
-            SendDFToBots(0, x, y, this.Id, dir);
+            if (!World.W.ValidCoord(x,y))
+            {
+                return;
+            }
+            SendDFToBots(0, this.x, this.y, this.Id, dir);
             var cell = World.GetCell(x, y);
             if (World.GetProp(cell).damage > 0)
             {
@@ -260,18 +271,7 @@ namespace MinesServer.GameShit
         }
         public void Move(int x, int y, int dir)
         {
-            foreach (var c in skillslist.skills.Values)
-            {
-                if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
-                {
-                    if (c.type == SkillType.Movement)
-                    {
-                        c.AddExp(this);
-                    }
-                }
-            }
-            try
-            {
+
                 if (!World.W.ValidCoord(x, y) || win != null)
                 {
                     tp(this.x, this.y);
@@ -288,7 +288,17 @@ namespace MinesServer.GameShit
                 this.dir = dir;
                 if (Vector2.Distance(pos, newpos) < 1.2f)
                 {
-                    pos = newpos;
+                foreach (var c in skillslist.skills.Values)
+                {
+                    if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
+                    {
+                        if (c.type == SkillType.Movement)
+                        {
+                            c.AddExp(this);
+                        }
+                    }
+                }
+                pos = newpos;
                 }
                 else
                 {
@@ -296,21 +306,17 @@ namespace MinesServer.GameShit
                 }
                 SendMyMove();
                 SendMap();
-                if (World.ContainsPack(x, y, out var pack))
+                if (World.ContainsPack(x, y, out var pack) && (pack.cid == cid || pack.cid == 0))
                 {
                     win = pack.GUIWin(this)!;
                     SendWindow();
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex);
-            }
         }
         #endregion
         #region creating
         public void CreatePlayer()
         {
+            ClanReqs = new();
             name = "";
             money = 1000;
             creds = 0;
@@ -326,7 +332,7 @@ namespace MinesServer.GameShit
             health.LoadHealth(this);
             pos = new Vector2(0, 0);
             dir = 0;
-            clanid = 0;
+            clan = null;
             skin = 0;
             tail = 0;
             RandomResp();
@@ -344,8 +350,7 @@ namespace MinesServer.GameShit
         public Resp? GetCurrentResp()
         {
             using var db = new DataBase();
-            var r = db.resps.FirstOrDefault(i => i.id == respid);
-            World.ContainsPack(r.x, r.y, out var p);
+            World.ContainsPack(resp.x, resp.y, out var p);
             return p as Resp;
         }
         private void AddBasicSkills()
@@ -365,17 +370,9 @@ namespace MinesServer.GameShit
             }
             MServer.Instance.players.Add(Id, this);
             connection.auth = null;
-            using (var db = new DataBase())
-            {
-                crys = db.baskets.First(x => x.Id == Id);
-                crys.player = this;
-                inventory = db.inventories.First(x => x.Id == Id);
-                health = db.healths.First(x => x.Id == Id);
-                settings = db.settings.First(x => x.id == Id);
-                skillslist = db.skills.First(x => x.Id == Id);
-                skillslist.LoadSkills();
-                health.LoadHealth(this);
-            }
+            crys.player = this;
+            skillslist.LoadSkills();
+            health.LoadHealth(this);
             MoveToChunk(ChunkX, ChunkY);
             connection.SendPing();
             connection.SendWorldInfo();
@@ -432,6 +429,14 @@ namespace MinesServer.GameShit
             new MoneyPacket(this.money, this.creds);
             connection?.SendU(new MoneyPacket(this.money, this.creds));
         }
+        public void OpenClan()
+        {
+            if (clan != null)
+            {
+                using var db = new DataBase();
+                db.clans.Where(i => i.id == clan.id).Include(p => p.members).Include(p => p.reqs).FirstOrDefault()?.OpenClanWin(this);
+            }
+        }
         public void SendAutoDigg()
         {
             connection?.SendU(new AutoDiggPacket(autoDig));
@@ -443,6 +448,7 @@ namespace MinesServer.GameShit
         public void tp(int x, int y)
         {
             connection?.SendU(new TPPacket(x, y));
+            SendMyMove();
         }
         public void SendGeo()
         {
@@ -455,10 +461,10 @@ namespace MinesServer.GameShit
         }
         public void SendClan()
         {
-            if (clanid == 0)
+            if (cid == 0)
                 connection?.SendU(new ClanHidePacket());
             else
-                connection?.SendU(new ClanShowPacket(clanid));
+                connection?.SendU(new ClanShowPacket(cid));
 
         }
         public void SendCrys()
@@ -505,7 +511,7 @@ namespace MinesServer.GameShit
                             var player = MServer.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                packets.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.clanid, 0));
+                                packets.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.cid, 0));
                             }
                         }
                     }
@@ -516,7 +522,7 @@ namespace MinesServer.GameShit
         }
         public void Update()
         {
-            if (DateTime.Now - lastc190hit > TimeSpan.FromMinutes(1))
+            if (DateTime.Now - lastc190hit >= TimeSpan.FromMinutes(1))
             {
                 c190stacks = 1;
                 lastc190hit = DateTime.Now;
@@ -559,7 +565,7 @@ namespace MinesServer.GameShit
                             cx *= 32; cy *= 32;
                             foreach (var id in ch.bots)
                             {
-                                MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBBotPacket(Id, this.x, this.y, dir, 0, clanid, 0)]));
+                                MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBBotPacket(Id, this.x, this.y, dir, 0, cid, 0)]));
                             }
                         }
                     }
@@ -573,7 +579,7 @@ namespace MinesServer.GameShit
                 var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
                 if (chtoremove.bots.ContainsKey(this.Id))
                 {
-                    chtoremove.bots.Remove(this.Id);
+                    chtoremove.bots.Remove(Id,out var p);
                 }
             }
             var chtoadd = World.W.chunks[x, y];
@@ -625,7 +631,7 @@ namespace MinesServer.GameShit
                                     var player = MServer.GetPlayer(id.Key);
                                     if (player != null)
                                     {
-                                        packetsmap.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.clanid, 0));
+                                        packetsmap.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.cid, 0));
                                     }
                                 }
                             }
@@ -697,7 +703,7 @@ namespace MinesServer.GameShit
                             var player = MServer.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                player?.connection?.SendLocalChat(msg);
+                                player?.connection?.SendB(new HBPacket([new HBChatPacket(Id, x, y, msg)]));
                             }
                         }
                     }
@@ -728,7 +734,7 @@ namespace MinesServer.GameShit
                 var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
                 if (chtoremove.bots.ContainsKey(this.Id))
                 {
-                    chtoremove.bots.Remove(this.Id);
+                    chtoremove.bots.Remove(this.Id,out var p);
                 }
             }
         }

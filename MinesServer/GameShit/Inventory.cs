@@ -63,8 +63,12 @@ namespace MinesServer.GameShit
                 },
                 {
                     5,(p) =>{
-                  ShitClass.Boom((int)p.GetDirCord().X,(int)p.GetDirCord().Y);
+                        if (!World.GunRadius((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p))
+                        {
+                            ShitClass.Boom((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
                         return true;
+                        }
+                        return false;
                         }
                 },
                  {
@@ -72,6 +76,18 @@ namespace MinesServer.GameShit
                     ShitClass.Raz((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
                         return true;
                         }
+                },
+                  {
+                    26,(p) =>
+                    {
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-2,2,-2,2,(int)coord.X,(int)coord.Y,p) && p.clan != null)
+                            {
+                        new Gun((int)coord.X,(int)coord.Y,p.Id,p.cid).Build();
+                            return true;
+                            }
+                        return false;
+                    }
                 },
                 {
                     40,(p) =>{
@@ -131,7 +147,7 @@ namespace MinesServer.GameShit
         {
             if (DateTime.Now - time >= TimeSpan.FromMilliseconds(400))
             {
-                if (typeditems.ContainsKey(selected) && (World.GetProp((int)p.GetDirCord().X, (int)p.GetDirCord().Y).can_place_over || selected == 40) && this[selected] > 0)
+                if (typeditems.ContainsKey(selected) && !World.ContainsPack((int)p.GetDirCord().X, (int)p.GetDirCord().Y,out var pack) && (World.GetProp((int)p.GetDirCord().X, (int)p.GetDirCord().Y).can_place_over || selected == 40) && this[selected] > 0)
                 {
                     if (typeditems[selected](p))
                     {

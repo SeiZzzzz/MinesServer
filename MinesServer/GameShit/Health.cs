@@ -51,6 +51,7 @@ namespace MinesServer.GameShit
             player.MoveToChunk(player.ChunkX, player.ChunkY);
             player.SendMap();
             player.tp(player.x, player.y);
+            SendHp();
         }
         public void Hurt(int d, DamageType t = DamageType.Pure)
         {
@@ -63,9 +64,25 @@ namespace MinesServer.GameShit
                         c.AddExp(player);
                     }
                 }
-                else if (c != null && c.UseSkill(SkillEffectType.OnHurt, player))
+                if (c != null && c.UseSkill(SkillEffectType.OnHurt,player) && t == DamageType.Gun)
                 {
-                    c.AddExp(player);
+                    if (c.type == Enums.SkillType.Induction)
+                    {
+                        c.AddExp(player);
+                    }
+                    if (c.type == Enums.SkillType.AntiGun)
+                    {
+                        c.AddExp(player);
+                        var eff = (int)(d * (c.GetEffect() / 100));
+                        if (d - eff >= 0)
+                        {
+                            d -= eff;
+                        }
+                        else
+                        {
+                            d = 0;
+                        }
+                    }
                 }
             }
             if (HP - d > 0)

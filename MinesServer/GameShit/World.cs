@@ -6,6 +6,7 @@ using MinesServer.Network.World;
 using MinesServer.Server;
 using MoreLinq.Extensions;
 using System.IO.Pipes;
+using System.Numerics;
 
 namespace MinesServer.GameShit
 {
@@ -326,6 +327,23 @@ namespace MinesServer.GameShit
                 ch.Update();
             }
         }
+        public static bool GunRadius(int x,int y,Player player)
+        {
+            for (int chx = -21; chx <= 21; chx++)
+            {
+                for (int chy = -21; chy <= 21; chy++)
+                {
+                    if (Vector2.Distance(new Vector2(x, y), new Vector2(x + chx, y + chy)) <= 20f)
+                    {
+                        if (World.W.ValidCoord(x + chx, y + chy) && (ContainsPack(x + chx, y + chy, out var p) && p is Gun && (p as Gun).charge > 0 && (p as Gun).cid != player.cid))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
         public static DateTime lastpackupd = DateTime.Now;
         public static DateTime lastpackeffect = DateTime.Now;
         public static void Update()
@@ -344,7 +362,7 @@ namespace MinesServer.GameShit
                                 db.Attach(pack.Value);
                                 var damagable = pack.Value as IDamagable;
                                 damagable?.Damage(2);
-                                if (damagable.CanDestroy())
+                                if (damagable.NeedEffect())
                                 {
                                     damagable.SendBrokenEffect();
                                 }
@@ -355,8 +373,10 @@ namespace MinesServer.GameShit
                 db.SaveChanges();
                 lastpackupd = DateTime.Now;
             }
-            if (DateTime.Now - lastpackeffect >= TimeSpan.FromSeconds(3))
+            
+            if (DateTime.Now - lastpackeffect >= TimeSpan.FromSeconds(0.5))
             {
+                using var db = new DataBase();
                 for (int chx = 0; chx < W.chunksCountW; chx++)
                 {
                     for (int chy = 0; chy < W.chunksCountH; chy++)
@@ -366,14 +386,21 @@ namespace MinesServer.GameShit
                             if (pack.Value != null && pack.Value is IDamagable)
                             {
                                 var damagable = pack.Value as IDamagable;
-                                if (damagable.CanDestroy())
+                                if (damagable.NeedEffect())
                                 {
                                     damagable.SendBrokenEffect();
+                                }
+                                if (pack.Value != null && pack.Value is Gun)
+                                {
+                                    var gun = pack.Value as Gun;
+                                    db.Attach(gun);
+                                    gun.Update();
                                 }
                             }
                         }
                     }
                 }
+                db.SaveChanges();
                 lastpackeffect = DateTime.Now;
             }
             if (DateTime.Now - lastcryupdate >= TimeSpan.FromSeconds(30))

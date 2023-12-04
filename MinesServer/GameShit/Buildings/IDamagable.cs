@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MinesServer.Server;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,6 +18,10 @@ namespace MinesServer.GameShit.Buildings
             if (hp - i >= 0)
             {
                 hp -= i;
+                if (hp == 0)
+                {
+                    brokentimer = DateTime.Now;
+                }
                 return;
             }
             hp = 0;
@@ -28,6 +33,10 @@ namespace MinesServer.GameShit.Buildings
             {
                 return false;
             }
+            return hp == 0;
+        }
+        public bool NeedEffect()
+        {
             return hp == 0;
         }
         public abstract void Destroy(Player p);

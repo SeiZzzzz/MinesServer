@@ -1,4 +1,5 @@
-﻿using MinesServer.GameShit.GUI;
+﻿using MinesServer.GameShit.ClanSystem;
+using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents;
@@ -11,6 +12,10 @@ namespace MinesServer.GameShit
     {
         public static void InitCommands()
         {
+            commands.Add("clans", (p, arg) =>
+            {
+                Clan.OpenClanList(p);
+            });
             commands.Add("setitem", (p, arg) =>
             {
                 if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1], out var i) && int.TryParse(arg.Split(" ")[2], out var c))
@@ -43,16 +48,14 @@ namespace MinesServer.GameShit
             });
             commands.Add("getallmap", (p, arg) =>
             {
-                List<IHubPacket> l = new();
                 for (int x = 0; x < World.W.chunksCountW; x++)
                 {
                     for (int y = 0; y < World.W.chunksCountH; y++)
                     {
                         World.W.chunks[x, y].Load();
-                        l.Add(new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].pastedcells));
+                        p.connection?.SendB(new HBPacket([new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].pastedcells)]));
                     }
                 }
-                p.connection.SendB(new HBPacket(l.ToArray()));
             });
             commands.Add("setnick", (p, arg) =>
             {
@@ -101,6 +104,7 @@ namespace MinesServer.GameShit
                             Placeholder = "cmd",
                             IsConsole = true
                         },
+                        ClanList = [],
                         Text = string.Join("", p.console.Select(x => x.text + '\n').ToArray()),
                         Buttons = [new Button("ВЫПОЛНИТЬ", $"{ActionMacros.Input}", (args) =>
                         {
@@ -111,13 +115,13 @@ namespace MinesServer.GameShit
                                 if (commands.Keys.Contains(msg.Split(' ')[0]))
                                 {
                                     commands[msg.Split(' ')[0]](p, msg);
-                                    ShowConsole(p);
                                     return;
                                 }
                             }
                             if (commands.Keys.Contains(msg))
                             {
                                 commands[msg](p, msg);
+                                if (!msg.StartsWith("clans"))
                                 ShowConsole(p);
                                 return;
                             }

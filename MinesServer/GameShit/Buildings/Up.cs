@@ -62,7 +62,7 @@ namespace MinesServer.GameShit.Buildings
                 Title = "penis",
                 Text = skillfromslot?.Description(),
                 Button = skillfromslot != null && skillfromslot.isUpReady() ? new Button("ап", "upgrade", (args) => { skillfromslot.Up(p); p.win = GUIWin(p); p.SendWindow(); }) : null,
-                OnDelete = skillfromslot != null ? (slot) => { p.skillslist.DeletetSkill(p); p.win = GUIWin(p); p.SendWindow(); } : null,
+                OnDelete = skillfromslot != null ? (slot) => { p.skillslist.DeleteSkill(p); p.win = GUIWin(p); p.SendWindow(); } : null,
                 SkillIcon = skillfromslot?.type
             };
             return new Window()

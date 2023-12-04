@@ -1,7 +1,13 @@
-﻿using MinesServer.GameShit.Buildings;
+﻿using MinesServer.Enums;
+using MinesServer.GameShit.Buildings;
+using MinesServer.GameShit.Skills;
+using MinesServer.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,15 +31,15 @@ namespace MinesServer.GameShit.Consumables
                     for (; y <= shoty; y++)
                     {
                         var c = World.GetCell(x, y);
-                        if (!World.isAlive(c) && World.GetProp(c).is_diggable)
+                        foreach (var player in World.W.GetPlayersFromPos(x, y))
+                        {
+                            player.health.Hurt(20 + 60 * player.c190stacks);
+                            player.c190stacks++;
+                            player.lastc190hit = DateTime.Now;
+                        }
+                        if (!World.isAlive(c) && World.GetProp(c).is_diggable && World.GetProp(c).is_destructible)
                         {
                             World.DamageCell(x, y, 50);
-                            foreach(var player in World.W.GetPlayersFromPos(x, y))
-                            {
-                                player.health.Hurt(20 + 60 * player.c190stacks);
-                                player.c190stacks++;
-                                player.lastc190hit = DateTime.Now;
-                            }
                         }
                     }
                     break;
@@ -47,15 +53,15 @@ namespace MinesServer.GameShit.Consumables
                     for (; x >= shotx; x--)
                     {
                         var c = World.GetCell(x, y);
-                        if (!World.isAlive(c) && World.GetProp(c).is_diggable)
+                        foreach (var player in World.W.GetPlayersFromPos(x, y))
+                        {
+                            player.health.Hurt(20 + 60 * player.c190stacks);
+                            player.c190stacks++;
+                            player.lastc190hit = DateTime.Now;
+                        }
+                        if (!World.isAlive(c) && World.GetProp(c).is_diggable && World.GetProp(c).is_destructible)
                         {
                             World.DamageCell(x, y, 50);
-                            foreach (var player in World.W.GetPlayersFromPos(x, y))
-                            {
-                                player.health.Hurt(20 + 60 * player.c190stacks);
-                                player.c190stacks++;
-                                player.lastc190hit = DateTime.Now;
-                            }
                         }
                     }
                     break;
@@ -69,15 +75,15 @@ namespace MinesServer.GameShit.Consumables
                     for (; y >= shoty; y--)
                     {
                         var c = World.GetCell(x, y);
-                        if (!World.isAlive(c) && World.GetProp(c).is_diggable)
+                        foreach (var player in World.W.GetPlayersFromPos(x, y))
+                        {
+                            player.health.Hurt(20 + 60 * player.c190stacks);
+                            player.c190stacks++;
+                            player.lastc190hit = DateTime.Now;
+                        }
+                        if (!World.isAlive(c) && World.GetProp(c).is_diggable && World.GetProp(c).is_destructible)
                         {
                             World.DamageCell(x, y, 50);
-                            foreach (var player in World.W.GetPlayersFromPos(x, y))
-                            {
-                                player.health.Hurt(20 + 60 * player.c190stacks);
-                                player.c190stacks++;
-                                player.lastc190hit = DateTime.Now;
-                            }
                         }
                     }
                     break;
@@ -91,22 +97,22 @@ namespace MinesServer.GameShit.Consumables
                     for (; x <= shotx; x++)
                     {
                         var c = World.GetCell(x, y);
-                        if (!World.isAlive(c) && World.GetProp(c).is_diggable)
+                        foreach (var player in World.W.GetPlayersFromPos(x, y))
+                        {
+                            player.health.Hurt(20 + 60 * player.c190stacks);
+                            player.c190stacks++;
+                            player.lastc190hit = DateTime.Now;
+                        }
+                        if (!World.isAlive(c) && World.GetProp(c).is_diggable && World.GetProp(c).is_destructible)
                         {
                             World.DamageCell(x, y, 50);
-                            foreach (var player in World.W.GetPlayersFromPos(x, y))
-                            {
-                                player.health.Hurt(20 + 60 * player.c190stacks);
-                                player.c190stacks++;
-                                player.lastc190hit = DateTime.Now;
-                            }
                         }
                     }
                     break;
 
             }
         }
-        public static void Boom(int x, int y)
+        public static void Boom(int x, int y,Player player)
         {
             var ch = World.W.GetChunk(x, y);
             ch.SendPack('B', x, y, 0, 0);
@@ -125,7 +131,14 @@ namespace MinesServer.GameShit.Consumables
                             var c = World.GetCell(x + _x, y + _y);
                             if (World.GetProp(c).is_destructible && !World.PackPart(x + _x, y + _y))
                             {
-                                World.Destroy(x + _x, y + _y, World.destroytype.CellAndRoad);
+                                if (c == 117 && Physics.r.Next(1, 101) > 98)
+                                {
+                                    World.SetCell(x + _x, y + _y, 118);
+                                }
+                                else
+                                {
+                                    World.Destroy(x + _x, y + _y, World.destroytype.CellAndRoad);
+                                }
                             }
                         }
                     }
@@ -140,6 +153,7 @@ namespace MinesServer.GameShit.Consumables
             ch.SendPack('B', x, y, 0, 2);
             World.W.AsyncAction(15, () =>
             {
+                using var db = new DataBase();
                 for (int _x = -10; _x <= 10; _x++)
                 {
                     for (int _y = -10; _y <= 10; _y++)
@@ -149,6 +163,7 @@ namespace MinesServer.GameShit.Consumables
                             if (World.ContainsPack(x + _x, y + _y, out var pack) && pack is IDamagable)
                             {
                                 var damagable = pack as IDamagable;
+                                db.Attach(pack);
                                 if (damagable.CanDestroy())
                                 {
                                     damagable.Destroy(p);
@@ -165,6 +180,7 @@ namespace MinesServer.GameShit.Consumables
                         }
                     }
                 }
+                db.SaveChanges();
                 ch.SendDirectedFx(1, x, y, 9, 0, 2);
                 ch.ClearPack(x, y);
             });

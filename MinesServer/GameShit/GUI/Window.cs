@@ -87,8 +87,6 @@ namespace MinesServer.GameShit.GUI
                     }
             }
             obj["buttons"] = new JSONArray();
-            obj["buttons"].Add("ВЫЙТИ");
-            obj["buttons"].Add("exit");
             if (CurrentTab.History.Count <= 1) obj["back"] = false;
             else
             {
@@ -237,6 +235,8 @@ namespace MinesServer.GameShit.GUI
                 obj["si"] = up.SkillIcon?.GetCode() ?? "";
                 return "up:" + obj.ToString();
             }
+            obj["buttons"].Add("ВЫЙТИ");
+            obj["buttons"].Add("exit");
             return "unknown-report-this-to-the-developer:" + obj.ToString();
         }
     }

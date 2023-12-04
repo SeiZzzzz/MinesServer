@@ -9,21 +9,17 @@ namespace MinesServer.GameShit
     public class PlayerSkills
     {
         public int Id { get; set; }
-        public string ser { get; set; }
+        public string ser { get; set; } = "";
         public void LoadSkills()
         {
-            if (!string.IsNullOrWhiteSpace(ser))
+            if (skills.Count < 1)
             {
-                skills = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<int,Skill?>>(ser);
-            }
-            else
-            {
-                ser = "";
+                skills = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<int, Skill?>>(ser);
             }
         }
         [NotMapped]
         public int selectedslot = -1;
-        public void DeletetSkill(Player p)
+        public void DeleteSkill(Player p)
         {
             if (!skills.ContainsKey(selectedslot))
             {
@@ -46,8 +42,9 @@ namespace MinesServer.GameShit
         }
         public void Save()
         {
-            ser = Newtonsoft.Json.JsonConvert.SerializeObject(skills, Newtonsoft.Json.Formatting.None);
             using var db = new DataBase();
+            db.Attach(this);
+            ser = Newtonsoft.Json.JsonConvert.SerializeObject(skills, Newtonsoft.Json.Formatting.None);
             db.SaveChanges();
         }
         public Dictionary<SkillType, bool> SkillToInstall()
@@ -66,6 +63,7 @@ namespace MinesServer.GameShit
         public UpSkill[] GetSkills()
         {
             List<UpSkill> ski = new();
+            LoadSkills();
             foreach(var i in skills)
             {
                 if (i.Value != null)
@@ -83,7 +81,6 @@ namespace MinesServer.GameShit
         {
                 new Skill()
                 {
-                    lastexp = 25,
                     costfunc = (int x) => 1f,
                     effectfunc = (int x) => 100f + x * 10,
                     expfunc = (int x) => 1,
@@ -188,13 +185,27 @@ namespace MinesServer.GameShit
                 },
                 new Skill()
                 {
-                    lastexp = 700,
-                    lastcost = 1100,
                     costfunc = (int x) => 1f,
                     effectfunc = (int x) => 0.08f + (float)(Math.Log10(x) * (Math.Pow(x, 0.5) / 4)),
-                    expfunc = (int x) => 0,
+                    expfunc = (int x) => 1f,
                     type = SkillType.MineGeneral, // доба
                     effecttype = SkillEffectType.OnDigCrys
+                },
+                new Skill()
+                {
+                    costfunc = (int x) => 1f,
+                    effectfunc = (int x) => 100f + x * 4f,
+                    expfunc = (int x) => 1f,
+                    type = SkillType.Induction, // инда
+                    effecttype = SkillEffectType.OnHurt
+                },
+                new Skill()
+                {
+                    costfunc = (int x) => 1f,
+                    effectfunc = (int x) => 1 + x * 0.5f,
+                    expfunc = (int x) => 1,
+                    type = SkillType.AntiGun, // антипуфка
+                    effecttype = SkillEffectType.OnHurt
                 }
 
         };

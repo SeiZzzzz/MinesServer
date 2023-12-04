@@ -45,6 +45,10 @@ namespace MinesServer.GameShit.GUI
 
         public bool ProcessButton(string action)
         {
+            if (action.Length == 0)
+            {
+                return false;
+            }
             if (action[0] == '<')
             {
                 if (action[1..] != Action)

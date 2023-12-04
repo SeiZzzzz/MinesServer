@@ -149,7 +149,7 @@ namespace MinesServer.GameShit.Buildings
             {
                 if (MServer.GetPlayer(ownerid) != null)
                 {
-                    cid = clan ? MServer.GetPlayer(ownerid).clanid : 0;
+                    cid = clan ? MServer.GetPlayer(ownerid).cid : 0;
                 }
             }
             if (int.TryParse(d["cost"], out var costs))
@@ -186,14 +186,14 @@ namespace MinesServer.GameShit.Buildings
         }
         public override Window? GUIWin(Player p)
         {
-            Action adminaction = (p.Id != ownerid && p.clanid != cid ? null : () =>
+            Action adminaction = (p.Id != ownerid && p.cid != cid ? null : () =>
             {
                 if (p.Id == ownerid)
                 {
                     p.win?.CurrentTab.Open(AdmnPage(p));
                 }
             })!;
-            Page page = p.respid != id ? new Page()
+            Page page = p.resp != this ? new Page()
             {
                 OnAdmin = adminaction,
 

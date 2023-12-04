@@ -20,6 +20,9 @@ namespace MinesServer.Server
         public DbSet<Up> ups { get; set; }
         public DbSet<Order> orders { get; set; }
         public DbSet<Clan> clans { get; set; }
+        public DbSet<Request> reqs { get; set; }
+        public DbSet<Rank> ranks { get; set; }
+        public DbSet<Gun> guns { get; set; }
         public static bool created = false;
         public DataBase()
         {
@@ -29,14 +32,21 @@ namespace MinesServer.Server
         {
             optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;MultipleActiveResultSets=true;Database=M;Trusted_Connection=True;");
         }
-        public static Player GetPlayerClassFromBD(int id)
-        {
-            using var db = new DataBase();
-            var p = db.players.SingleOrDefault(p => p.Id == id);
-            return p!;
-        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Clan>()
+                .Navigation(c => c.members)
+                .AutoInclude();
+            modelBuilder.Entity<Clan>()
+               .Navigation(c => c.reqs)
+               .AutoInclude();
+            modelBuilder.Entity<Clan>()
+               .Navigation(c => c.ranks)
+               .AutoInclude();
+            modelBuilder.Entity<Player>()
+                .Navigation(p => p.ClanReqs)
+                .AutoInclude();
         }
         public static void Save()
         {
@@ -64,6 +74,10 @@ namespace MinesServer.Server
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.ups)
+                {
+                    World.AddPack(i.x, i.y, i);
+                }
+                foreach (var i in db.guns)
                 {
                     World.AddPack(i.x, i.y, i);
                 }
