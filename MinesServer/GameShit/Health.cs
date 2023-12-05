@@ -48,9 +48,8 @@ namespace MinesServer.GameShit
             r = player.GetCurrentResp()!;
             var newpos = r.GetRandompoint();
             player.x = newpos.Item1; player.y = newpos.Item2;
-            player.MoveToChunk(player.ChunkX, player.ChunkY);
-            player.SendMap();
             player.tp(player.x, player.y);
+            player.SendMap();
             SendHp();
         }
         public void Hurt(int d, DamageType t = DamageType.Pure)

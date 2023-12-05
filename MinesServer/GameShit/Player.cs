@@ -17,6 +17,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Numerics;
+using System.Windows.Navigation;
 
 namespace MinesServer.GameShit
 {
@@ -57,7 +58,7 @@ namespace MinesServer.GameShit
         public Window? win;
         [NotMapped]
         private float cb;
-        public DateTime Delay;
+        public DateTime Delay = DateTime.Now;
         public bool CanAct { get { return Delay <= DateTime.Now; } }
         public int dir { get; set; }
         public int x
@@ -149,6 +150,17 @@ namespace MinesServer.GameShit
         private void Mine(byte cell, int x, int y)
         {
             float dob = 1 + (float)Math.Truncate(cb);
+            foreach (var c in skillslist.skills.Values)
+            {
+                if (c != null && c.UseSkill(SkillEffectType.OnDigCrys, this))
+                {
+                    if (c.type == SkillType.MineGeneral)
+                    {
+                        dob += c.GetEffect();
+                        c.AddExp(this, (float)Math.Truncate(dob));
+                    }
+                }
+            }
             dob *= (CellType)cell switch
             {
                 CellType.XGreen => 4,
@@ -161,17 +173,6 @@ namespace MinesServer.GameShit
             cb -= (float)Math.Truncate(cb);
             long odob = (long)Math.Truncate(dob);
             var type = ParseCryType((CellType)cell);
-            foreach (var c in skillslist.skills.Values)
-            {
-                if (c != null && c.UseSkill(SkillEffectType.OnDigCrys, this))
-                {
-                    if (c.type == SkillType.MineGeneral)
-                    {
-                        dob += c.GetEffect();
-                        c.AddExp(this, (float)Math.Truncate(dob));
-                    }
-                }
-            }
             cb += dob - odob;
             crys.AddCrys(type, odob);
             World.AddDob(type, odob);
@@ -288,21 +289,22 @@ namespace MinesServer.GameShit
                 this.dir = dir;
                 if (Vector2.Distance(pos, newpos) < 1.2f)
                 {
-                foreach (var c in skillslist.skills.Values)
-                {
-                    if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
+                    foreach (var c in skillslist.skills.Values)
                     {
-                        if (c.type == SkillType.Movement)
+                        if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
                         {
-                            c.AddExp(this);
+                            if (c.type == SkillType.Movement)
+                            {
+                                c.AddExp(this);
+                            }
                         }
                     }
-                }
-                pos = newpos;
+                    pos = newpos;
                 }
                 else
                 {
                     tp(this.x, this.y);
+                    return;
                 }
                 SendMyMove();
                 SendMap();
@@ -311,6 +313,47 @@ namespace MinesServer.GameShit
                     win = pack.GUIWin(this)!;
                     SendWindow();
                 }
+        }
+        public void Build(string type)
+        {
+            int x = (int)GetDirCord().X, y = (int)GetDirCord().Y;
+            if (!World.W.ValidCoord(x, y) || World.GunRadius(x, y, this) || World.PackPart(x,y))
+            {
+                return;
+            }
+            var buildskills = skillslist.skills.Values.Where(c => c.effecttype == SkillEffectType.OnBld);
+            switch (type)
+            {
+                case "G":
+                    foreach (var c in buildskills)
+                    {
+                        if (c.type == SkillType.BuildGreen && World.GetProp(x, y).isEmpty)
+                        {
+                            c.AddExp(this);
+                            if (crys.RemoveCrys(0, (long)c.GetEffect()))
+                            {
+                                World.SetCell(x, y, 101);
+                            }
+                        }
+                    }
+                    break;
+                case "V":
+
+                    break;
+                case "R":
+                    foreach (var c in buildskills)
+                    {
+                            if (c.type == SkillType.BuildRoad)
+                            {
+                                c.AddExp(this);
+                                if (crys.RemoveCrys(0,(long)c.GetEffect()) && World.GetProp(x,y).isEmpty)
+                                {
+                                    World.SetCell(x, y, 35);
+                                }
+                            }
+                    }
+                    break;
+            }
         }
         #endregion
         #region creating
@@ -341,7 +384,8 @@ namespace MinesServer.GameShit
         {
             using var db = new DataBase();
             var re = db.resps.Where(i => i.ownerid == 0);
-            var resp = re.FirstOrDefault()!;
+            var rp = Physics.r.Next(0, re.Count());
+            var resp = re.ElementAt(rp);
             var pos = resp.GetRandompoint();
             this.pos = new Vector2(pos.Item1, pos.Item2);
             SetResp(resp);
@@ -362,18 +406,11 @@ namespace MinesServer.GameShit
         }
         public void Init()
         {
-            if (MServer.Instance.players.Keys.Contains(Id))
-            {
-                MServer.Instance.players.Remove(Id);
-                connection?.Disconnect();
-                return;
-            }
-            MServer.Instance.players.Add(Id, this);
+            MServer.Instance.players[Id] = this;
             connection.auth = null;
             crys.player = this;
             skillslist.LoadSkills();
             health.LoadHealth(this);
-            MoveToChunk(ChunkX, ChunkY);
             connection.SendPing();
             connection.SendWorldInfo();
             SendAutoDigg();
@@ -511,7 +548,7 @@ namespace MinesServer.GameShit
                             var player = MServer.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                packets.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.cid, 0));
+                                    packets.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.cid, 0));
                             }
                         }
                     }

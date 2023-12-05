@@ -2,8 +2,16 @@
 
 namespace MinesServer.GameShit.GUI.Horb.List.Rich
 {
-    public readonly record struct RichListEntry(RichListEntryType Type, string Label, string Values, string InitialValue, string Action, Button[]? Buttons = null, RichCard[]? Cards = null)
+    public readonly struct RichListEntry
     {
+        public required RichListEntryType Type { get; init; }
+        public string Label { get; init; }
+        public string Values { get; init; }
+        public string InitialValue { get; init; } 
+        public string Action { get; init; }
+        public Button[]? Buttons { get; init; }
+        public RichCard[]? Cards { get; init; }
+
         public string SerializedLabel => Type switch
         {
             RichListEntryType.Card => string.Join("&", Cards!.Select(x => x.Button.Label)),
@@ -94,18 +102,16 @@ namespace MinesServer.GameShit.GUI.Horb.List.Rich
             };
         }
 
-        public static RichListEntry ButtonLine(string label, Button button) => new()
+        public static RichListEntry Button(string label, Button button) => new()
         {
             Type = RichListEntryType.Button,
-            Action = "",
-            InitialValue = "",
             Label = label,
-            Values = button.Label,
             Buttons = [button]
         };
 
         public static RichListEntry CardLine(RichCard[] cards) => new()
         {
+            Type = RichListEntryType.Card,
             Cards = cards
         };
     }

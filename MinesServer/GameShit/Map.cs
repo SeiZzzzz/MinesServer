@@ -20,20 +20,24 @@ namespace MinesServer.GameShit
             dstream = new BinaryStream(File.Open(dpath, FileMode.OpenOrCreate));
         }
         public bool MapExists = true;
+        public object slock = new();
         public void SaveChunk(Chunk ch)
         {
-            byte[] w = ch.wcells, r = ch.rcells;
-            float[] dur = ch.durcells;
-            if (w != null && r != null && dur != null)
+            lock (slock)
             {
-                stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-                stream.Write(w);
-                rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-                rstream.Write(r);
-                dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
-                var durbytes = new byte[dur.Length * 4];
-                Buffer.BlockCopy(dur, 0, durbytes, 0, durbytes.Length);
-                dstream.Write(durbytes);
+                byte[] w = ch.wcells, r = ch.rcells;
+                float[] dur = ch.durcells;
+                if (w != null && r != null && dur != null)
+                {
+                    stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+                    stream.Write(w);
+                    rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+                    rstream.Write(r);
+                    dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
+                    var durbytes = new byte[dur.Length * 4];
+                    Buffer.BlockCopy(dur, 0, durbytes, 0, durbytes.Length);
+                    dstream.Write(durbytes);
+                }
             }
 
         }

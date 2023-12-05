@@ -140,11 +140,11 @@ namespace MinesServer.Server
             db.players.Add(temp);
             temp.passwd = passwd;
             temp.name = nick;
-            temp.connection = initiator;
-            db.Attach(temp.resp);
+            db.Attach(temp.resp);db.Attach(temp.skillslist);
             db.SaveChanges();
-            initiator.player = temp;
-            initiator.SendU(new AHPacket(temp.Id, temp.hash));
+            initiator.player = MServer.GetPlayer(temp.Id);
+            initiator.player.connection = initiator;
+            initiator.SendU(new AHPacket(initiator.player.Id, initiator.player.hash));
             initiator.player.Init();
             complited = true;
         }
@@ -180,8 +180,8 @@ namespace MinesServer.Server
             if (temp.passwd == passwd)
             {
                 complited = true;
-                temp.connection = initiator;
-                initiator.player = temp;
+                initiator.player = MServer.GetPlayer(temp.Id);
+                initiator.player.connection = initiator;
                 initiator.SendU(new AHPacket(temp.Id, temp.hash));
                 initiator.player.Init();
                 return;

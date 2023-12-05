@@ -180,12 +180,8 @@ namespace MinesServer.Server
             {
                 player.AddAciton(() =>
                 {
-                    int x = (int)(parent.X + (packet.Direction == 3 ? 1 : packet.Direction == 1 ? -1 : 0));
-                    int y = (int)(parent.Y + (packet.Direction == 0 ? 1 : packet.Direction == 2 ? -1 : 0));
-                    if (World.W.ValidCoord(x, y))
-                    {
-                        //bld
-                    }
+                    player.dir = packet.Direction;
+                    player.Build(packet.BlockType);
                     player.AddDelay(1);
                 });
             }

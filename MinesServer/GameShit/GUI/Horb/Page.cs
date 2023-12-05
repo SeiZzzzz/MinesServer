@@ -34,8 +34,7 @@ namespace MinesServer.GameShit.GUI.Horb
                     return true;
 
             foreach (var i in RichList?.Entries ?? Enumerable.Empty<RichListEntry>())
-                switch (i.Type)
-                {
+                switch (i.Type) {
                     case RichListEntryType.Button: if (i.Buttons![0].ProcessButton(action)) return true; break;
                     case RichListEntryType.Fill: if (i.Buttons!.Any(btn => btn.ProcessButton(action))) return true; break;
                     case RichListEntryType.Card: if (i.Cards!.Any(e => e.Button.ProcessButton(action))) return true; break;

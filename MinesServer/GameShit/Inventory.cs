@@ -40,7 +40,7 @@ namespace MinesServer.GameShit
                         new Up((int)coord.X,(int)coord.Y,p.Id).Build();
                             return true;
                             }
-                        return true;
+                        return false;
                     }
                 },
                 {

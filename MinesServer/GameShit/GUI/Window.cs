@@ -37,6 +37,10 @@ namespace MinesServer.GameShit.GUI
 
         public bool ProcessButton(string action)
         {
+
+#warning Invalid payload. Remove in production!
+            if (string.IsNullOrEmpty(action)) return false;
+
             if (action is "exit" or "exit:0")
                 throw new InvalidOperationException("Exit action is not supported here. Handle this action in the packet layer.");
 
@@ -87,12 +91,6 @@ namespace MinesServer.GameShit.GUI
                     }
             }
             obj["buttons"] = new JSONArray();
-            if (CurrentTab.History.Count <= 1) obj["back"] = false;
-            else
-            {
-                obj["buttons"].Add("НАЗАД");
-                obj["buttons"].Add("<" + CurrentTab.Action);
-            }
             if (page.OnAdmin is not null) obj["admin"] = true;
             if (page is Page horb)
             {
@@ -101,6 +99,14 @@ namespace MinesServer.GameShit.GUI
                     obj["buttons"].Add(b.Label);
                     obj["buttons"].Add(b.ActionFormat);
                 }
+                if (CurrentTab.History.Count <= 1) obj["back"] = false;
+                else
+                {
+                    obj["buttons"].Add("НАЗАД");
+                    obj["buttons"].Add("<" + CurrentTab.Action);
+                }
+                obj["buttons"].Add("ВЫЙТИ");
+                obj["buttons"].Add("exit");
                 if (horb.Text is not null) obj["text"] = horb.Text;
                 if (horb.CrystalConfig is not null)
                 {
@@ -210,14 +216,22 @@ namespace MinesServer.GameShit.GUI
                     obj["inv"] = string.Join(":", horb.Inventory!.Select(x =>
                     {
                         if (x.Id == -1) return "-1:f";
-                        if (x.Amount is not null) return $"{(x.Id >= 2000 ? $"s{x.Id - 2000}" : x.Id)}:{(x.Faint ? "-" : "")}{x.Amount ?? 0}";
+                        if (x.Amount is not null) return $"{(x.Id >= 2000 ? $"s{((SkillType)(x.Id - 2000)).GetCode()}" : x.Id)}:{(x.Faint ? "-" : "")}{x.Amount ?? 0}";
                         if (x.Faint && string.IsNullOrWhiteSpace(x.UpText) && string.IsNullOrWhiteSpace(x.DownText)) return $"{(x.Id >= 2000 ? $"s{((SkillType)(x.Id - 2000)).GetCode()}" : x.Id)}:f";
-                        return $"{(x.Id >= 2000 ? $"s{x.Id - 2000}" : x.Id)}:{(x.Faint ? "@" : "")}{(char)x.UpTextColor}{x.UpText};{(char)x.DownTextColor}{x.DownText}";
+                        return $"{(x.Id >= 2000 ? $"s{((SkillType)(x.Id - 2000)).GetCode()}" : x.Id)}:{(x.Faint ? "@" : "")}{(char)x.UpTextColor}{x.UpText};{(char)x.DownTextColor}{x.DownText}".Trim();
                     }));
                 return "horb:" + obj.ToString();
             }
             else if (page is UpPage up)
             {
+                if (CurrentTab.History.Count <= 1) obj["back"] = false;
+                else
+                {
+                    obj["buttons"].Add("НАЗАД");
+                    obj["buttons"].Add("<" + CurrentTab.Action);
+                }
+                obj["buttons"].Add("ВЫЙТИ");
+                obj["buttons"].Add("exit");
                 if (up.Text is not null) obj["txt"] = up.Text;
                 obj["k"] = string.Join("#", up.Skills.Select(x => $"{x.Type.GetCode()}:{x.Level}:{x.Slot}:{(x.CanUpgrade ? "1" : "0")}")) + "#";
                 obj["s"] = up.SlotAmount;
@@ -227,17 +241,15 @@ namespace MinesServer.GameShit.GUI
                     obj["b"] = up.Button!.Value.Label;
                     obj["ba"] = up.Button!.Value.ActionFormat;
                 }
+                obj["i"] = "";
                 if (up.SkillsToInstall is not null) obj["i"] = string.Join(":", up.SkillsToInstall!.Select(x => (x.Value ? "" : "_") + x.Key.GetCode()));
-                else obj["i"] = "";
                 if (up.OnDelete is not null) obj["del"] = 1;
                 if (up.SelectedSlot is not null) obj["sl"] = up.SelectedSlot!.Value;
                 else obj["sl"] = -1;
                 obj["si"] = up.SkillIcon?.GetCode() ?? "";
                 return "up:" + obj.ToString();
             }
-            obj["buttons"].Add("ВЫЙТИ");
-            obj["buttons"].Add("exit");
-            return "unknown-report-this-to-the-developer:" + obj.ToString();
+            return "horb:{\"title\":\"!!! UNKNOWN PAGE TYPE !!!\",\"text\":\"Report this to the developer, please.\n" + page.GetType() + "\"}";
         }
     }
 }

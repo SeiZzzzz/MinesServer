@@ -12,6 +12,10 @@ namespace MinesServer.GameShit
     {
         public static void InitCommands()
         {
+            commands.Add("fedresp", (p, arg) =>
+            {
+                p.RandomResp();
+            });
             commands.Add("clans", (p, arg) =>
             {
                 Clan.OpenClanList(p);

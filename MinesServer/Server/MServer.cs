@@ -17,7 +17,6 @@ namespace MinesServer.Server
             Instance = this;
             MConsole.InitCommands();
             players = new Dictionary<int, Player>();
-            /*HorbDecoder.InitCommands();*/
             time = new ServerTime();
             new World(Default.cfg.WorldName, 32 * 32, 32 * 32);
             time.Start();

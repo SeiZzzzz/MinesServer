@@ -43,8 +43,8 @@ namespace MinesServer.GameShit
                 Console.WriteLine("Generation End");
                 Console.WriteLine($"{DateTime.Now - x} loaded");
                 x = DateTime.Now;
-                CreateSpawns(4);
             }
+            CreateSpawns(4);
             Console.WriteLine("Creating chunkmesh");
             x = DateTime.Now;
             Console.WriteLine($"{DateTime.Now - x} loaded");
@@ -58,13 +58,28 @@ namespace MinesServer.GameShit
             var r = new Random();
             using (var db = new DataBase())
             {
+                var y = 10;
+                var x = 0;
                 while (db.resps.Where(i => i.ownerid == 0).Count() < c)
                 {
-                    var x = r.Next(width);
-                    var y = 5;
-                    if (CanBuildPack(-2, 6, -2, 3, x, y, null, true))
+                    x = r.Next(x,width + 1);
+                    if (x == width)
                     {
-                        new Resp(x, y, 0).Build();
+                        y++;
+                        x = 0;
+                    }
+                    if (CanBuildPack(-10, 5, -10, 5, x, y, null, true))
+                    {
+                        for(int rx = -10;rx <= 10;rx++)
+                        {
+                            for (int ry = -10;ry <= 10;ry++)
+                            {
+                               SetCell(x + rx, y + ry, 36);
+                            }
+                        }
+                        new Market(x - 7, y - 4, 0).Build();
+                        new Resp(x - 8,y + 7, 0).Build();
+                        new Up(x, y - 4, 0).Build();
 
                     }
                 }
@@ -100,9 +115,9 @@ namespace MinesServer.GameShit
                 for (int cy = bottom; cy <= top; cy++)
                 {
                     var p = GetProp(GetCell(x + cx, y + cy));
-                    if (!ValidCoord(x + cx, y + cy) || (ignoreplace && (p.is_destructible || PackPart(x + cx, y + cy))) || ((PackPart(x + cx, y + cy) || !p.can_place_over || !p.isEmpty) && !ignoreplace))
+                    if (!ValidCoord(x + cx, y + cy) || (ignoreplace && (!p.is_diggable || !p.is_destructible || GetCell(x + cx, y + cy) == 36)) || PackPart(x + cx, y + cy) || ((!p.can_place_over || !p.isEmpty) && !ignoreplace))
                     {
-                        if (player != null)
+                        if (player != null && ValidCoord(x + cx,y + cy))
                         {
                             packets.Add(new HBFXPacket(x + cx, y + cy, 0));
                         }
@@ -226,10 +241,7 @@ namespace MinesServer.GameShit
                 return false;
             }
             var ch = W.GetChunk(x, y);
-            if (ch.packsprop == null)
-            {
-                ch.LoadPackProps();
-            }
+            ch.LoadPackProps();
             return ch.packsprop[(x - ch.WorldX) + (y - ch.WorldY) * 32];
         }
         public static void AddPack(int x, int y, Pack p)
@@ -287,6 +299,11 @@ namespace MinesServer.GameShit
         }
         public static bool ContainsPack(int x, int y, out Pack p)
         {
+            if (!W.ValidCoord(x,y))
+            {
+                p = null;
+                return true;
+            }
             var chpos = W.GetChunkPosByCoords(x, y);
             var ch = W.chunks[chpos.Item1, chpos.Item2];
             p = ch.GetPack((x - ch.WorldX), (y - ch.WorldY))!;
@@ -403,11 +420,11 @@ namespace MinesServer.GameShit
                 db.SaveChanges();
                 lastpackeffect = DateTime.Now;
             }
-            if (DateTime.Now - lastcryupdate >= TimeSpan.FromSeconds(30))
+            if (DateTime.Now - lastcryupdate >= TimeSpan.FromHours(1))
             {
                 for (int i = 0; i < W.cryscostmod.Length; i++)
                 {
-                    var p = ((W.summary[i] * W.summary.Sum()) / 100);
+                    var p = ((W.summary[i] + W.summary.Sum()) / 100);
                     if (p > 0)
                     {
                         if (p > 20 && (W.cryscostbase[i] + W.cryscostmod[i]) > W.cryscostbase[i])
@@ -433,8 +450,8 @@ namespace MinesServer.GameShit
         {
             W.summary[t] += dob;
         }
-        public int[] cryscostmod = new int[6];
-        public int[] cryscostbase = { 8, 16, 22, 26, 24, 40 };
+        public int[] cryscostmod = { 10, 10, 15, 10, 15, 15 };
+        public int[] cryscostbase = { 8, 16, 24, 26, 24, 40 };
         public long[] summary = new long[6];
         public Chunk GetChunk(int x, int y)
         {

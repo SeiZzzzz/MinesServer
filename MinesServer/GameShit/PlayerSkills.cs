@@ -2,13 +2,15 @@
 using MinesServer.GameShit.GUI.UP;
 using MinesServer.GameShit.Skills;
 using MinesServer.Server;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit
 {
     public class PlayerSkills
     {
-        public int Id { get; set; }
+        [Key]
+        public int id { get; set; }
         public string ser { get; set; } = "";
         public void LoadSkills()
         {
@@ -90,9 +92,41 @@ namespace MinesServer.GameShit
                 new Skill()
                 {
                     costfunc = (int x) => 1f,
+                    effectfunc = (int x) => 5f - x * 0.2f < 0 ? 1f : 5f - x * 0.2f,
+                    expfunc = (int x) => 1f,
+                    type = SkillType.BuildRoad,
+                    effecttype = SkillEffectType.OnBld
+                },
+                new Skill()
+                {
+                    costfunc = (int x) => 1f,
+                    effectfunc = (int x) => 1f + x * 2,
+                    expfunc = (int x) => 1f,
+                    type = SkillType.BuildGreen, 
+                    effecttype = SkillEffectType.OnBld
+                },
+                new Skill()
+                {
+                    costfunc = (int x) => 1f,
+                    effectfunc = (int x) => 1f + x * 2,
+                    expfunc = (int x) => 1f,
+                    type = SkillType.BuildYellow,
+                    effecttype = SkillEffectType.OnBld
+                },
+                 new Skill()
+                {
+                    costfunc = (int x) => 1f,
+                    effectfunc = (int x) => 1f + x * 2f,
+                    expfunc = (int x) => 1f,
+                    type = SkillType.BuildRed,
+                    effecttype = SkillEffectType.OnBld
+                },
+                new Skill()
+                {
+                    costfunc = (int x) => 1f,
                     effectfunc = (int x) => 1f,
                     expfunc = (int x) => 1f,
-                    type = SkillType.BuildGreen, // стройка
+                    type = SkillType.BuildStructure, 
                     effecttype = SkillEffectType.OnBld
                 },
                 new Skill()

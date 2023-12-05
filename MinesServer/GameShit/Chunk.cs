@@ -69,6 +69,7 @@ namespace MinesServer.GameShit
                 durcells[x + y * 32] = World.GetProp(cell).durability;
                 this[x, y] = cell;
             }
+            LoadPackProps();
             packsprop[x + y * 32] = packmesh ? true : false;
             if (active)
             {
@@ -286,7 +287,6 @@ namespace MinesServer.GameShit
         }
         public void Dispose()
         {
-            Save();
             cells = null;
             wcells = null;
             durcells = null;
@@ -295,11 +295,11 @@ namespace MinesServer.GameShit
         }
         public void Load()
         {
-            LoadPackProps();
             if (cells != null && wcells != null)
             {
                 return;
             }
+            LoadPackProps();
             wcells = new byte[1024]; rcells = new byte[1024]; durcells = new float[1024]; cells = new byte[1024];
             World.W.map.LoadChunk(this);
             for (int x = 0; x < 32; x++)
@@ -319,10 +319,7 @@ namespace MinesServer.GameShit
                 }
             }
         }
-        public void Save()
-        {
-            World.W.map.SaveChunk(this);
-        }
+        public void Save() => World.W.map.SaveChunk(this);
         private bool ShouldBeLoadedBots()
         {
             for (var xxx = -2; xxx <= 2; xxx++)

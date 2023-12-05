@@ -54,11 +54,11 @@
                 }
                 Console.WriteLine($"fill sectors {s[i].seccells.Count} {i}/{s.Count}");
                 var inside = new SectorFiller();
-                if (s[i].seccells.Count > 80000)
+                if (s[i].seccells.Count > 60000)
                 {
                     inside.CreateFillForCells(s[i], false, s[i].GenerateInsides());
                 }
-                else if (s[i].seccells.Count <= 80000)
+                else if (s[i].seccells.Count <= 60000)
                 {
                     inside.CreateFillForCells(s[i], true, s[i].GenerateInsides());
                 }

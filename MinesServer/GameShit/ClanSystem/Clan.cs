@@ -104,7 +104,7 @@ namespace MinesServer.GameShit.ClanSystem
             {
                 Text = "Заявка подана",
                 Title = "КЛАНЫ",
-                Card = new Card(CardImageType.Clan, (200 + id).ToString(), $"<color=white>{name}</color>\nУчастники: <color=white>{members.Count}</color>"),
+                Card = new Card(CardImageType.Clan, this.id.ToString(), $"<color=white>{name}</color>\nУчастники: <color=white>{members.Count}</color>"),
                 Buttons = []
             });
             p.SendWindow();
@@ -142,7 +142,7 @@ namespace MinesServer.GameShit.ClanSystem
         public void DeclineReq(Request target)
         {
             using var db = new DataBase(); 
-            db.Attach(target.player);
+            db.Attach(this);
             reqs.Remove(target);
             target.player.ClanReqs.Remove(target); 
             db.SaveChanges();
@@ -356,9 +356,10 @@ namespace MinesServer.GameShit.ClanSystem
                 buttons = [];
             }
             using var db = new DataBase();
-            if (GetRequests().FirstOrDefault(i => i.player.Id == id) != null)
+            if (GetRequests().FirstOrDefault(i => i.player.Id == p.Id) != null)
             {
                 text += "\n Заявка уже подана";
+                buttons = [];
             }
             p.win.CurrentTab.Open(new Page()
             {

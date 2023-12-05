@@ -54,7 +54,7 @@ namespace MinesServer.GameShit.Buildings
                     RichList = new RichListConfig()
                     {
                         Entries = [RichListEntry.Text($"hp {m.hp}"),
-                            RichListEntry.ButtonLine($"прибыль {m.moneyinside}$", m.moneyinside == 0 ? new Button() : new Button("Получить", "getprofit",(args) => { using var db = new DataBase(); p.money += m.moneyinside;m.moneyinside = 0;p.SendMoney();db.SaveChanges();m.onadmn(p, m);p.SendWindow(); })),
+                            RichListEntry.Button($"прибыль {m.moneyinside}$", m.moneyinside == 0 ? new Button() : new Button("Получить", "getprofit",(args) => { using var db = new DataBase(); p.money += m.moneyinside;m.moneyinside = 0;p.SendMoney();db.SaveChanges();m.onadmn(p, m);p.SendWindow(); })),
                         ]
                     },
                     Buttons = []

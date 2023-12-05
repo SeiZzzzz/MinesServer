@@ -18,6 +18,11 @@ namespace MinesServer.GameShit.Skills
             expfunc ??= PlayerSkills.skillz.First(i => i.type == type).expfunc;
             return expfunc(lvl);
         }
+        public float GetDop()
+        {
+            expfunc ??= PlayerSkills.skillz.First(i => i.type == type).dopfunc;
+            return dopfunc(lvl);
+        }
         public float GetCost()
         {
             costfunc ??= PlayerSkills.skillz.First(i => i.type == type).costfunc;
@@ -87,5 +92,7 @@ namespace MinesServer.GameShit.Skills
         public Func<int, float> effectfunc;
         [NonSerialized]
         public Func<int, float> costfunc;
+        [NonSerialized]
+        public Func<int, float> dopfunc = null;
     }
 }

@@ -1,4 +1,5 @@
 ﻿using RcherNZ.AccidentalNoise;
+using System;
 
 namespace MinesServer.GameShit.Generator
 {
@@ -24,7 +25,7 @@ namespace MinesServer.GameShit.Generator
         }
         public void CreateFillForCells(Sector s, bool gig = false, params CellType[] args)
         {
-        tme:
+            tme:
             Console.WriteLine("");
             var dick = new Dictionary<CellType, (float, float)>();
             var gt = 0;
@@ -32,34 +33,13 @@ namespace MinesServer.GameShit.Generator
             var gte = 0;
             foreach (var d in args)
             {
-            GC:
-                int f = rand.Next(1, 1000001);
-                int sec = rand.Next(f, 1000001);
-                var dis = (float)((sec - f) / 1000000f);
-                if (dis > 0.2f || dis < 0.05f)
+                double start = rand.NextDouble();
+                double end = start + rand.NextDouble();
+                if (dick.Values.Any(segment => segment.Item1 <= end && segment.Item2 >= start))
                 {
-                    gt++;
-                    Console.Write($"\rgoto {gt}");
-                    if (gt > 100000)
-                    {
-                        goto tme;
-                    }
-                    goto GC;
+                    continue;
                 }
-                for (int j = 0; j < dick.Count; j++)
-                {
-                    if ((dick.ElementAt(j).Value.Item1 * 1000000f) < sec && f < (dick.ElementAt(j).Value.Item2 * 1000000f))
-                    {
-                        gt1++;
-                        Console.Write($"\rgoto err1 {gt1}");
-                        if (gt1 > 100000)
-                        {
-                            goto tme;
-                        }
-                        goto GC;
-                    }
-                }
-                dick[d] = (f / 1000000f, sec / 1000000f);
+                dick[d] = ((float)start, (float)end);
             }
         reg:
             var fr = NotTypedNoise();

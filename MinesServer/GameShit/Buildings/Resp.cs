@@ -24,7 +24,7 @@ namespace MinesServer.GameShit.Buildings
         }
         public Resp(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Resp)
         {
-            cost = 1000;
+            cost = 10;
             charge = 100;
             maxcharge = 1000;
             hp = 100;
@@ -176,7 +176,7 @@ namespace MinesServer.GameShit.Buildings
                     Entries = [RichListEntry.Fill("заряд", charge, maxcharge, Enums.CrystalType.Blue, fillbuttons[0], fillbuttons[1], fillbuttons[2]),
                         RichListEntry.Text("hp"),
                         RichListEntry.UInt32("cost", "cost", (uint)cost),
-                        RichListEntry.ButtonLine($"прибыль {moneyinside}$", moneyinside == 0 ? new Button() : new Button("Получить", "getprofit", (args) => { using var db = new DataBase(); p.money += moneyinside; moneyinside = 0; p.SendMoney(); db.SaveChanges();p.win?.CurrentTab.Replace(AdmnPage(p)); p.SendWindow(); })),
+                        RichListEntry.Button($"прибыль {moneyinside}$", moneyinside == 0 ? new Button() : new Button("Получить", "getprofit", (args) => { using var db = new DataBase(); p.money += moneyinside; moneyinside = 0; p.SendMoney(); db.SaveChanges();p.win?.CurrentTab.Replace(AdmnPage(p)); p.SendWindow(); })),
                         RichListEntry.Bool("Клановый респ", "clan", cid > 0),
                         RichListEntry.UInt32("clanzone", "clanzone", (uint)clanzone)
                             ]
