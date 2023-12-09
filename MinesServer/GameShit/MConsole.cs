@@ -52,12 +52,11 @@ namespace MinesServer.GameShit
             });
             commands.Add("getallmap", (p, arg) =>
             {
-                for (int x = 0; x < World.W.chunksCountW; x++)
+                for (int x = 0; x < World.ChunksW; x++)
                 {
-                    for (int y = 0; y < World.W.chunksCountH; y++)
+                    for (int y = 0; y < World.ChunksH; y++)
                     {
-                        World.W.chunks[x, y].Load();
-                        p.connection?.SendB(new HBPacket([new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].pastedcells)]));
+                        p.connection?.SendB(new HBPacket([new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].cells)]));
                     }
                 }
             });

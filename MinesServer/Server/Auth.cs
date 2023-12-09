@@ -48,10 +48,14 @@ namespace MinesServer.Server
             {
                 player = MServer.GetPlayer(p.user_id.Value)!;
             }
+            if (player?.connection is not null)
+            {
+                return;
+            }
             if (player == null)
             {
                 initiator.SendPing();
-                initiator.SendU(new WorldInfoPacket(World.W.name, World.W.width, World.W.height, 0, "COCK", "http://pi.door/", "ok"));
+                initiator.SendU(new WorldInfoPacket(World.W.name, World.CellsWidth, World.CellsHeight, 0, "COCK", "http://pi.door/", "ok"));
                 authwin = new Window()
                 {
                     Title = "ВХОД",
@@ -142,11 +146,10 @@ namespace MinesServer.Server
             temp.name = nick;
             db.Attach(temp.resp);db.Attach(temp.skillslist);
             db.SaveChanges();
-            initiator.player = MServer.GetPlayer(temp.Id);
+            initiator.SendU(new AHPacket(temp.Id, temp.hash));
+            initiator.player = MServer.GetPlayer(temp.name);
             initiator.player.connection = initiator;
-            initiator.SendU(new AHPacket(initiator.player.Id, initiator.player.hash));
             initiator.player.Init();
-            complited = true;
         }
         public void TryToFindByNick(string name, Session initiator)
         {

@@ -1,11 +1,13 @@
 ﻿using MinesServer.Enums;
 using MinesServer.GameShit.GUI;
+using MinesServer.GameShit.GUI.Horb;
+using MinesServer.GameShit.GUI.Horb.List.Rich;
 using MinesServer.GameShit.Skills;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
-using System.Windows.Forms.VisualStyles;
 namespace MinesServer.GameShit.Buildings
 {
     public class Gun : Pack, IDamagable
@@ -38,11 +40,48 @@ namespace MinesServer.GameShit.Buildings
                 p.inventory[1]++;
             }
         }
+        public void Fill(Player p, long val)
+        {
+            if (charge == maxcharge)
+            {
+                return;
+            }
+            using var db = new DataBase();
+            db.Attach(this);
+            if (p.crys[CrystalType.Cyan] < val)
+                {
+                    val = p.crys[CrystalType.Cyan];
+                }
+                if (p.crys.RemoveCrys((int)CrystalType.Cyan, val))
+                {
+                    charge += (int)val;
+                World.W.GetChunk(x, y).ResendPacks();
+            }
+            db.SaveChanges();
+            p.win = GUIWin(p);
+                p.SendWindow();
+        }
         public override Window? GUIWin(Player p)
         {
+            Button[] fillbuttons = [p.crys[CrystalType.Cyan] >= 100 ? new Button("+100", "fill:100", (args) => Fill(p, 100)) : new Button("+100", "fill:100"),
+                p.crys[CrystalType.Cyan] >= 1000 ? new Button("+1000", "fill:1000", (args) => Fill(p, 1000)) : new Button("+1000", "fill:1000"),
+                p.crys[CrystalType.Cyan] >= 0 ? new Button("max", "fill:max", (args) => Fill(p, (long)(maxcharge - charge))) : new Button("max", "fill:max")
+               ];
             return new Window()
             {
-                Tabs = []
+                Tabs = [new Tab()
+                { Action = "gun",
+                Label = "хуй",
+                Title = "Пушка" ,
+                    InitialPage = new Page()
+                    {
+                        RichList = new RichListConfig()
+                        {
+                            Entries = [RichListEntry.Fill("заряд", (int)charge, (int)maxcharge, CrystalType.Cyan, fillbuttons[0], fillbuttons[1], fillbuttons[2])]
+                        },
+                        Buttons = []
+                    }
+                }]
             };
         }
         public override void Build()

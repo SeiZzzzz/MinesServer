@@ -5,6 +5,7 @@ using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
 using MinesServer.Server;
 using MoreLinq.Extensions;
+using System;
 using System.IO.Pipes;
 using System.Numerics;
 
@@ -12,30 +13,40 @@ namespace MinesServer.GameShit
 {
     public class World
     {
+        public const int CellsWidth = 32 * ChunkWidth;
+        public const int CellsHeight = 32 * ChunkHeight;
+        public const int ChunkWidth = 32;
+        public const int ChunkHeight = 32;
+        public const int ChunkVolume = ChunkWidth * ChunkHeight;
+        public const int TotalVolume = ChunksAmount * ChunkVolume;
+
+        const float _chunksWidth = (float)CellsWidth / ChunkWidth;
+        const float _chunksHeight = (float)CellsWidth / ChunkHeight;
+        public const int ChunksW = _chunksWidth > (int)_chunksWidth ? (int)_chunksWidth + 1 : (int)_chunksWidth; // Альтернатива Math.Ceiling для константных выражений
+        public const int ChunksH = _chunksHeight > (int)_chunksHeight ? (int)_chunksHeight + 1 : (int)_chunksHeight; // Альтернатива Math.Ceiling для константных выражений
+        public const int ChunksAmount = ChunksW * ChunksH;
+
         public string name { get; private set; }
-        public int width { get; private set; }
-        public int height { get; private set; }
-        public int chunksCountW { get { return width / 32; } }
-        public int chunksCountH { get { return height / 32; } }
-        public readonly Map map;
+        public ByteWorldLayer cells;
+        public ByteWorldLayer road;
+        public WorldLayer<float> durability;
         public Chunk[,] chunks;
         public static World W;
         public Gen gen;
-        public World(string name, int width, int height)
+        public World(string name)
         {
             W = this;
-            this.width = width;
-            this.height = height;
             this.name = name;
-            map = new Map(width, height);
-            gen = new Gen(width, height);
+            cells = new($"{name}.mapb");
+            road = new($"{name}_road.mapb");
+            durability = new($"{name}_durability.mapb");
+            gen = new Gen(CellsWidth, CellsHeight);
             var x = DateTime.Now;
-            chunks = new Chunk[chunksCountW, chunksCountH];
+            chunks = new Chunk[ChunksW, ChunksH];
             CreateChunks();
-            if (!map.MapExists)
+            if (!cells.Exists || !road.Exists || !durability.Exists)
             {
-                EmptyChunks();
-                Console.WriteLine($"Creating World Preset{width} x {height}({chunksCountW} x {chunksCountH} chunks)");
+                Console.WriteLine($"Creating World Preset{CellsWidth} x {CellsHeight}({ChunksW} x {ChunksH} chunks)");
                 Console.WriteLine("EmptyMapGeneration");
                 x = DateTime.Now;
                 //CreateEmptyMap(114);
@@ -51,6 +62,9 @@ namespace MinesServer.GameShit
             Console.WriteLine("LoadConfirmed");
             Console.WriteLine("Started");
             DataBase.Load();
+            cells.Commit();
+            road.Commit();
+            durability.Commit();
             MServer.started = true;
         }
         public void CreateSpawns(int c)
@@ -62,13 +76,13 @@ namespace MinesServer.GameShit
                 var x = 0;
                 while (db.resps.Where(i => i.ownerid == 0).Count() < c)
                 {
-                    x = r.Next(x,width + 1);
-                    if (x == width)
+                    x = r.Next(x, CellsWidth + 1);
+                    if (x >= CellsWidth)
                     {
                         y++;
                         x = 0;
                     }
-                    if (CanBuildPack(-10, 5, -10, 5, x, y, null, true))
+                    if (CanBuildPack(-5, 5, -5, 5, x, y, null, true))
                     {
                         for(int rx = -10;rx <= 10;rx++)
                         {
@@ -82,27 +96,24 @@ namespace MinesServer.GameShit
                         new Up(x, y - 4, 0).Build();
 
                     }
+                    if (y > CellsHeight)
+                    {
+                        y = 0;
+                    }
                 }
             }
+            cells.Commit();
+            road.Commit();
+            durability.Commit();
 
         }
         public void CreateChunks()
         {
-            for (int chx = 0; chx < chunksCountW; chx++)
+            for (int chx = 0; chx < ChunksW; chx++)
             {
-                for (int chy = 0; chy < chunksCountH; chy++)
+                for (int chy = 0; chy < ChunksH; chy++)
                 {
                     chunks[chx, chy] = new Chunk((chx, chy));
-                }
-            }
-        }
-        public void EmptyChunks()
-        {
-            for (int chx = 0; chx < chunksCountW; chx++)
-            {
-                for (int chy = 0; chy < chunksCountH; chy++)
-                {
-                    chunks[chx, chy].EmptyLoad();
                 }
             }
         }
@@ -161,6 +172,26 @@ namespace MinesServer.GameShit
                 return;
             }
             var ch = W.GetChunk(x, y);
+            switch (t)
+            {
+                case destroytype.Cell:
+                    if (W.cells[x, y] != 0)
+                    {
+                        W.cells[x,  y] = 0;
+                        W.road[x,  y] = W.road[x, y] == 0 ? 32 : W.road[x,  y];
+                    }
+                    break;
+                case destroytype.Road:
+                    if (W.road[x, y] != 32)
+                    {
+                        W.road[x, y] = 32;
+                    }
+                    break;
+                case destroytype.CellAndRoad:
+                    W.cells[x, y] = 0;
+                    W.road[x, y] = 32;
+                    break;
+            }
             ch.DestroyCell(x - ch.WorldX, y - ch.WorldY, t);
         }
         public static float GetDurability(int x, int y)
@@ -169,8 +200,7 @@ namespace MinesServer.GameShit
             {
                 return 0f;
             }
-            var ch = W.GetChunk(x, y);
-            return ch.GetDurability(x - ch.WorldX, y - ch.WorldY);
+            return W.durability[x, y]!.Value;
         }
         public static void SetDurability(int x, int y, float d)
         {
@@ -178,27 +208,26 @@ namespace MinesServer.GameShit
             {
                 return;
             }
-            var ch = W.GetChunk(x, y);
-            ch.SetDurability(x - ch.WorldX, y - ch.WorldY, d);
+            W.durability[x, y] = d;
         }
         public void CreateEmptyMap(byte cell)
         {
             int cells = 0;
             var j = DateTime.Now;
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < CellsWidth; x++)
             {
-                for (int y = 0; y < height; y++)
+                for (int y = 0; y < CellsHeight; y++)
                 {
                     cells += 1;
                     World.SetCell(x, y, cell);
                 }
                 if (DateTime.Now - j > TimeSpan.FromSeconds(2))
                 {
-                    Console.Write($"\r{cells}/{width * height}");
+                    Console.Write($"\r{cells}/{TotalVolume}");
                     j = DateTime.Now;
                 }
             }
-            Console.Write($"\r{cells}/{width * height}");
+            Console.Write($"\r{cells}/{TotalVolume}");
             Console.WriteLine("");
         }
         public static Cell GetProp(byte type)
@@ -232,6 +261,16 @@ namespace MinesServer.GameShit
                 return;
             }
             var ch = W.GetChunk(x, y);
+            if (GetProp(cell).isEmpty)
+            {
+                W.cells[x, y] = 0;
+                W.road[x,y] = cell;
+            }
+            else
+            {
+                W.cells[x, y] = cell;
+                W.durability[x, y] = GetProp(cell).durability;
+            }
             ch.SetCell(x - ch.WorldX, y - ch.WorldY, cell, packmesh);
         }
         public static bool PackPart(int x, int y)
@@ -264,12 +303,13 @@ namespace MinesServer.GameShit
         }
         public static byte GetCell(int x, int y)
         {
-            if (!W.ValidCoord(x, y))
+            var cell = W.cells[x, y] ?? 0;
+            if (cell == 0)
             {
-                return 0;
+                var r = W.road[x, y] ?? 32;
+                return r;
             }
-            var ch = W.GetChunk(x, y);
-            return ch.GetCell(x - ch.WorldX, y - ch.WorldY);
+            return cell;
         }
         public async void AsyncAction(int secdelay, Action act)
         {
@@ -334,7 +374,7 @@ namespace MinesServer.GameShit
                 _ => false
             };
         }
-        public bool ValidCoord(int x, int y) => (x >= 0 && y >= 0) && (x < width && y < height);
+        public bool ValidCoord(int x, int y) => (x >= 0 && y >= 0) && (x < CellsWidth && y < CellsHeight);
         private (int, int) GetChunkPosByCoords(int x, int y) => ((int)Math.Floor((float)x / 32), (int)Math.Floor((float)y / 32));
         public void UpdateChunkByCoords(int x, int y)
         {
@@ -368,9 +408,9 @@ namespace MinesServer.GameShit
             if (DateTime.Now - lastpackupd >= TimeSpan.FromHours(1))
             {
                 using var db = new DataBase();
-                for (int chx = 0; chx < W.chunksCountW; chx++)
+                for (int chx = 0; chx < ChunksW; chx++)
                 {
-                    for (int chy = 0; chy < W.chunksCountH; chy++)
+                    for (int chy = 0; chy < ChunksH; chy++)
                     {
                         foreach(var pack in W.chunks[chx, chy].packs)
                         {
@@ -394,9 +434,9 @@ namespace MinesServer.GameShit
             if (DateTime.Now - lastpackeffect >= TimeSpan.FromSeconds(0.5))
             {
                 using var db = new DataBase();
-                for (int chx = 0; chx < W.chunksCountW; chx++)
+                for (int chx = 0; chx < ChunksW; chx++)
                 {
-                    for (int chy = 0; chy < W.chunksCountH; chy++)
+                    for (int chy = 0; chy < ChunksH; chy++)
                     {
                         foreach (var pack in W.chunks[chx, chy].packs)
                         {

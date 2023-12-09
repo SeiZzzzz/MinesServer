@@ -10,8 +10,8 @@ namespace MinesServer.GameShit.Buildings
     public class Resp : Pack, IDamagable
     {
         #region fields
-        public int charge { get; set; }
-        public int maxcharge { get; set; }
+        public float charge { get; set; }
+        public float maxcharge { get; set; }
         public int cost { get; set; }
         public override int cid { get; set; }
         public long moneyinside { get; set; }
@@ -166,14 +166,14 @@ namespace MinesServer.GameShit.Buildings
         {
             Button[] fillbuttons = [p.crys[Enums.CrystalType.Blue] >= 100 ? new Button("+100", "fill:100", (args) => Fill(p, 100)) : new Button("+100", "fill:100"),
                 p.crys[Enums.CrystalType.Blue] >= 1000 ? new Button("+1000", "fill:1000", (args) => Fill(p, 1000)) : new Button("+1000", "fill:1000"),
-                p.crys[Enums.CrystalType.Blue] >= 0 ? new Button("max", "fill:max", (args) => Fill(p, maxcharge - charge)) : new Button("max", "fill:max")
+                p.crys[Enums.CrystalType.Blue] >= 0 ? new Button("max", "fill:max", (args) => Fill(p, (long)(maxcharge - charge))) : new Button("max", "fill:max")
                ];
             return new Page()
             {
                 Text = " ",
                 RichList = new RichListConfig()
                 {
-                    Entries = [RichListEntry.Fill("заряд", charge, maxcharge, Enums.CrystalType.Blue, fillbuttons[0], fillbuttons[1], fillbuttons[2]),
+                    Entries = [RichListEntry.Fill("заряд", (int)charge, (int)maxcharge, Enums.CrystalType.Blue, fillbuttons[0], fillbuttons[1], fillbuttons[2]),
                         RichListEntry.Text("hp"),
                         RichListEntry.UInt32("cost", "cost", (uint)cost),
                         RichListEntry.Button($"прибыль {moneyinside}$", moneyinside == 0 ? new Button() : new Button("Получить", "getprofit", (args) => { using var db = new DataBase(); p.money += moneyinside; moneyinside = 0; p.SendMoney(); db.SaveChanges();p.win?.CurrentTab.Replace(AdmnPage(p)); p.SendWindow(); })),

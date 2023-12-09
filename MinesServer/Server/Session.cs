@@ -8,6 +8,7 @@ using MinesServer.Network.HubEvents;
 using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using NetCoreServer;
+using System.Text;
 
 namespace MinesServer.Server
 {
@@ -258,7 +259,7 @@ namespace MinesServer.Server
         #region senders
         public void SendWorldInfo()
         {
-            SendU(new WorldInfoPacket(World.W.name, World.W.width, World.W.height, 123, "COCK", "http://pi.door/", "ok"));
+            SendU(new WorldInfoPacket(World.W.name, World.CellsWidth, World.CellsHeight, 123, "COCK", "http://pi.door/", "ok"));
         }
         public void SendPing()
         {
@@ -277,6 +278,7 @@ namespace MinesServer.Server
         {
             Span<byte> span = stackalloc byte[p.Length];
             p.Encode(span);
+            //Console.WriteLine(Encoding.UTF8.GetString(span));
             SendAsync(span);
         }
 

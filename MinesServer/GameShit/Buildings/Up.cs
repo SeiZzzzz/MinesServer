@@ -4,6 +4,7 @@ using MinesServer.GameShit.GUI.UP;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using System.ComponentModel.DataAnnotations.Schema;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace MinesServer.GameShit.Buildings
@@ -11,6 +12,8 @@ namespace MinesServer.GameShit.Buildings
     public class Up : Pack, IDamagable
     {
         #region fields
+        [NotMapped]
+        public float charge { get; set; }
         public int hp { get; set; }
         public DateTime brokentimer { get; set; }
         public long moneyinside { get; set; }

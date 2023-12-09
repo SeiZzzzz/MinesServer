@@ -35,9 +35,12 @@
                             var t = map[(x + chx) + (y + chy) * height].value == 2 ? (byte)CellType.NiggerRock : map[(x + chx) + (y + chy) * height].value == 1 ? (byte)CellType.RedRock : (byte)0;
                             if (t != 0)
                             {
-                                World.W.GetChunk((x + chx), (y + chy)).wcells[chx + chy * 32] = t;
+                                World.SetCell((x + chx), (y + chy), t);
                             }
-                            World.W.GetChunk((x + chx), (y + chy)).rcells[chx + chy * 32] = 32;
+                            else
+                            {
+                                World.SetCell((x + chx), (y + chy), 32);
+                            }
                             rc++;
                         }
 
@@ -54,11 +57,11 @@
                 }
                 Console.WriteLine($"fill sectors {s[i].seccells.Count} {i}/{s.Count}");
                 var inside = new SectorFiller();
-                if (s[i].seccells.Count > 60000)
+                if (s[i].seccells.Count > 40000)
                 {
                     inside.CreateFillForCells(s[i], false, s[i].GenerateInsides());
                 }
-                else if (s[i].seccells.Count <= 60000)
+                else if (s[i].seccells.Count <= 40000)
                 {
                     inside.CreateFillForCells(s[i], true, s[i].GenerateInsides());
                 }
@@ -66,20 +69,21 @@
                 foreach (var c in s[i].seccells)
                 {
                     var ty = c.type == CellType.Empty ? (byte)0 : (byte)c.type;
-                    var ch = World.W.GetChunk(c.pos.Item1, c.pos.Item2);
-                    var xx = c.pos.Item1 - ch.WorldX; var yy = c.pos.Item2 - ch.WorldY;
                     if (ty != 0)
                     {
-                        ch.wcells[xx + yy * 32] = ty;
+                        World.SetCell(c.pos.Item1, c.pos.Item2, ty);
                     }
-                    ch.rcells[xx + yy * 32] = 32;
+                    else
+                    {
+                        World.SetCell(c.pos.Item1, c.pos.Item2, 32);
+                    }
                 }
             }
-            World.W.map.SaveAllChunks();
+            World.W.cells.Commit();
+            World.W.road.Commit();
+            World.W.durability.Commit();
+
             Console.WriteLine("END END");
-        }
-        public void Update()
-        {
         }
     }
 }
