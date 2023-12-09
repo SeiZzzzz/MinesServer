@@ -54,6 +54,7 @@ namespace MinesServer.GameShit
         }
         public void Hurt(int d, DamageType t = DamageType.Pure)
         {
+            if (player is null) return;
             foreach (var c in player.skillslist.skills.Values)
             {
                 if (c != null && c.UseSkill(SkillEffectType.OnHealth, player))

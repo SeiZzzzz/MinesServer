@@ -135,7 +135,11 @@ namespace MinesServer.GameShit.Consumables
                                 {
                                     World.SetCell(x + _x, y + _y, 118);
                                 }
-                                else
+                                else if (c == 118)
+                                {
+                                    World.SetCell(x + _x, y + _y, 103);
+                                }
+                                else if (c != 117 && c != 118)
                                 {
                                     World.Destroy(x + _x, y + _y, World.destroytype.CellAndRoad);
                                 }
@@ -144,6 +148,34 @@ namespace MinesServer.GameShit.Consumables
                     }
                 }
                 ch.SendDirectedFx(1, x, y, 3, 0, 0);
+                ch.ClearPack(x, y);
+            });
+        }
+        public static void Prot(int x, int y, Player player)
+        {
+            var ch = World.W.GetChunk(x, y);
+            ch.SendPack('B', x, y, 0, 1);
+            World.W.AsyncAction(10, () =>
+            {
+                for (int _x = -1; _x <= 1; _x++)
+                {
+                    for (int _y = -1; _y <= 1; _y++)
+                    {
+                        if (World.W.ValidCoord(x + _x, y + _y) && System.Numerics.Vector2.Distance(new System.Numerics.Vector2(x, y), new System.Numerics.Vector2(x + _x, y + _y)) <= 3.5f)
+                        {
+                            foreach (var p in World.W.GetPlayersFromPos(x + _x, y + _y))
+                            {
+                                p.health.Hurt(50);
+                            }
+                            var c = World.GetCell(x + _x, y + _y);
+                            if (World.GetProp(c).is_destructible && !World.PackPart(x + _x, y + _y))
+                            {
+                                 World.Destroy(x + _x, y + _y, World.destroytype.CellAndRoad);
+                            }
+                        }
+                    }
+                }
+                ch.SendDirectedFx(1, x, y, 1, 0,1);
                 ch.ClearPack(x, y);
             });
         }
@@ -164,6 +196,7 @@ namespace MinesServer.GameShit.Consumables
                             {
                                 var damagable = pack as IDamagable;
                                 db.Attach(pack);
+                                
                                 if (damagable.CanDestroy())
                                 {
                                     damagable.Destroy(p);

@@ -39,7 +39,7 @@ namespace MinesServer.Server
         }
         public void Update()
         {
-            if (World.W.map == null || !MServer.started)
+            if (!MServer.started)
             {
                 return;
             }
@@ -64,13 +64,16 @@ namespace MinesServer.Server
                     Console.WriteLine(ex);
                 }*/
             }
-            for (int x = 0; x < World.W.chunksCountW; x++)
+            for (int x = 0; x < World.ChunksW; x++)
             {
-                for (int y = 0; y < World.W.chunksCountH; y++)
+                for (int y = 0; y < World.ChunksH; y++)
                 {
                     World.W.chunks[x, y].Update();
                 }
             }
+            World.W.cells.Commit();
+            World.W.road.Commit();
+            World.W.durability.Commit();
             World.Update();
             using var db = new DataBase();
             foreach (var order in db.orders)

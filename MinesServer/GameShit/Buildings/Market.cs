@@ -5,12 +5,15 @@ using MinesServer.GameShit.Marketext;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using System.ComponentModel.DataAnnotations.Schema;
 namespace MinesServer.GameShit.Buildings
 {
     public class Market : Pack,IDamagable
     {
         #region fields
         public int hp { get; set; }
+        [NotMapped]
+        public float charge { get; set; }
         public long moneyinside { get; set; }
         public DateTime brokentimer { get; set; }
         #endregion;

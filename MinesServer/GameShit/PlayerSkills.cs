@@ -228,7 +228,7 @@ namespace MinesServer.GameShit
                 new Skill()
                 {
                     costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 100f + x * 4f,
+                    effectfunc = (int x) => 100f + x * 0.2f,
                     expfunc = (int x) => 1f,
                     type = SkillType.Induction, // инда
                     effecttype = SkillEffectType.OnHurt
@@ -236,7 +236,7 @@ namespace MinesServer.GameShit
                 new Skill()
                 {
                     costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1 + x * 0.5f,
+                    effectfunc = (int x) => 1 + x * 0.5f > 92f ? 92f : 1 + x * 0.5f,
                     expfunc = (int x) => 1,
                     type = SkillType.AntiGun, // антипуфка
                     effecttype = SkillEffectType.OnHurt
