@@ -177,7 +177,7 @@ namespace MinesServer.GameShit
             var c = 0;
             foreach (var dir in baseddirs)
             {
-                if (World.IsEmpty(x + dir.Item1, y + dir.Item2) && World.W.GetPlayersFromPos(x + dir.Item1, y + dir.Item2).Count == 0 && !World.isAlive(World.GetCell(x + -dir.Item1, y + -dir.Item2)) && !World.GetProp(x + -dir.Item1,y + -dir.Item2).isEmpty && World.GetProp(x + -dir.Item1, y + -dir.Item2).is_diggable && World.GetProp(x + -dir.Item1, y + -dir.Item2).is_destructible)
+                if (World.IsEmpty(x + dir.Item1, y + dir.Item2) && World.W.GetPlayersFromPos(x + dir.Item1, y + dir.Item2).Count == 0 && !World.GetProp(x + -dir.Item1,y + -dir.Item2).isEmpty && World.GetProp(x + -dir.Item1, y + -dir.Item2).is_diggable && World.GetProp(x + -dir.Item1, y + -dir.Item2).is_destructible)
                 {
                     World.SetCell(x + dir.Item1, y + dir.Item2, World.GetCell(x + -dir.Item1, y + -dir.Item2));
                     World.SetDurability(x + dir.Item1, y + dir.Item2, World.GetProp(x + dir.Item1, y + dir.Item2).durability * mod);

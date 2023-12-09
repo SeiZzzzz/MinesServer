@@ -71,16 +71,6 @@ namespace MinesServer.GameShit
                         return false;
                         }
                 },
-                   {
-                    6,(p) =>{
-                    if (!World.GunRadius((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p))
-                        {
-                            ShitClass.Prot((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
-                        return true;
-                        }
-                        return false;
-                        }
-                },
                  {
                     7,(p) =>{
                     ShitClass.Raz((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);

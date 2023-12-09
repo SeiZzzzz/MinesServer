@@ -45,9 +45,7 @@ namespace MinesServer
             {
                 using var db = new DataBase();
                 db.SaveChanges();
-                World.W.cells.Commit();
-                World.W.road.Commit();
-                World.W.durability.Commit();
+                World.W.map.SaveAllChunks();
             });
             commands.Add("restart", () => { server.Stop(); Console.WriteLine("kinda restart"); server.Start(); });
             commands.Add("players", () =>

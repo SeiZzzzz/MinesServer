@@ -11,14 +11,6 @@ namespace MinesServer.GameShit.Buildings
     {
         public void Damage(int i)
         {
-            if (charge - 100 > 0)
-            {
-                charge -= 100;
-            }
-            else
-            {
-                charge = 0;
-            }
             if (ownerid == 0 || hp == 0)
             {
                 return;
@@ -56,7 +48,6 @@ namespace MinesServer.GameShit.Buildings
         public int ownerid { get; set; }
         public int x { get; set; }
         public int y { get; set; }
-        public float charge { get; set; }
         public int hp { get; set; }
     }
 }

@@ -30,7 +30,7 @@ namespace MinesServer.Server
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\MSSqlLocalDB;MultipleActiveResultSets=true;Database=M;Trusted_Connection=True;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;MultipleActiveResultSets=true;Database=M;Trusted_Connection=True;");
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -61,7 +61,9 @@ namespace MinesServer.Server
             {
                 foreach (var i in db.boxes)
                 {
+                    World.W.GetChunk(i.x, i.y).Load();
                     World.SetCell(i.x, i.y, 90);
+                    World.W.GetChunk(i.x, i.y).Save();
                 }
                 foreach (var i in db.resps)
                 {

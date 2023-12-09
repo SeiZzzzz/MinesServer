@@ -2,7 +2,7 @@
 
 namespace MinesServer.GameShit
 {
-    /*public class Map
+    public class Map
     {
         public Map(int mapWidth, int mapHeight)
         {
@@ -43,17 +43,14 @@ namespace MinesServer.GameShit
         }
         public void LoadChunk(Chunk ch)
         {
-            lock (slock)
-            {
-                stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-                stream.Read(ch.wcells);
-                rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
-                rstream.Read(ch.rcells);
-                dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
-                var durbytes = new byte[ch.durcells.Length * 4];
-                dstream.Read(durbytes);
-                Buffer.BlockCopy(durbytes, 0, ch.durcells, 0, ch.durcells.Length);
-            }
+            stream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+            stream.Read(ch.wcells);
+            rstream.Position = ch.pos.Item1 * World.W.chunksCountH * 1024 + ch.pos.Item2 * 1024;
+            rstream.Read(ch.rcells);
+            dstream.Position = ch.pos.Item1 * World.W.chunksCountH * 4 * 1024 + ch.pos.Item2 * 4 * 1024;
+            var durbytes = new byte[ch.durcells.Length * 4];
+            dstream.Read(durbytes);
+            Buffer.BlockCopy(durbytes, 0, ch.durcells, 0, ch.durcells.Length);
         }
         public void SaveAllChunks()
         {
@@ -82,5 +79,5 @@ namespace MinesServer.GameShit
         {
             return stream.Position >= stream.Length;
         }
-    }*/
+    }
 }

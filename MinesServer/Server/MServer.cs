@@ -18,7 +18,7 @@ namespace MinesServer.Server
             MConsole.InitCommands();
             players = new Dictionary<int, Player>();
             time = new ServerTime();
-            new World(Default.cfg.WorldName);
+            new World(Default.cfg.WorldName, 32 * 32, 32 * 32);
             time.Start();
             OptionKeepAlive = true;
         }

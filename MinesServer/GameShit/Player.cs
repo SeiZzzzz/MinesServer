@@ -533,7 +533,7 @@ namespace MinesServer.GameShit
         public void ReSendBots()
         {
             List<IHubPacket> packets = new();
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
             {
                 for (var yyy = -2; yyy <= 2; yyy++)
@@ -584,7 +584,7 @@ namespace MinesServer.GameShit
         }
         public void SendMyMove()
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (int x = -2; x <= 2; x++)
             {
                 for (int y = -2; y <= 2; y++)
@@ -595,6 +595,7 @@ namespace MinesServer.GameShit
                     {
                         var ch = World.W.chunks[cx, cy];
                         ch.active = true;
+                        ch.Load();
                         if (ch != null)
                         {
 
@@ -633,7 +634,7 @@ namespace MinesServer.GameShit
         public bool needupdmap = true;
         public void SendMap()
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             if (!valid(ChunkX, ChunkY))
             {
                 return;
@@ -653,14 +654,15 @@ namespace MinesServer.GameShit
                         {
                             var ch = World.W.chunks[cx, cy];
                             ch.active = true;
+                            ch.Load();
                             if (ch != null)
                             {
                                 foreach (var p in ch.packs.Values)
                                 {
-                                    connection?.SendB(new HBPacket([new HBPacksPacket(p.x + p.y * World.CellsHeight, [new HBPack((char)p.type, p.x, p.y, p.cid, p.off)])]));
+                                    connection?.SendB(new HBPacket([new HBPacksPacket(p.x + p.y * World.W.height, [new HBPack((char)p.type, p.x, p.y, p.cid, p.off)])]));
                                 }
                                 cx *= 32; cy *= 32;
-                                packetsmap.Add(new HBMapPacket(cx, cy, 32, 32, ch.cells));
+                                packetsmap.Add(new HBMapPacket(cx, cy, 32, 32, ch.pastedcells));
                                 foreach (var id in ch.bots)
                                 {
                                     var player = MServer.GetPlayer(id.Key);
@@ -681,7 +683,7 @@ namespace MinesServer.GameShit
         }
         public void SendDFToBots(int fx, int fxx, int fxy, int bid, int dir, int col = 0)
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
             {
                 for (var yyy = -2; yyy <= 2; yyy++)
@@ -702,7 +704,7 @@ namespace MinesServer.GameShit
         }
         public void SendFXoBots(int fx, int fxx, int fxy)
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
             {
                 for (var yyy = -2; yyy <= 2; yyy++)
@@ -723,7 +725,7 @@ namespace MinesServer.GameShit
         }
         public void SendLocalMsg(string msg)
         {
-            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.W.chunksCountW && y < World.W.chunksCountH);
             for (var xxx = -2; xxx <= 2; xxx++)
             {
                 for (var yyy = -2; yyy <= 2; yyy++)

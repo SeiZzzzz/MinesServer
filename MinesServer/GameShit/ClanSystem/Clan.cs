@@ -3,7 +3,6 @@ using Microsoft.Identity.Client;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List;
-using MinesServer.GameShit.GUI.Horb.List.Rich;
 using MinesServer.GameShit.GUI.UP;
 using MinesServer.GameShit.Marketext;
 using MinesServer.Server;
@@ -143,10 +142,9 @@ namespace MinesServer.GameShit.ClanSystem
         public void DeclineReq(Request target)
         {
             using var db = new DataBase(); 
-            db.Attach(target);
+            db.Attach(this);
             reqs.Remove(target);
-            target.player.ClanReqs.Remove(target);
-            db.Remove(target);
+            target.player.ClanReqs.Remove(target); 
             db.SaveChanges();
 
         }
@@ -175,25 +173,18 @@ namespace MinesServer.GameShit.ClanSystem
             }
             return list.ToArray();
         }
-        public void OpenPlayerPrew(Player p,Player target,bool changerank = false)
+        public void OpenPlayerPrew(Player p,Player target)
         {
             Button[] buttons = [new Button("Прокачка","skills",(args) => OpenPlayerSkills(p,target))];
-            RichListEntry[] list = [];
-            if (changerank)
+            if (p.Id == ownerid && target.Id != p.Id)
             {
-                list = list.Append(RichListEntry.DropDown("изменение звания", "changerankd", ranks.Where(i => i.priority < p.clanrank.priority).Select(i => i.name).ToArray(), (ranks as List<Rank>).IndexOf(target.clanrank))).ToArray();
-            }
-            if (p.clanrank.priority > target.clanrank.priority)
-            {
-                buttons = buttons.Concat([new Button("kick", "kick", (args) => { }), new Button("changerank", "changerank", (args) => OpenPlayerPrew(p, target, true))]).ToArray();
+                buttons = buttons.Append(new Button("kick", "kick", (args) => { })).ToArray();
             }
             p.win.CurrentTab.Open(new Page()
             {
-                RichList = new RichListConfig(list,true),
                 Text = $"@@ПРОФИЛЬ СОКЛАНА\n\nИмя: <color={target.clanrank?.colorhex}>{target.name}</color>\nЗвание: {target.clanrank.name}\nID:  <color=white>{target.Id}</color>",
                 Buttons = buttons
             });
-            p.SendWindow();
         }
         public void OpenPlayerSkills(Player p,Player target)
         {
@@ -210,7 +201,7 @@ namespace MinesServer.GameShit.ClanSystem
         public void LeaveClan(Player p)
         {
             using var db = new DataBase();
-            db.Attach(p);
+            db.Attach(this);
             if (p.Id == ownerid)
             {
                 db.Remove(this);

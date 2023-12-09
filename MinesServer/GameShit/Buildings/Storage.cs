@@ -1,5 +1,4 @@
 ﻿using MinesServer.GameShit.GUI;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit.Buildings
 {
@@ -10,8 +9,6 @@ namespace MinesServer.GameShit.Buildings
             get => crysinside[index];
             set => crysinside[index] = value;
         }
-        [NotMapped]
-        public float charge { get; set; }
         public DateTime brokentimer { get; set; }
         public int hp { get; set; }
 
