@@ -18,7 +18,7 @@ namespace MinesServer.Server
         public string passwd = "";
         public void CallAction(string text)
         {
-            authwin.ProcessButton(text);
+            authwin?.ProcessButton(text);
         }
         public void exit()
         {
@@ -47,10 +47,6 @@ namespace MinesServer.Server
             if (p.user_id.HasValue)
             {
                 player = MServer.GetPlayer(p.user_id.Value)!;
-            }
-            if (player?.connection is not null)
-            {
-                return;
             }
             if (player == null)
             {
@@ -82,14 +78,19 @@ namespace MinesServer.Server
                 initiator.SendWin(authwin.ToString());
                 return;
             }
-            else if (player != null && CalculateMD5Hash(player.hash + sid) == p.token)
+            else if (player != null && player.connection == null && CalculateMD5Hash(player.hash + sid) == p.token)
             {
                 player.connection = initiator;
                 initiator.player = player;
                 player.Init();
                 return;
             }
-            initiator.SendU(new AHPacket());
+            if (player == null)
+            {
+                initiator.SendU(new AHPacket());
+                return;
+            }
+            initiator.auth = null;
         }
         public static bool NickNotAvl(string nick)
         {
@@ -150,6 +151,7 @@ namespace MinesServer.Server
             initiator.player = MServer.GetPlayer(temp.name);
             initiator.player.connection = initiator;
             initiator.player.Init();
+            initiator.auth = null;
         }
         public void TryToFindByNick(string name, Session initiator)
         {

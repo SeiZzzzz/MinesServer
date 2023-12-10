@@ -1,4 +1,5 @@
-﻿using MinesServer.Enums;
+﻿using Microsoft.Identity.Client;
+using MinesServer.Enums;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
 using MinesServer.GameShit.GUI;
@@ -29,6 +30,7 @@ namespace MinesServer.GameShit
         public List<Request> ClanReqs { get; set; } = new List<Request>();
         public Player() => Delay = DateTime.Now;
         public DateTime lastPlayersend = DateTime.Now;
+        public DateTime lastPacks = DateTime.Now;
         public Queue<Action> playerActions = new();
         public int Id { get; set; }
         public string name { get; set; }
@@ -557,6 +559,27 @@ namespace MinesServer.GameShit
             connection?.SendB(new HBPacket(packets.ToArray()));
             lastPlayersend = DateTime.Now;
         }
+        public void ReSendPacks()
+        {
+            var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
+            for (var xxx = -2; xxx <= 2; xxx++)
+            {
+                for (var yyy = -2; yyy <= 2; yyy++)
+                {
+                    var x = (ChunkX + xxx);
+                    var y = (ChunkY + yyy);
+                    if (valid(x, y))
+                    {
+                        var ch = World.W.chunks[x, y];
+                        foreach (var p in ch.packs.Values)
+                            {
+                            connection?.SendB(new HBPacket([new HBPacksPacket((p.x / 32)  + (p.y / 32) * World.ChunksH, [new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off)])]));
+                            }
+                    }
+                }
+            }
+            lastPlayersend = DateTime.Now;
+        }
         public void Update()
         {
             if (DateTime.Now - lastc190hit >= TimeSpan.FromMinutes(1))
@@ -630,15 +653,14 @@ namespace MinesServer.GameShit
         }
         [NotMapped]
         public (int, int)? lastchunk { get; private set; }
-        public bool needupdmap = true;
-        public void SendMap()
+        public void SendMap(bool force = false)
         {
             var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
             if (!valid(ChunkX, ChunkY))
             {
                 return;
             }
-            if (lastchunk != (ChunkX, ChunkY) || needupdmap)
+            if (lastchunk != (ChunkX, ChunkY) || force)
             {
                 MoveToChunk(ChunkX, ChunkY);
                 List<IHubPacket> packetsmap = new();
@@ -653,14 +675,16 @@ namespace MinesServer.GameShit
                         {
                             var ch = World.W.chunks[cx, cy];
                             ch.active = true;
+                            List<HBPack> packs = new();
                             if (ch != null)
                             {
-                                foreach (var p in ch.packs.Values)
-                                {
-                                    connection?.SendB(new HBPacket([new HBPacksPacket(p.x + p.y * World.CellsHeight, [new HBPack((char)p.type, p.x, p.y, p.cid, p.off)])]));
-                                }
                                 cx *= 32; cy *= 32;
                                 packetsmap.Add(new HBMapPacket(cx, cy, 32, 32, ch.cells));
+                                foreach (var p in ch.packs.Values)
+                                {
+                                   packs.Add(new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off));
+                                }
+                                connection?.SendB(new HBPacket([new HBPacksPacket(ch.pos.Item1 + ch.pos.Item2 * World.ChunksH, packs.ToArray())]));
                                 foreach (var id in ch.bots)
                                 {
                                     var player = MServer.GetPlayer(id.Key);
@@ -674,9 +698,7 @@ namespace MinesServer.GameShit
                     }
                 }
                 connection?.SendB(new HBPacket(packetsmap.ToArray()));
-                connection?.SendB(new HBPacket(packetspacks.ToArray()));
                 lastPlayersend = DateTime.Now;
-                needupdmap = false;
             }
         }
         public void SendDFToBots(int fx, int fxx, int fxy, int bid, int dir, int col = 0)

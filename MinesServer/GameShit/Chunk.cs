@@ -134,7 +134,7 @@ namespace MinesServer.GameShit
                             var player = MServer.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack(type, x, y, cid, off)])]));
+                                MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack(type, x, y, (byte)cid, (byte)off)])]));
                             }
                         }
                     }

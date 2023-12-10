@@ -26,18 +26,18 @@ namespace MinesServer.GameShit.Generator
             {
                 for (int x = 0; x < size.Item1; x++)
                 {
-                    if (map[x + y * size.Item2].sector == -1 && map[x + y * size.Item2].value == 0) //если клетка не принадлежит сектору и пустая, подзалупный алгоритм начинает работать
+                    if (map[x * size.Item2 + y].sector == -1 && map[x * size.Item2 + y].value == 0) //если клетка не принадлежит сектору и пустая, подзалупный алгоритм начинает работать
                     {
                         var swidth = 0;
                         var sheight = 0;
-                        var depth = map[x + y * size.Item2].pos.Item2;
-                        que.Enqueue(map[x + y * size.Item2]);
+                        var depth = map[x * size.Item2 + y].pos.Item2;
+                        que.Enqueue(map[x * size.Item2 + y]);
                         while (que.Count > 0)
                         {
                             var cell = que.Dequeue();
                             depth = depth > cell.pos.Item2 ? cell.pos.Item2 : depth;
-                            swidth = swidth > (cell.pos.Item1 - map[x + y * size.Item2].pos.Item1) ? swidth : (map[x + y * size.Item2].pos.Item1 - map[x + y * size.Item2].pos.Item2);
-                            sheight = sheight > (cell.pos.Item2 - map[x + y * size.Item2].pos.Item2) ? sheight : (cell.pos.Item1 - map[x + y * size.Item2].pos.Item2);
+                            swidth = swidth > (cell.pos.Item1 - map[x * size.Item2 + y].pos.Item1) ? swidth : (map[x * size.Item2 + y].pos.Item1 - map[x * size.Item2 + y].pos.Item2);
+                            sheight = sheight > (cell.pos.Item2 - map[x * size.Item2 + y].pos.Item2) ? sheight : (cell.pos.Item1 - map[x * size.Item2 + y].pos.Item2);
                             ce.Add(cell);
                             cell.sector = sectors.Count; //тут заполнение сектора клетки
                             foreach (var i in dirs)
@@ -75,7 +75,7 @@ namespace MinesServer.GameShit.Generator
             {
                 for (int x = 0; x < size.Item1; x++)
                 {
-                    if (map[x + y * size.Item2].value == 1)
+                    if (map[x * size.Item2 + y].value == 1)
                     {
                         var c = 0; var ch = 0; var e = 0;
                         for (int xx = -2; xx <= 2; xx++)
@@ -85,15 +85,15 @@ namespace MinesServer.GameShit.Generator
                                 var nx = x + xx; var ny = y + yy;
                                 if (v(nx, ny))
                                 {
-                                    if (map[nx + ny * size.Item2].value == 1)
+                                    if (map[nx * size.Item2 + ny].value == 1)
                                     {
                                         c++;
                                     }
-                                    else if (map[nx + ny * size.Item2].value == 2)
+                                    else if (map[nx * size.Item2 + ny].value == 2)
                                     {
                                         ch++;
                                     }
-                                    else if (map[nx + ny * size.Item2].value == 0)
+                                    else if (map[nx * size.Item2 + ny].value == 0)
                                     {
                                         e++;
                                     }
@@ -102,7 +102,7 @@ namespace MinesServer.GameShit.Generator
                         }
                         if ((3 < ch && r.Next(1, 101) > 60) || (e > 1))
                         {
-                            map[x + y * size.Item2].value = 2;
+                            map[x * size.Item2 + y].value = 2;
                             if (r.Next(1, 101) > 95 && b)
                             {
                                 Boom(x, y);
@@ -140,7 +140,7 @@ namespace MinesServer.GameShit.Generator
                     var v = (float)fr.Get((float)(x / (float)size.Item1), (float)(y / (float)size.Item1));
                     max = max < v ? v : max;
                     min = min < v ? min : v;
-                    map[x + y * size.Item2] = new SectorCell() { value = v, pos = (x, y), sector = -1 };
+                    map[x * size.Item2 + y] = new SectorCell() { value = v, pos = (x, y), sector = -1 };
                     counter++;
                 }
                 Console.Write($"\r{counter}/{map.Length} setting base map");
@@ -156,8 +156,8 @@ namespace MinesServer.GameShit.Generator
             {
                 for (int y = 0; y < size.Item2; y++)
                 {
-                    map[x + y * size.Item2].value = (float)((map[x + y * size.Item2].value - min) / (max - min));
-                    mid += map[x + y * size.Item2].value;
+                    map[x * size.Item2 + y].value = (float)((map[x * size.Item2 + y].value - min) / (max - min));
+                    mid += map[x * size.Item2 + y].value;
                     counter++;
                 }
                 Console.Write($"\r{counter}/{map.Length} sampling map");
@@ -176,13 +176,13 @@ namespace MinesServer.GameShit.Generator
             {
                 for (int x = 0; x < size.Item1; x++)
                 {
-                    if (map[x + y * size.Item2].value == 2 && r.Next(1, 101) > 90)
+                    if (map[x * size.Item2 + y].value == 2 && r.Next(1, 101) > 90)
                     {
-                        map[x + y * size.Item2].value = 0;
+                        map[x * size.Item2 + y].value = 0;
                     }
-                    else if (map[x + y * size.Item2].value == 1 && r.Next(1, 101) > 95)
+                    else if (map[x * size.Item2 + y].value == 1 && r.Next(1, 101) > 95)
                     {
-                        map[x + y * size.Item2].value = 0;
+                        map[x * size.Item2 + y].value = 0;
                     }
                     c++;
                 }
@@ -199,7 +199,7 @@ namespace MinesServer.GameShit.Generator
             {
                 for (int y = 0; y < size.Item2; y++)
                 {
-                    map[x + y * size.Item2].type = map[x + y * size.Item2].value == 2 ? CellType.NiggerRock : (map[x + y * size.Item2].value == 1 ? CellType.RedRock : CellType.Empty);
+                    map[x * size.Item2 + y].type = map[x * size.Item2 + y].value == 2 ? CellType.NiggerRock : (map[x * size.Item2 + y].value == 1 ? CellType.RedRock : CellType.Empty);
                 }
             }
             Console.WriteLine("end");
@@ -212,7 +212,7 @@ namespace MinesServer.GameShit.Generator
             {
                 for (int y = 0; y < size.Item2; y++)
                 {
-                    temp[x + y * size.Item2].value = temp[x + y * size.Item2].value == 0 ? map[x + y * size.Item2].value : temp[x + y * size.Item2].value;
+                    temp[x * size.Item2 + y].value = temp[x * size.Item2 + y].value == 0 ? map[x * size.Item2 + y].value : temp[x * size.Item2 + y].value;
                 }
             }
             map = temp;
@@ -232,11 +232,11 @@ namespace MinesServer.GameShit.Generator
                 for (int y = 0; y < size.Item2; y++)
                 {
                     counter++;
-                    if (map[x + y * size.Item2].value == 1)
+                    if (map[x * size.Item2 + y].value == 1)
                     {
                         if (r.Next(1, 101) < chs(y))
                         {
-                            map[x + y * size.Item2].value = 2;
+                            map[x * size.Item2 + y].value = 2;
                         }
                     }
                 }
@@ -253,9 +253,9 @@ namespace MinesServer.GameShit.Generator
                 for (int yy = -b; yy <= b; yy++)
                 {
                     var nx = x + xx; var ny = y + yy;
-                    if (v(nx, ny) && ((map[nx + ny * size.Item2].value == 0 && r.Next(1, 101) > 60) || (map[nx + ny * size.Item2].value == 1 && r.Next(1, 101) < chs(y))))
+                    if (v(nx, ny) && ((map[nx * size.Item2 + ny].value == 0 && r.Next(1, 101) > 60) || (map[nx * size.Item2 + ny].value == 1 && r.Next(1, 101) < chs(y))))
                     {
-                        map[nx + ny * size.Item2].value = 2;
+                        map[nx * size.Item2 + ny].value = 2;
                     }
                 }
             }
@@ -266,13 +266,13 @@ namespace MinesServer.GameShit.Generator
             {
                 for (int y = 0; y < size.Item2; y++)
                 {
-                    if (map[x + y * size.Item2].value < mid + res)
+                    if (map[x * size.Item2 + y].value < mid + res)
                     {
-                        map[x + y * size.Item2].value = 0;
+                        map[x * size.Item2 + y].value = 0;
                     }
-                    else if (map[x + y * size.Item2].value >= mid + res)
+                    else if (map[x * size.Item2 + y].value >= mid + res)
                     {
-                        map[x + y * size.Item2].value = 1;
+                        map[x * size.Item2 + y].value = 1;
                     }
                 }
             }

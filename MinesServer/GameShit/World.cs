@@ -35,25 +35,30 @@ namespace MinesServer.GameShit
         public Gen gen;
         public World(string name)
         {
+            
             W = this;
             this.name = name;
-            cells = new($"{name}.mapb");
-            road = new($"{name}_road.mapb");
-            durability = new($"{name}_durability.mapb");
             gen = new Gen(CellsWidth, CellsHeight);
             var x = DateTime.Now;
             chunks = new Chunk[ChunksW, ChunksH];
             CreateChunks();
-            if (!cells.Exists || !road.Exists || !durability.Exists)
+            if (!File.Exists($"{name}.mapb"))
             {
+                cells = new($"{name}.mapb");
+                road = new($"{name}_road.mapb");
+                durability = new($"{name}_durability.mapb");
                 Console.WriteLine($"Creating World Preset{CellsWidth} x {CellsHeight}({ChunksW} x {ChunksH} chunks)");
                 Console.WriteLine("EmptyMapGeneration");
                 x = DateTime.Now;
-                //CreateEmptyMap(114);
                 gen.StartGeneration();
                 Console.WriteLine("Generation End");
                 Console.WriteLine($"{DateTime.Now - x} loaded");
-                x = DateTime.Now;
+            }
+            if (cells == null)
+            {
+                cells = new($"{name}.mapb");
+                road = new($"{name}_road.mapb");
+                durability = new($"{name}_durability.mapb");
             }
             CreateSpawns(4);
             Console.WriteLine("Creating chunkmesh");

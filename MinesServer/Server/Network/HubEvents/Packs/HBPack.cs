@@ -6,15 +6,15 @@ namespace MinesServer.Network.HubEvents.Packs
     {
         public string PacketName => throw new NotImplementedException();
 
-        public int Length => sizeof(char) + sizeof(byte) + sizeof(ushort) * 3;
+        public int Length => sizeof(char) + sizeof(ushort) * 2 + sizeof(byte) * 2;
 
         public static HBPack Decode(ReadOnlySpan<byte> decodeFrom)
         {
             char code = Convert.ToChar(decodeFrom[0]);
             int x = Convert.ToInt32(MemoryMarshal.Read<ushort>(decodeFrom[1..]));
             int y = Convert.ToInt32(MemoryMarshal.Read<ushort>(decodeFrom[3..]));
-            int clan = Convert.ToInt32(MemoryMarshal.Read<ushort>(decodeFrom[5..]));
-            int off = Convert.ToInt32(decodeFrom[7]);
+            byte clan = decodeFrom[6];
+            byte off = decodeFrom[7];
             return new(code, x, y, clan, off);
         }
 
@@ -24,15 +24,15 @@ namespace MinesServer.Network.HubEvents.Packs
             var bytesWritten = sizeof(char);
             var tmpx = Convert.ToUInt16(X);
             var tmpy = Convert.ToUInt16(Y);
-            var tmpclan = Convert.ToUInt16(ClanId);
             MemoryMarshal.Write(output[1..], in tmpx);
-            bytesWritten += sizeof(ushort);
+            bytesWritten += sizeof(ushort); 
             MemoryMarshal.Write(output[3..], in tmpy);
             bytesWritten += sizeof(ushort);
-            MemoryMarshal.Write(output[5..], in tmpclan);
-            bytesWritten += sizeof(ushort);
+            output[5] = Convert.ToByte(ClanId);
+            bytesWritten++;
             output[7] = Convert.ToByte(Off);
-            return ++bytesWritten;
+            bytesWritten++;
+            return bytesWritten;
         }
     }
 }

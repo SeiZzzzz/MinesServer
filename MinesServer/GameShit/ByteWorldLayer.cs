@@ -15,30 +15,30 @@ namespace MinesServer.GameShit
             var data = Data(chunkIndex);
             var cellPos = x % ChunkWidth + y % ChunkHeight * ChunkHeight;
             data[cellPos] = value;
-            lock (Stream)
+            lock (_stream)
             {
-                Stream.Position = chunkIndex * ChunkVolume + cellPos;
-                Stream.Write([value], 0, sizeof(byte));
+                _stream.Position = chunkIndex * ChunkVolume + cellPos;
+                _stream.Write([value], 0, sizeof(byte));
             }
         }
 
         protected override byte[] ReadFromFile(int chunkIndex)
         {
-            lock (Stream)
+            lock (_stream)
             {
                 var temp = new byte[ChunkVolume];
-                Stream.Position = chunkIndex * temp.Length;
-                Stream.Read(temp, 0, ChunkVolume);
+                _stream.Position = chunkIndex * temp.Length;
+                _stream.Read(temp, 0, ChunkVolume);
                 return temp;
             }
         }
 
         protected override void WriteToFile(int chunkindex, byte[] data)
         {
-            lock (Stream)
+            lock (_stream)
             {
-                Stream.Position = chunkindex * ChunkVolume;
-                Stream.Write(data);
+                _stream.Position = chunkindex * ChunkVolume;
+                _stream.Write(data);
             }
         }
     }

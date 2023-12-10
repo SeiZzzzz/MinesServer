@@ -19,9 +19,9 @@ namespace MinesServer.GameShit.ClanSystem
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         [Key]
         public int id { get; set; }
-        public virtual ICollection<Request> reqs { get; set; } = new List<Request>();
-        public virtual ICollection<Player> members { get; set; } = new List<Player>();
-        public virtual ICollection<Rank> ranks { get; set; } = new List<Rank>();
+        public virtual List<Request> reqs { get; set; } = new List<Request>();
+        public virtual List<Player> members { get; set; } = new List<Player>();
+        public virtual List<Rank> ranks { get; set; } = new List<Rank>();
         public int ownerid { get; set; }
         public string name { get; set; }
         public string abr { get; set; }
@@ -92,7 +92,6 @@ namespace MinesServer.GameShit.ClanSystem
         public void AddReq(int id)
         {
             using var db = new DataBase();
-            db.Attach(this);
             var p = MServer.GetPlayer(id);
             if (GetRequests().FirstOrDefault(i => i.player?.Id == id) == null)
             {
@@ -100,6 +99,7 @@ namespace MinesServer.GameShit.ClanSystem
                 reqs.Add(req);
                 p?.ClanReqs.Add(req);
             }
+            db.Update(this);
             db.SaveChanges();
             p.win.CurrentTab.Open(new Page()
             {
@@ -146,7 +146,7 @@ namespace MinesServer.GameShit.ClanSystem
             db.Attach(target);
             reqs.Remove(target);
             target.player.ClanReqs.Remove(target);
-            db.Remove(target);
+            db.reqs.Remove(target);
             db.SaveChanges();
 
         }
@@ -161,6 +161,7 @@ namespace MinesServer.GameShit.ClanSystem
             player.SendClan();
             reqs.Remove(q);
             player.ClanReqs.Clear();
+            db.reqs.Remove(q);
             db.SaveChanges();
         }
         private ClanListEntry[] BuildClanlist(Player p)
@@ -210,13 +211,14 @@ namespace MinesServer.GameShit.ClanSystem
         public void LeaveClan(Player p)
         {
             using var db = new DataBase();
-            db.Attach(p);
+            db.Attach(this);
+            p.clanrank = null;
+            p.win = null;
+            p.clan = null;
             if (p.Id == ownerid)
             {
                 db.Remove(this);
             }
-            p.win = null;
-            p.clan = null;
             p.SendClan();
             p.SendMyMove();
             p.SendWindow();

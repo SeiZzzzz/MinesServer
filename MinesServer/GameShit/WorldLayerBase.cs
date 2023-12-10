@@ -9,8 +9,7 @@ namespace MinesServer.GameShit
 
         protected readonly HashSet<int> _updatedChunks = [];
 
-        private FileStream? _stream;
-        protected FileStream Stream => _stream ??= new(filename, FileMode.OpenOrCreate);
+        protected FileStream _stream = new(filename, FileMode.OpenOrCreate);
 
         /// <summary>
         /// Currently loaded chunks, indecies
@@ -87,8 +86,6 @@ namespace MinesServer.GameShit
             if (chunkIndex < 0 || chunkIndex >= ChunksAmount) return;
             _buffer[chunkIndex] = _data[chunkIndex] = null;
         }
-
-        public bool Exists => File.Exists(filename);
 
         public ReadOnlyMemory<T> ReadOnly_Data(int chunkx, int chunky) => ReadOnly_Data(GetChunkIndex(chunkx, chunky));
 
