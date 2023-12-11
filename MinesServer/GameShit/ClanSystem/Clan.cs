@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure.Core;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
@@ -9,6 +10,7 @@ using MinesServer.GameShit.Marketext;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity.Validation;
 using System.Drawing;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -92,12 +94,11 @@ namespace MinesServer.GameShit.ClanSystem
         public void AddReq(int id)
         {
             using var db = new DataBase();
-            var p = MServer.GetPlayer(id);
-            if (GetRequests().FirstOrDefault(i => i.player?.Id == id) == null)
+            var p = DataBase.GetPlayer(id);
+            if (reqs.FirstOrDefault(i => i.player?.Id == id) == null)
             {
-                var req = new Request() { clan = this, player = p, reqtime = DateTime.Now };
+                var req = new Request() { player = p, reqtime = DateTime.Now };
                 reqs.Add(req);
-                p?.ClanReqs.Add(req);
             }
             db.Update(this);
             db.SaveChanges();
@@ -114,17 +115,15 @@ namespace MinesServer.GameShit.ClanSystem
         {
             List<ListEntry> rq = new();
             var c = 1;
-            foreach (var request in GetRequests())
+            foreach (var request in reqs)
             {
-                rq.Add(new ListEntry($"{c}.<color=white>{request.player?.name}</color>", new Button("...", $"openreq:{request.player?.Id}",(args) => OpenReq(p,request))));
+                rq.Add(new ListEntry($"{c}.<color=white>{Request.LoadReq(request).player?.name}</color>", new Button("...", $"openreq:{Request.LoadReq(request).player?.Id}",(args) => OpenReq(p, Request.LoadReq(request)))));
                 c++;
             }
             return rq.ToArray();
         }
         public void OpenReq(Player p,Request target)
         {
-            using var db = new DataBase();
-
             p.win = new Window()
             {
                 Title = "Заявка в клан",
@@ -134,7 +133,7 @@ namespace MinesServer.GameShit.ClanSystem
                     {
                         Text = $"@@Заявка на прием в клан:\n\n\nИмя: <color=white>{target.player?.name}</color>\nID <color=white>{target.player?.Id}</color>\nИстекает через:" +
                         $" {string.Format("{0:hh}ч.{0:mm} мин.", (TimeSpan.FromDays(1) - (DateTime.Now - target.reqtime)))}",
-                        Buttons = [new Button("Принять", "accept", (args) => { AddMember(target.player, target); OpenClanWin(p); }), new Button("Откланить", "decline", (args) => { DeclineReq(target); OpenClanWin(p); }), new Button("Прокачка", "openskills", (args) => OpenPlayerSkills(p, target.player))]
+                        Buttons = [new Button("Принять", "accept", (args) => { AddMember(Request.LoadReq(target)); OpenClanWin(p); }), new Button("Откланить", "decline", (args) => { DeclineReq(Request.LoadReq(target)); OpenClanWin(p); }), new Button("Прокачка", "openskills", (args) => OpenPlayerSkills(p, Request.LoadReq(target).player))]
                     }
                 }]
             };
@@ -145,23 +144,18 @@ namespace MinesServer.GameShit.ClanSystem
             using var db = new DataBase(); 
             db.Attach(target);
             reqs.Remove(target);
-            target.player.ClanReqs.Remove(target);
             db.reqs.Remove(target);
             db.SaveChanges();
-
         }
-        public void AddMember(Player p,Request q)
+        public void AddMember(Request q)
         {
             using var db = new DataBase();
+            q.player = DataBase.GetPlayer(q.player.Id);
             db.Attach(this);
-            var player = MServer.GetPlayer(p.Id);
-            player.clan = this;
-            members.Add(player);
-            player.clanrank = ranks.OrderBy(r => r.priority).First();
-            player.SendClan();
+            members.Add(q.player);
+            q.player.clanrank = ranks.OrderBy(r => r.priority).First();
             reqs.Remove(q);
-            player.ClanReqs.Clear();
-            db.reqs.Remove(q);
+            q.player.SendClan();
             db.SaveChanges();
         }
         private ClanListEntry[] BuildClanlist(Player p)
@@ -182,11 +176,11 @@ namespace MinesServer.GameShit.ClanSystem
             RichListEntry[] list = [];
             if (changerank)
             {
-                list = list.Append(RichListEntry.DropDown("изменение звания", "changerankd", ranks.Where(i => i.priority < p.clanrank.priority).Select(i => i.name).ToArray(), (ranks as List<Rank>).IndexOf(target.clanrank))).ToArray();
+                list = list.Append(RichListEntry.DropDown("изменение звания", "changerankd", ranks.Where(i => i.priority < p.clanrank.priority).Select(i => i.name).ToArray(), ranks.IndexOf(target.clanrank))).ToArray();
             }
             if (p.clanrank.priority > target.clanrank.priority)
             {
-                buttons = buttons.Concat([new Button("kick", "kick", (args) => { }), new Button("changerank", "changerank", (args) => OpenPlayerPrew(p, target, true))]).ToArray();
+                buttons = buttons.Concat([new Button("kick", "kick", (args) => KickPlayer(p,target)), new Button("changerank", "changerank", (args) => OpenPlayerPrew(p, target, true))]).ToArray();
             }
             p.win.CurrentTab.Open(new Page()
             {
@@ -196,9 +190,18 @@ namespace MinesServer.GameShit.ClanSystem
             });
             p.SendWindow();
         }
+        public void KickPlayer(Player p, Player target )
+        { 
+            using var db = new DataBase();
+            db.Attach(target);
+            target.clanrank = null;
+            members.Remove(target);
+            db.SaveChanges();
+            OpenClanWin(p);
+        }
         public void OpenPlayerSkills(Player p,Player target)
         {
-            target = MServer.GetPlayer(target.Id);
+            target = DataBase.GetPlayer(target.Id);
             p.win.CurrentTab.Open(new UpPage()
             {
                 Skills = target.skillslist.GetSkills(),
@@ -353,11 +356,6 @@ namespace MinesServer.GameShit.ClanSystem
             };
             p.SendWindow();
         }
-        public List<Request> GetRequests()
-        {
-            using var db = new DataBase();
-            return db.reqs.Where(i => i.clan == this).Include(p => p.player).ToList();
-        }
         public void OpenPreview(Player p)
         {
             var text = "";
@@ -367,7 +365,7 @@ namespace MinesServer.GameShit.ClanSystem
                 buttons = [];
             }
             using var db = new DataBase();
-            if (GetRequests().FirstOrDefault(i => i.player.Id == p.Id) != null)
+            if (reqs.FirstOrDefault(i => i.player.Id == p.Id) != null)
             {
                 text += "\n Заявка уже подана";
                 buttons = [];

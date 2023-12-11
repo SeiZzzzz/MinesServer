@@ -329,7 +329,7 @@ namespace MinesServer.GameShit
             var st = new Stack<Player>();
             foreach (var id in GetChunk(x, y).bots.Keys)
             {
-                var p = MServer.GetPlayer(id);
+                var p = DataBase.GetPlayer(id);
                 if (p == null)
                 {
                     continue;

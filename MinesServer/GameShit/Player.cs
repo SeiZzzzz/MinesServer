@@ -27,7 +27,6 @@ namespace MinesServer.GameShit
         #region fields
         [NotMapped]
         public Session? connection { get; set; }
-        public List<Request> ClanReqs { get; set; } = new List<Request>();
         public Player() => Delay = DateTime.Now;
         public DateTime lastPlayersend = DateTime.Now;
         public DateTime lastPacks = DateTime.Now;
@@ -361,7 +360,6 @@ namespace MinesServer.GameShit
         #region creating
         public void CreatePlayer()
         {
-            ClanReqs = new();
             name = "";
             money = 1000;
             creds = 0;
@@ -408,7 +406,7 @@ namespace MinesServer.GameShit
         }
         public void Init()
         {
-            MServer.Instance.players[Id] = this;
+            DataBase.activeplayers.Add(this);
             connection.auth = null;
             crys.player = this;
             skillslist.LoadSkills();
@@ -547,7 +545,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[x, y];
                         foreach (var id in ch.bots)
                         {
-                            var player = MServer.GetPlayer(id.Key);
+                            var player = DataBase.GetPlayer(id.Key);
                             if (player != null)
                             {
                                     packets.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.cid, 0));
@@ -607,6 +605,10 @@ namespace MinesServer.GameShit
         }
         public void SendMyMove()
         {
+            if (connection == null)
+            {
+                return;
+            }
             var valid = bool (int x, int y) => (x >= 0 && y >= 0) && (x < World.ChunksW && y < World.ChunksH);
             for (int x = -2; x <= 2; x++)
             {
@@ -624,7 +626,7 @@ namespace MinesServer.GameShit
                             cx *= 32; cy *= 32;
                             foreach (var id in ch.bots)
                             {
-                                MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBBotPacket(Id, this.x, this.y, dir, 0, cid, 0)]));
+                                DataBase.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBBotPacket(Id, this.x, this.y, dir, 0, cid, 0)]));
                             }
                         }
                     }
@@ -687,7 +689,7 @@ namespace MinesServer.GameShit
                                 connection?.SendB(new HBPacket([new HBPacksPacket(ch.pos.Item1 + ch.pos.Item2 * World.ChunksH, packs.ToArray())]));
                                 foreach (var id in ch.bots)
                                 {
-                                    var player = MServer.GetPlayer(id.Key);
+                                    var player = DataBase.GetPlayer(id.Key);
                                     if (player != null)
                                     {
                                         packetsmap.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.cid, 0));
@@ -714,7 +716,7 @@ namespace MinesServer.GameShit
                         var y = (this.ChunkY + yyy);
                         var ch = World.W.chunks[x, y];
 
-                        foreach (var player in ch.bots.Select(id => MServer.GetPlayer(id.Key)))
+                        foreach (var player in ch.bots.Select(id => DataBase.GetPlayer(id.Key)))
                         {
                             player?.connection?.SendB(new HBPacket([new HBDirectedFXPacket(Id, fxx, fxy, fx, dir, col)]));
                         }
@@ -735,7 +737,7 @@ namespace MinesServer.GameShit
                         var y = ChunkY + yyy;
                         var ch = World.W.chunks[x, y];
 
-                        foreach (var player in ch.bots.Select(id => MServer.GetPlayer(id.Key)))
+                        foreach (var player in ch.bots.Select(id => DataBase.GetPlayer(id.Key)))
                         {
                             player?.connection?.SendB(new HBPacket([new HBFXPacket(fxx, fxy, fx)]));
                         }
@@ -757,7 +759,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[x, y];
                         foreach (var id in ch.bots)
                         {
-                            var player = MServer.GetPlayer(id.Key);
+                            var player = DataBase.GetPlayer(id.Key);
                             if (player != null)
                             {
                                 player?.connection?.SendB(new HBPacket([new HBChatPacket(Id, x, y, msg)]));

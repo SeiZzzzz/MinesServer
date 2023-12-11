@@ -45,7 +45,7 @@ namespace MinesServer.GameShit.Generator
                                 var nx = cell.pos.Item1 + i.Item1; var ny = cell.pos.Item2 + i.Item2;
                                 if (v(nx, ny))
                                 {
-                                    var ncell = map[nx + ny * size.Item2];
+                                    var ncell = map[nx * size.Item2 + ny];
                                     if (ncell.sector == -1 && ncell.value == 0) // если клетка пустая, она становится частью сектора
                                     {
                                         ncell.sector = sectors.Count; //заполнение сектора клетки

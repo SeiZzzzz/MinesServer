@@ -43,9 +43,10 @@ namespace MinesServer.Server
             {
                 return;
             }
-            foreach(var i in MServer.Instance.players)
+            foreach(var i in DataBase.activeplayers)
             {
-                var player = MServer.GetPlayer(i.Value.Id);
+                using var dbas = new DataBase();
+                var player = DataBase.GetPlayer(i.Id);
                 player?.connection?.UpdateMs();
                 player?.Update();
             }

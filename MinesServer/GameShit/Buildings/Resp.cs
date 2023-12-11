@@ -147,9 +147,9 @@ namespace MinesServer.GameShit.Buildings
         {
             if (bool.TryParse(d["clan"], out var clan))
             {
-                if (MServer.GetPlayer(ownerid) != null)
+                if (DataBase.GetPlayer(ownerid) != null)
                 {
-                    cid = clan ? MServer.GetPlayer(ownerid).cid : 0;
+                    cid = clan ? DataBase.GetPlayer(ownerid).cid : 0;
                 }
             }
             if (int.TryParse(d["cost"], out var costs))

@@ -46,7 +46,7 @@ namespace MinesServer.Server
             Player player = null;
             if (p.user_id.HasValue)
             {
-                player = MServer.GetPlayer(p.user_id.Value)!;
+                player = DataBase.GetPlayer(p.user_id.Value)!;
             }
             if (player == null)
             {
@@ -148,7 +148,7 @@ namespace MinesServer.Server
             db.Attach(temp.resp);db.Attach(temp.skillslist);
             db.SaveChanges();
             initiator.SendU(new AHPacket(temp.Id, temp.hash));
-            initiator.player = MServer.GetPlayer(temp.name);
+            initiator.player = DataBase.GetPlayer(temp.name);
             initiator.player.connection = initiator;
             initiator.player.Init();
             initiator.auth = null;
@@ -156,7 +156,7 @@ namespace MinesServer.Server
         public void TryToFindByNick(string name, Session initiator)
         {
             using var db = new DataBase();
-            Player player = MServer.GetPlayer(name);
+            Player player = DataBase.GetPlayer(name);
             if (player != default(Player))
             {
                 temp = player;
@@ -185,7 +185,7 @@ namespace MinesServer.Server
             if (temp.passwd == passwd)
             {
                 complited = true;
-                initiator.player = MServer.GetPlayer(temp.Id);
+                initiator.player = DataBase.GetPlayer(temp.Id);
                 initiator.player.connection = initiator;
                 initiator.SendU(new AHPacket(temp.Id, temp.hash));
                 initiator.player.Init();

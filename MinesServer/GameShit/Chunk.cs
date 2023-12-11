@@ -86,7 +86,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBDirectedFXPacket(id.Key, x, y, fx, dir, color)]));
+                            DataBase.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBDirectedFXPacket(id.Key, x, y, fx, dir, color)]));
                         }
                     }
                 }
@@ -105,7 +105,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBFXPacket(x,y,fx)]));
+                            DataBase.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBFXPacket(x,y,fx)]));
                         }
                     }
                 }
@@ -131,11 +131,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            var player = MServer.GetPlayer(id.Key);
-                            if (player != null)
-                            {
-                                MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack(type, x, y, (byte)cid, (byte)off)])]));
-                            }
+                                DataBase.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack(type, x, y, (byte)cid, (byte)off)])]));
                         }
                     }
                 }
@@ -154,7 +150,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            MServer.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [])]));
+                            DataBase.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [])]));
                         }
                     }
                 }
@@ -254,7 +250,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
-                            MServer.GetPlayer(id.Key)?.connection?.SendCell(x, y, cell);
+                            DataBase.GetPlayer(id.Key)?.connection?.SendCell(x, y, cell);
                         }
                     }
                 }

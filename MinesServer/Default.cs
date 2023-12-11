@@ -54,10 +54,10 @@ namespace MinesServer
             commands.Add("restart", () => { server.Stop(); Console.WriteLine("kinda restart"); server.Start(); });
             commands.Add("players", () =>
             {
-                Console.WriteLine($"online {server.players.Count}");
-                for (int i = 0; i < server.players.Count; i++)
+                Console.WriteLine($"online {DataBase.activeplayers.Count}");
+                for (int i = 0; i < DataBase.activeplayers.Count; i++)
                 {
-                    Console.WriteLine($"id: {server.players.ElementAt(i).Value.Id}\n name :[{server.players.ElementAt(i).Value.name}]");
+                    Console.WriteLine($"id: {DataBase.activeplayers.ElementAt(i).Id}\n name :[{DataBase.activeplayers.ElementAt(i).name}]");
                 }
             });
             for (; ; )

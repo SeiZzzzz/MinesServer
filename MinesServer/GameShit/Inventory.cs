@@ -131,7 +131,7 @@ namespace MinesServer.GameShit
                 db.Attach(this);
                 items[index] = value;
                 itemstobd = string.Join(';', items);
-                MServer.GetPlayer(Id)?.SendInventory();
+                DataBase.GetPlayer(Id)?.SendInventory();
                 db.SaveChanges();
             }
         }

@@ -44,9 +44,6 @@ namespace MinesServer.Server
             modelBuilder.Entity<Clan>()
                .Navigation(c => c.ranks)
                .AutoInclude();
-            modelBuilder.Entity<Player>()
-                .Navigation(p => p.ClanReqs)
-                .AutoInclude();
         }
         public static void Save()
         {
@@ -54,6 +51,47 @@ namespace MinesServer.Server
             db.SaveChanges();
             db.Dispose();
         }
+        public static Player? GetPlayer(int id)
+        {
+            var player = activeplayers.FirstOrDefault(p => p.Id == id);
+            if (player != null)
+            {
+                return player;
+            }
+            var db = new DataBase();
+            return db.players
+                .Where(i => i.Id == id)
+                .Include(p => p.clanrank)
+                .Include(p => p.clan)
+                .Include(p => p.inventory)
+                .Include(p => p.crys)
+                .Include(p => p.skillslist)
+                .Include(p => p.settings)
+                .Include(p => p.health)
+                .Include(p => p.resp)
+                .FirstOrDefault();
+        }
+        public static Player? GetPlayer(string name)
+        {
+            var player = activeplayers.FirstOrDefault(p => p.name == name);
+            if (player != null)
+            {
+                return player;
+            }
+            var db = new DataBase();
+            return db.players
+                .Where(i => i.name == name)
+                .Include(p => p.clanrank)
+                .Include(p => p.clan)
+                .Include(p => p.inventory)
+                .Include(p => p.crys)
+                .Include(p => p.skillslist)
+                .Include(p => p.settings)
+                .Include(p => p.health)
+                .Include(p => p.resp)
+                .FirstOrDefault();
+        }
+        public static List<Player> activeplayers = new();
         public static void Load()
         {
             using var db = new DataBase();

@@ -36,7 +36,7 @@ namespace MinesServer.GameShit.Marketext
             {
                 using var db = new DataBase();
                 db.orders.Remove(this);
-                var buyer = MServer.GetPlayer(buyerid);
+                var buyer = DataBase.GetPlayer(buyerid);
                 if (buyer != null && buyer.inventory != null)
                 {
                     buyer.inventory[itemid] += num;
@@ -45,7 +45,7 @@ namespace MinesServer.GameShit.Marketext
                 {
                     db.inventories.First(i => i.Id == buyerid)[itemid] += num;
                 }
-                var initiator = MServer.GetPlayer(initiatorid);
+                var initiator = DataBase.GetPlayer(initiatorid);
                 if (initiator != null)
                 {
                     initiator.money += cost;

@@ -22,7 +22,7 @@ namespace MinesServer.Server
         public Session(TcpServer server) : base(server) { father = server as MServer; }
         public int online
         {
-            get => father.players.Count;
+            get => DataBase.activeplayers.Count;
         }
         public float starttime = 0;
         public string sid { get; set; }
@@ -59,11 +59,7 @@ namespace MinesServer.Server
             using var db = new DataBase();
             db.players.Update(player);
             db.SaveChanges();
-            if (father.players.Keys.Contains(player.Id))
-            {
-                father.players.Remove(player.Id);
-                player.OnDisconnect();
-            }
+            DataBase.activeplayers.Remove(player);
             player = null;
 
         }
@@ -206,7 +202,7 @@ namespace MinesServer.Server
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)
         {
-            SendU(new NickListPacket(packet.BotIds.ToDictionary(x => x, x => MServer.GetPlayer(x)?.name)));
+            SendU(new NickListPacket(packet.BotIds.ToDictionary(x => x, x => DataBase.GetPlayer(x)?.name)));
         }
         private void LocalChatHandler(TYPacket parent, LoclPacket packet)
         {
