@@ -43,10 +43,10 @@ namespace MinesServer.Server
             {
                 return;
             }
-            foreach(var i in DataBase.activeplayers)
+            for(int i = 0;i < DataBase.activeplayers.Count;i++)
             {
                 using var dbas = new DataBase();
-                var player = DataBase.GetPlayer(i.Id);
+                var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
                 player?.connection?.UpdateMs();
                 player?.Update();
             }

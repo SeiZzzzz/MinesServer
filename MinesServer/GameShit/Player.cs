@@ -18,6 +18,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Numerics;
+using System.Reflection;
 using System.Windows.Navigation;
 
 namespace MinesServer.GameShit
@@ -84,13 +85,34 @@ namespace MinesServer.GameShit
         }
         #endregion
         #region actions
+        public void Update()
+        {
+            if (DateTime.Now - lastc190hit >= TimeSpan.FromMinutes(1))
+            {
+                c190stacks = 1;
+                lastc190hit = DateTime.Now;
+            }
+            if (DateTime.Now - lastPlayersend > TimeSpan.FromSeconds(4))
+            {
+                ReSendBots();
+            }
+            var cellprop = World.GetProp(World.GetCell(x, y));
+            if (!cellprop.isEmpty)
+            {
+                health.Hurt(cellprop.fall_damage);
+                if (cellprop.is_destructible)
+                {
+                    World.Destroy(x, y);
+                }
+            }
+            if (playerActions.Count > 0)
+            {
+                playerActions.Dequeue()();
+            }
+        }
         public void SetResp(Resp r)
         {
             resp = r;
-        }
-        public void AddDelay(double ms) //delay on action
-        {
-            Delay = DateTime.Now + TimeSpan.FromMilliseconds(ms);
         }
         private int ParseCryType(CellType cell)
         {
@@ -264,11 +286,12 @@ namespace MinesServer.GameShit
                 }
             }
         }
-        public void AddAciton(Action a)
+        public void AddAciton(Action a,double delay)
         {
             if (CanAct)
             {
                 playerActions.Enqueue(a);
+                Delay = DateTime.Now + TimeSpan.FromMilliseconds(delay);
             }
         }
         public void Move(int x, int y, int dir)
@@ -586,31 +609,6 @@ namespace MinesServer.GameShit
                 }
             }
             lastPlayersend = DateTime.Now;
-        }
-        public void Update()
-        {
-            if (DateTime.Now - lastc190hit >= TimeSpan.FromMinutes(1))
-            {
-                c190stacks = 1;
-                lastc190hit = DateTime.Now;
-            }
-            if (DateTime.Now - lastPlayersend > TimeSpan.FromSeconds(4))
-            {
-                ReSendBots();
-            }
-            var cellprop = World.GetProp(World.GetCell(x, y));
-            if (!cellprop.isEmpty)
-            {
-                health.Hurt(cellprop.fall_damage);
-                if (cellprop.is_destructible)
-                {
-                    World.Destroy(x, y);
-                }
-            }
-            if (playerActions.Count > 0 && CanAct)
-            {
-                playerActions.Dequeue()();
-            }
         }
         public void SendMyMove()
         {
