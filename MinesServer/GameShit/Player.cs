@@ -406,7 +406,16 @@ namespace MinesServer.GameShit
         }
         public void Init()
         {
-            DataBase.activeplayers.Add(this);
+            if (DataBase.activeplayers.FirstOrDefault(p => p.Id == Id)== default)
+            {
+                DataBase.activeplayers.Add(this);
+            }
+            else
+            {
+                DataBase.activeplayers.Remove(DataBase.activeplayers.FirstOrDefault(p => p.Id == Id));
+                connection.Disconnect();
+                connection.Dispose();
+            }
             connection.auth = null;
             crys.player = this;
             skillslist.LoadSkills();

@@ -13,10 +13,5 @@ namespace MinesServer.GameShit.ClanSystem
         public int id { get; set; }
         public Player player { get; set; }
         public DateTime reqtime { get; set; }
-        public static Request LoadReq(Request q)
-            {
-            using var db = new DataBase();
-            return db.reqs.Include(p => p.player).First(w => w == q);
-        }
 }
 }

@@ -117,7 +117,7 @@ namespace MinesServer.GameShit.ClanSystem
             var c = 1;
             foreach (var request in reqs)
             {
-                rq.Add(new ListEntry($"{c}.<color=white>{Request.LoadReq(request).player?.name}</color>", new Button("...", $"openreq:{Request.LoadReq(request).player?.Id}",(args) => OpenReq(p, Request.LoadReq(request)))));
+                rq.Add(new ListEntry($"{c}.<color=white>{request.player?.name}</color>", new Button("...", $"openreq:{request.player?.Id}",(args) => OpenReq(p, request))));
                 c++;
             }
             return rq.ToArray();
@@ -133,7 +133,7 @@ namespace MinesServer.GameShit.ClanSystem
                     {
                         Text = $"@@Заявка на прием в клан:\n\n\nИмя: <color=white>{target.player?.name}</color>\nID <color=white>{target.player?.Id}</color>\nИстекает через:" +
                         $" {string.Format("{0:hh}ч.{0:mm} мин.", (TimeSpan.FromDays(1) - (DateTime.Now - target.reqtime)))}",
-                        Buttons = [new Button("Принять", "accept", (args) => { AddMember(Request.LoadReq(target)); OpenClanWin(p); }), new Button("Откланить", "decline", (args) => { DeclineReq(Request.LoadReq(target)); OpenClanWin(p); }), new Button("Прокачка", "openskills", (args) => OpenPlayerSkills(p, Request.LoadReq(target).player))]
+                        Buttons = [new Button("Принять", "accept", (args) => { AddMember(target); OpenClanWin(p); }), new Button("Откланить", "decline", (args) => { DeclineReq(target); OpenClanWin(p); }), new Button("Прокачка", "openskills", (args) => OpenPlayerSkills(p, target?.player))]
                     }
                 }]
             };

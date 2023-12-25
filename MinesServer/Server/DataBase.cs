@@ -44,6 +44,9 @@ namespace MinesServer.Server
             modelBuilder.Entity<Clan>()
                .Navigation(c => c.ranks)
                .AutoInclude();
+            modelBuilder.Entity<Request>()
+               .Navigation(c => c.player)
+               .AutoInclude();
         }
         public static void Save()
         {

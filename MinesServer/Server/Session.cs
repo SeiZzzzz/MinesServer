@@ -61,7 +61,7 @@ namespace MinesServer.Server
             db.SaveChanges();
             DataBase.activeplayers.Remove(player);
             player = null;
-
+            Dispose();
         }
         #endregion
 
