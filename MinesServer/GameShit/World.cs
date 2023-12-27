@@ -13,8 +13,8 @@ namespace MinesServer.GameShit
 {
     public class World
     {
-        public const int CellsWidth = 32 * ChunkWidth;
-        public const int CellsHeight = 32 * ChunkHeight;
+        public const int CellsWidth = 312 * ChunkWidth;
+        public const int CellsHeight = 312 * ChunkHeight;
         public const int ChunkWidth = 32;
         public const int ChunkHeight = 32;
         public const int ChunkVolume = ChunkWidth * ChunkHeight;
@@ -47,7 +47,7 @@ namespace MinesServer.GameShit
                 cells = new($"{name}.mapb");
                 road = new($"{name}_road.mapb");
                 durability = new($"{name}_durability.mapb");
-                Console.WriteLine($"Creating World Preset{CellsWidth} x {CellsHeight}({ChunksW} x {ChunksH} chunks)");
+                Console.WriteLine($"Creating World Preset {CellsWidth} x {CellsHeight}({ChunksW} x {ChunksH} chunks)");
                 Console.WriteLine("EmptyMapGeneration");
                 x = DateTime.Now;
                 gen.StartGeneration();

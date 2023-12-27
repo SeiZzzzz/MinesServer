@@ -3,6 +3,7 @@ using MinesServer.GameShit;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
 using MinesServer.GameShit.Marketext;
+using MinesServer.GameShit.Programmator;
 
 namespace MinesServer.Server
 {
@@ -23,6 +24,7 @@ namespace MinesServer.Server
         public DbSet<Request> reqs { get; set; }
         public DbSet<Rank> ranks { get; set; }
         public DbSet<Gun> guns { get; set; }
+        public DbSet<Program> progs { get; set; }
         public static bool created = false;
         public DataBase()
         {
@@ -44,6 +46,12 @@ namespace MinesServer.Server
             modelBuilder.Entity<Clan>()
                .Navigation(c => c.ranks)
                .AutoInclude();
+            modelBuilder.Entity<Program>()
+               .Navigation(c => c.owner)
+               .AutoInclude();
+            modelBuilder.Entity<Player>()
+                .Navigation(c => c.programs)
+                .AutoInclude();
             modelBuilder.Entity<Request>()
                 .Navigation(c => c.player)
                 .AutoInclude();

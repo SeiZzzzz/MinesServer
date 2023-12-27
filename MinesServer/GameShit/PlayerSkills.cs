@@ -102,7 +102,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x) => 1f,
                     effectfunc = (int x) => 1f + x * 2,
                     expfunc = (int x) => 1f,
-                    type = SkillType.BuildGreen, 
+                    type = SkillType.BuildGreen,
                     effecttype = SkillEffectType.OnBld
                 },
                 new Skill()
@@ -126,7 +126,7 @@ namespace MinesServer.GameShit
                     costfunc = (int x) => 1f,
                     effectfunc = (int x) => 1f,
                     expfunc = (int x) => 1f,
-                    type = SkillType.BuildStructure, 
+                    type = SkillType.BuildStructure,
                     effecttype = SkillEffectType.OnBld
                 },
                 new Skill()
@@ -235,9 +235,9 @@ namespace MinesServer.GameShit
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f+(x-((float)Math.Log10(x)*((float)Math.Pow(x,0.9))/2f)-x*0.098f),
-                    expfunc = (int x) => 1,
+                    costfunc = (int x) =>1f,
+                    effectfunc = (int x) =>  (float)Math.Round(1f+(x-((float)Math.Log10(x)*((float)Math.Pow(x,0.9))/2f)-x*0.098f)) >= 92 ? 92 : (float)Math.Round(1f+(x-((float)Math.Log10(x)*((float)Math.Pow(x,0.9))/2f)-x*0.098f)),
+                    expfunc = (int x) => 0,
                     type = SkillType.AntiGun, // антипуфка
                     effecttype = SkillEffectType.OnHurt
                 }

@@ -1,5 +1,6 @@
 ﻿using MinesServer.Network.Constraints;
 using MinesServer.Network.TypicalEvents;
+using MinesServer.Server.Network.TypicalEvents;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -58,6 +59,7 @@ namespace MinesServer.Network
             MissPacket.packetName => x => MissPacket.Decode(x),
             ChinPacket.packetName => x => ChinPacket.Decode(x),
             ADMNPacket.packetName => x => ADMNPacket.Decode(x),
+            TAURPacket.packetName => x => TAURPacket.Decode(x),
             _ => null
         };
 

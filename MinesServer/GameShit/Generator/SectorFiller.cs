@@ -69,7 +69,7 @@ namespace MinesServer.GameShit.Generator
             {
                 gte++;
                 Console.Write($"\rgoto toosmall {gte}");
-                if (gte > 10)
+                if (gte > 3)
                 {
                     Console.Write($"\ra lots of errors restart");
                     goto tme;

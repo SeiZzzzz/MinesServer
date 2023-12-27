@@ -1,4 +1,5 @@
 ﻿using MinesServer.GameShit;
+using MinesServer.GameShit.Programmator;
 using MinesServer.Network;
 using MinesServer.Network.Auth;
 using MinesServer.Network.ConnectionStatus;
@@ -94,10 +95,15 @@ namespace MinesServer.Server
                 case ADMNPacket admn: ADMN(packet, admn); break;
                 case RESPPacket res: Res(packet, res); break;
                 case ClanPacket clan: Clan(packet, clan);break;
+                case PopePacket pp: Pope(packet, pp);break;
                 default:
                     // Invalid event type
                     break;
             }
+        }
+        private void Pope(TYPacket f,PopePacket p)
+        {
+            Linker.OpenGui(player);
         }
         private void Clan(TYPacket f, ClanPacket p)
         {
