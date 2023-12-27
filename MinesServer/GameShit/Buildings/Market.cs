@@ -100,12 +100,12 @@ namespace MinesServer.GameShit.Buildings
                         {
                             OnAdmin = adminaction,
                             CrystalConfig =  new CrystalConfig(" ", "цена", [
-                            new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(0)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(1)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(2)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(3)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(3)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(4)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5)}$</color>", 0, 0, (int)(p.money / World.GetCrysCost(5)), 0)
+                            new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(0) * 10)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(1) * 10)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(2) * 10)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(3) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(3) * 10)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(4) * 10)), 0),
+                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(5) * 10)), 0)
 
                             ],true),
                             Text = "Покупка",
