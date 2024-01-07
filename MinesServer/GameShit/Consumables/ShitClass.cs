@@ -1,15 +1,5 @@
-﻿using MinesServer.Enums;
-using MinesServer.GameShit.Buildings;
-using MinesServer.GameShit.Skills;
+﻿using MinesServer.GameShit.Buildings;
 using MinesServer.Server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinesServer.GameShit.Consumables
 {
@@ -23,7 +13,7 @@ namespace MinesServer.GameShit.Consumables
             {
                 case 0:
                     shoty = y + 9;
-                    if (!World.W.ValidCoord(0,shoty))
+                    if (!World.W.ValidCoord(0, shoty))
                     {
                         break;
                     }
@@ -112,7 +102,7 @@ namespace MinesServer.GameShit.Consumables
 
             }
         }
-        public static void Boom(int x, int y,Player player)
+        public static void Boom(int x, int y, Player player)
         {
             var ch = World.W.GetChunk(x, y);
             ch.SendPack('B', x, y, 0, 0);
@@ -170,16 +160,16 @@ namespace MinesServer.GameShit.Consumables
                             var c = World.GetCell(x + _x, y + _y);
                             if (World.GetProp(c).is_destructible && !World.PackPart(x + _x, y + _y))
                             {
-                                 World.Destroy(x + _x, y + _y, World.destroytype.CellAndRoad);
+                                World.Destroy(x + _x, y + _y, World.destroytype.CellAndRoad);
                             }
                         }
                     }
                 }
-                ch.SendDirectedFx(1, x, y, 1, 0,1);
+                ch.SendDirectedFx(1, x, y, 1, 0, 1);
                 ch.ClearPack(x, y);
             });
         }
-        public static void Raz(int x, int y,Player p)
+        public static void Raz(int x, int y, Player p)
         {
             var ch = World.W.GetChunk(x, y);
             ch.SendPack('B', x, y, 0, 2);
@@ -196,7 +186,7 @@ namespace MinesServer.GameShit.Consumables
                             {
                                 var damagable = pack as IDamagable;
                                 db.Attach(pack);
-                                
+
                                 if (damagable.CanDestroy())
                                 {
                                     damagable.Destroy(p);

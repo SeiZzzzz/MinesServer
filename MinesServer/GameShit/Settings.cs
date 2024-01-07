@@ -6,8 +6,6 @@ using MinesServer.Network;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Diagnostics.Eventing.Reader;
-using System.Windows.Forms.Design;
 
 namespace MinesServer.GameShit
 {
@@ -59,7 +57,7 @@ namespace MinesServer.GameShit
         }
         public void Save(Player p, Dictionary<string, string> list)
         {
-            foreach(var i in list)
+            foreach (var i in list)
             {
                 this[i.Key] = i.Value;
             }
@@ -86,12 +84,12 @@ namespace MinesServer.GameShit
                         RichList = new RichListConfig()
                         {
                             Entries = [RichListEntry.DropDown("Масштаб интерфейса", "isca", ["мелко", "КРУПНО"], int.Parse(this["isca"])),
-                            RichListEntry.DropDown("Масштаб территории", "tsca", ["мелко", "КРУПНО"], int.Parse(this["tsca"])),
-                            RichListEntry.Bool("Включить управление мышкой", "mous", this["mous"].ToBool()),
-                            RichListEntry.Bool("Упрощенный режим графики", "pot", this["pot"].ToBool()),
-                            RichListEntry.Bool("ринудительно обновлять породы (увеличит потр. CPU)", "frc", this["frc"].ToBool()),
-                            RichListEntry.Bool("CTRL переключает скорость робота (вместо удерживания)", "ctrl", this["ctrl"].ToBool()),
-                            RichListEntry.Bool("Отключить ближайшие звуки", "mof", this["mof"].ToBool())
+                                RichListEntry.DropDown("Масштаб территории", "tsca", ["мелко", "КРУПНО"], int.Parse(this["tsca"])),
+                                RichListEntry.Bool("Включить управление мышкой", "mous", this["mous"].ToBool()),
+                                RichListEntry.Bool("Упрощенный режим графики", "pot", this["pot"].ToBool()),
+                                RichListEntry.Bool("ринудительно обновлять породы (увеличит потр. CPU)", "frc", this["frc"].ToBool()),
+                                RichListEntry.Bool("CTRL переключает скорость робота (вместо удерживания)", "ctrl", this["ctrl"].ToBool()),
+                                RichListEntry.Bool("Отключить ближайшие звуки", "mof", this["mof"].ToBool())
                             ]
                         },
                         Buttons = btns

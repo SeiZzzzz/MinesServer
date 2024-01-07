@@ -8,7 +8,7 @@ using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace MinesServer.GameShit.Buildings
 {
-    public class Market : Pack,IDamagable
+    public class Market : Pack, IDamagable
     {
         #region fields
         public int hp { get; set; }
@@ -47,7 +47,7 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x - 2, y - 2, 38, true);
             base.Build();
         }
-        public Action<Player,Market> onadmn = (p,m) =>
+        public Action<Player, Market> onadmn = (p, m) =>
         {
             if (p.Id == m.ownerid)
             {
@@ -57,7 +57,7 @@ namespace MinesServer.GameShit.Buildings
                     RichList = new RichListConfig()
                     {
                         Entries = [RichListEntry.Text($"hp {m.hp}"),
-                            RichListEntry.Button($"прибыль {m.moneyinside}$", m.moneyinside == 0 ? new Button() : new Button("Получить", "getprofit",(args) => { using var db = new DataBase(); p.money += m.moneyinside;m.moneyinside = 0;p.SendMoney();db.SaveChanges();m.onadmn(p, m);p.SendWindow(); })),
+                            RichListEntry.Button($"прибыль {m.moneyinside}$", m.moneyinside == 0 ? new Button() : new Button("Получить", "getprofit", (args) => { using var db = new DataBase(); p.money += m.moneyinside; m.moneyinside = 0; p.SendMoney(); db.SaveChanges(); m.onadmn(p, m); p.SendWindow(); })),
                         ]
                     },
                     Buttons = []
@@ -67,7 +67,7 @@ namespace MinesServer.GameShit.Buildings
         };
         public override Window? GUIWin(Player p)
         {
-            Action adminaction = (p.Id != ownerid ? null : () => onadmn(p,this));
+            Action adminaction = (p.Id != ownerid ? null : () => onadmn(p, this));
             return new Window()
             {
                 ShowTabs = true,
@@ -89,7 +89,7 @@ namespace MinesServer.GameShit.Buildings
                                 ),
                         Text = "Продажа кри",
                         Buttons = [new Button("sellall", $"sellall", (args) => MarketSystem.Sell(p.crys.cry, p, this)),
-                            new Button("sell", $"sell:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Sell(args.CrystalSliders, p,this))]
+                            new Button("sell", $"sell:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Sell(args.CrystalSliders, p, this))]
                     }
                 },
                     new Tab()
@@ -99,7 +99,7 @@ namespace MinesServer.GameShit.Buildings
                         InitialPage = new Page()
                         {
                             OnAdmin = adminaction,
-                            CrystalConfig =  new CrystalConfig(" ", "цена", [
+                            CrystalConfig = new CrystalConfig(" ", "цена", [
                             new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(0) * 10)), 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(1) * 10)), 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(2) * 10)), 0),
@@ -107,7 +107,7 @@ namespace MinesServer.GameShit.Buildings
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(4) * 10)), 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(5) * 10)), 0)
 
-                            ],true),
+                            ], true),
                             Text = "Покупка",
                             Buttons = [new Button("buy", $"buy:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Buy(args.CrystalSliders, p, this))
                         ]

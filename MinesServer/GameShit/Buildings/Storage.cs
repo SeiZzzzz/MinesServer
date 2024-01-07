@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit.Buildings
 {
-    public class Storage : Pack,IDamagable
+    public class Storage : Pack, IDamagable
     {
         public long this[int index]
         {
@@ -20,7 +20,7 @@ namespace MinesServer.GameShit.Buildings
         {
 
         }
-        public Storage(int x,int y,int ownerid) : base(x,y,ownerid,PackType.Storage)
+        public Storage(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Storage)
         {
 
         }

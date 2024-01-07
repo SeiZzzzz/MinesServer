@@ -1,5 +1,4 @@
 ﻿using MinesServer.GameShit;
-using System.Numerics;
 
 namespace MinesServer.Server
 {
@@ -43,27 +42,27 @@ namespace MinesServer.Server
             {
                 return;
             }
-            for(int i = 0;i < DataBase.activeplayers.Count;i++)
-            {
-                using var dbas = new DataBase();
-                var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
-                player?.connection?.UpdateMs();
-                player?.Update();
-            }
             for (int i = 0; i < gameActions.Count; i++)
             {
                 /*try
                 {*/
-                    var action = gameActions.Dequeue();
-                    if (action != null)
-                    {
-                        action();
-                    }
+                var action = gameActions.Dequeue();
+                if (action != null)
+                {
+                    action();
+                }
                 /*}
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
                 }*/
+            }
+            for (int i = 0; i < DataBase.activeplayers.Count; i++)
+            {
+                using var dbas = new DataBase();
+                var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
+                player?.connection?.UpdateMs();
+                player?.Update();
             }
             for (int x = 0; x < World.ChunksW; x++)
             {

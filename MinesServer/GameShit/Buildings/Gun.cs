@@ -6,7 +6,6 @@ using MinesServer.GameShit.Skills;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Numerics;
 namespace MinesServer.GameShit.Buildings
 {
@@ -20,7 +19,7 @@ namespace MinesServer.GameShit.Buildings
         public override int off { get { return charge > 0 ? 1 : 0; } }
         public DateTime brokentimer { get; set; }
         #endregion
-        public Gun(int x, int y, int ownerid,int cid) : base(x, y, ownerid, PackType.Gun)
+        public Gun(int x, int y, int ownerid, int cid) : base(x, y, ownerid, PackType.Gun)
         {
             this.cid = cid;
             hp = 1000;
@@ -49,17 +48,17 @@ namespace MinesServer.GameShit.Buildings
             using var db = new DataBase();
             db.Attach(this);
             if (p.crys[CrystalType.Cyan] < val)
-                {
-                    val = p.crys[CrystalType.Cyan];
-                }
-                if (p.crys.RemoveCrys((int)CrystalType.Cyan, val))
-                {
-                    charge += (int)val;
+            {
+                val = p.crys[CrystalType.Cyan];
+            }
+            if (p.crys.RemoveCrys((int)CrystalType.Cyan, val))
+            {
+                charge += (int)val;
                 World.W.GetChunk(x, y).ResendPacks();
             }
             db.SaveChanges();
             p.win = GUIWin(p);
-                p.SendWindow();
+            p.SendWindow();
         }
         public override Window? GUIWin(Player p)
         {
@@ -70,9 +69,10 @@ namespace MinesServer.GameShit.Buildings
             return new Window()
             {
                 Tabs = [new Tab()
-                { Action = "gun",
-                Label = "хуй",
-                Title = "Пушка" ,
+                {
+                    Action = "gun",
+                    Label = "хуй",
+                    Title = "Пушка",
                     InitialPage = new Page()
                     {
                         RichList = new RichListConfig()
@@ -115,15 +115,15 @@ namespace MinesServer.GameShit.Buildings
             {
                 return;
             }
-            for(int chx = -21;chx <= 21;chx++)
+            for (int chx = -21; chx <= 21; chx++)
             {
                 for (int chy = -21; chy <= 21; chy++)
                 {
-                    if (Vector2.Distance(new Vector2(x,y),new Vector2(x + chx,y + chy)) <= 20f)
+                    if (Vector2.Distance(new Vector2(x, y), new Vector2(x + chx, y + chy)) <= 20f)
                     {
-                        if (World.W.ValidCoord(x + chx,y + chy))
+                        if (World.W.ValidCoord(x + chx, y + chy))
                         {
-                            foreach(var player in World.W.GetPlayersFromPos(x + chx, y + chy))
+                            foreach (var player in World.W.GetPlayersFromPos(x + chx, y + chy))
                             {
                                 if (player.cid == cid)
                                 {

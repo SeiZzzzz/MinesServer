@@ -4,9 +4,6 @@ using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
 using MinesServer.Server;
-using MoreLinq.Extensions;
-using System;
-using System.IO.Pipes;
 using System.Numerics;
 
 namespace MinesServer.GameShit
@@ -35,7 +32,7 @@ namespace MinesServer.GameShit
         public Gen gen;
         public World(string name)
         {
-            
+
             W = this;
             this.name = name;
             gen = new Gen(CellsWidth, CellsHeight);
@@ -89,15 +86,15 @@ namespace MinesServer.GameShit
                     }
                     if (CanBuildPack(-5, 5, -5, 5, x, y, null, true))
                     {
-                        for(int rx = -10;rx <= 10;rx++)
+                        for (int rx = -10; rx <= 10; rx++)
                         {
-                            for (int ry = -10;ry <= 10;ry++)
+                            for (int ry = -10; ry <= 10; ry++)
                             {
-                               SetCell(x + rx, y + ry, 36);
+                                SetCell(x + rx, y + ry, 36);
                             }
                         }
                         new Market(x - 7, y - 4, 0).Build();
-                        new Resp(x - 8,y + 7, 0).Build();
+                        new Resp(x - 8, y + 7, 0).Build();
                         new Up(x, y - 4, 0).Build();
 
                     }
@@ -133,7 +130,7 @@ namespace MinesServer.GameShit
                     var p = GetProp(GetCell(x + cx, y + cy));
                     if (!ValidCoord(x + cx, y + cy) || (ignoreplace && (!p.is_diggable || !p.is_destructible || GetCell(x + cx, y + cy) == 36)) || PackPart(x + cx, y + cy) || ((!p.can_place_over || !p.isEmpty) && !ignoreplace))
                     {
-                        if (player != null && ValidCoord(x + cx,y + cy))
+                        if (player != null && ValidCoord(x + cx, y + cy))
                         {
                             packets.Add(new HBFXPacket(x + cx, y + cy, 0));
                         }
@@ -182,8 +179,8 @@ namespace MinesServer.GameShit
                 case destroytype.Cell:
                     if (W.cells[x, y] != 0)
                     {
-                        W.cells[x,  y] = 0;
-                        W.road[x,  y] = W.road[x, y] == 0 ? 32 : W.road[x,  y];
+                        W.cells[x, y] = 0;
+                        W.road[x, y] = W.road[x, y] == 0 ? 32 : W.road[x, y];
                     }
                     break;
                 case destroytype.Road:
@@ -269,7 +266,7 @@ namespace MinesServer.GameShit
             if (GetProp(cell).isEmpty)
             {
                 W.cells[x, y] = 0;
-                W.road[x,y] = cell;
+                W.road[x, y] = cell;
             }
             else
             {
@@ -344,7 +341,7 @@ namespace MinesServer.GameShit
         }
         public static bool ContainsPack(int x, int y, out Pack p)
         {
-            if (!W.ValidCoord(x,y))
+            if (!W.ValidCoord(x, y))
             {
                 p = null;
                 return true;
@@ -389,7 +386,7 @@ namespace MinesServer.GameShit
                 ch.Update();
             }
         }
-        public static bool GunRadius(int x,int y,Player player)
+        public static bool GunRadius(int x, int y, Player player)
         {
             for (int chx = -21; chx <= 21; chx++)
             {
@@ -417,7 +414,7 @@ namespace MinesServer.GameShit
                 {
                     for (int chy = 0; chy < ChunksH; chy++)
                     {
-                        foreach(var pack in W.chunks[chx, chy].packs)
+                        foreach (var pack in W.chunks[chx, chy].packs)
                         {
                             if (pack.Value != null && pack.Value is IDamagable)
                             {
@@ -435,7 +432,7 @@ namespace MinesServer.GameShit
                 db.SaveChanges();
                 lastpackupd = DateTime.Now;
             }
-            
+
             if (DateTime.Now - lastpackeffect >= TimeSpan.FromSeconds(0.5))
             {
                 using var db = new DataBase();

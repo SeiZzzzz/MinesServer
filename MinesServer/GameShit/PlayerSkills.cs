@@ -66,7 +66,7 @@ namespace MinesServer.GameShit
         {
             List<UpSkill> ski = new();
             LoadSkills();
-            foreach(var i in skills)
+            foreach (var i in skills)
             {
                 if (i.Value != null)
                 {
@@ -77,7 +77,7 @@ namespace MinesServer.GameShit
         }
         public int slots { get; set; } = 20;
         [NotMapped]
-        public Dictionary<int,Skill?> skills = new();
+        public Dictionary<int, Skill?> skills = new();
         [NotMapped]
         public static List<Skill> skillz = new List<Skill>()
         {

@@ -1,11 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MinesServer.GameShit.Programmator
+﻿namespace MinesServer.GameShit.Programmator
 {
     public class Program
     {

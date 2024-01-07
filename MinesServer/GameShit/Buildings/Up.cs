@@ -5,7 +5,6 @@ using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace MinesServer.GameShit.Buildings
 {
@@ -52,7 +51,7 @@ namespace MinesServer.GameShit.Buildings
                 OnSkill = onskill,
                 Title = "xxx",
                 Text = "Выберите скилл или пустой слот",
-                Button = new Button("buyslotcost", "buyslot", (args) => { if (p.creds > 1000) { p.skillslist.slots++; } p.win = GUIWin(p);p.SendWindow(); }),
+                Button = new Button("buyslotcost", "buyslot", (args) => { if (p.creds > 1000) { p.skillslist.slots++; } p.win = GUIWin(p); p.SendWindow(); }),
                 SkillIcon = SkillType.Unknown
             } : new UpPage()
             {
@@ -109,14 +108,14 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x - 1, y + 1, 32, false);
             World.SetCell(x, y + 1, 32, false);
         }
-            public void Destroy(Player p)
+        public void Destroy(Player p)
         {
             ClearBuilding();
             World.RemovePack(x, y);
             using var db = new DataBase();
             db.ups.Remove(this);
             db.SaveChanges();
-            if (Physics.r.Next(1,101) < 40)
+            if (Physics.r.Next(1, 101) < 40)
             {
                 p.connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "ШПАААК ВЫПАЛ")]));
                 p.inventory[2]++;

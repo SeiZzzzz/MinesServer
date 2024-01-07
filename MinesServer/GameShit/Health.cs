@@ -1,6 +1,5 @@
 ﻿using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
-using System.Collections;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit
@@ -33,7 +32,7 @@ namespace MinesServer.GameShit
             LoadHealth(player);
             player.connection?.SendU(new LivePacket(HP, MaxHP));
         }
-        public (int,int) FindEmptyForBox(int x,int y)
+        public (int, int) FindEmptyForBox(int x, int y)
         {
             var dirs = new (int, int)[] { (0, 1), (1, 0), (-1, 0), (0, -1) };
             var q = new Queue<(int, int)>();
@@ -41,12 +40,12 @@ namespace MinesServer.GameShit
             {
                 q.Enqueue((x, y));
             }
-            while(q.Count > 0)
+            while (q.Count > 0)
             {
                 var b = q.Dequeue();
-                foreach(var dir in dirs)
+                foreach (var dir in dirs)
                 {
-                    if (!World.IsEmpty(b.Item1 + dir.Item1,b.Item2 + dir.Item2))
+                    if (!World.IsEmpty(b.Item1 + dir.Item1, b.Item2 + dir.Item2))
                     {
                         q.Enqueue((b.Item1 + dir.Item1, b.Item2 + dir.Item2));
                     }
@@ -91,7 +90,7 @@ namespace MinesServer.GameShit
                         c.AddExp(player);
                     }
                 }
-                if (c != null && c.UseSkill(SkillEffectType.OnHurt,player) && t == DamageType.Gun)
+                if (c != null && c.UseSkill(SkillEffectType.OnHurt, player) && t == DamageType.Gun)
                 {
                     if (c.type == Enums.SkillType.Induction)
                     {

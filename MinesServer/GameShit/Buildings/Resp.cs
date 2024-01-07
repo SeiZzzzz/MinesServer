@@ -82,7 +82,7 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x - 1, y - 1, 106, true);
             World.SetCell(x + 1, y + 2, 106, true);
             World.SetCell(x - 1, y + 2, 106, true);
-            World.SetCell(x, y + 2, 37,true);
+            World.SetCell(x, y + 2, 37, true);
             for (int xx = x + 2; xx < x + 6; xx++)
             {
                 for (int yy = y - 1; yy < y + 3; yy++)
@@ -143,7 +143,7 @@ namespace MinesServer.GameShit.Buildings
                 p.inventory[1]++;
             }
         }
-        public void AdminSaveChanges(Player p,Dictionary<string, string> d)
+        public void AdminSaveChanges(Player p, Dictionary<string, string> d)
         {
             if (bool.TryParse(d["clan"], out var clan))
             {
@@ -156,7 +156,7 @@ namespace MinesServer.GameShit.Buildings
             {
                 cost = costs;
             }
-            if (int.TryParse(d["clanzone"],out var clanz))
+            if (int.TryParse(d["clanzone"], out var clanz))
             {
                 clanzone = clanz;
             }
@@ -176,12 +176,12 @@ namespace MinesServer.GameShit.Buildings
                     Entries = [RichListEntry.Fill("заряд", (int)charge, (int)maxcharge, Enums.CrystalType.Blue, fillbuttons[0], fillbuttons[1], fillbuttons[2]),
                         RichListEntry.Text("hp"),
                         RichListEntry.UInt32("cost", "cost", (uint)cost),
-                        RichListEntry.Button($"прибыль {moneyinside}$", moneyinside == 0 ? new Button() : new Button("Получить", "getprofit", (args) => { using var db = new DataBase(); p.money += moneyinside; moneyinside = 0; p.SendMoney(); db.SaveChanges();p.win?.CurrentTab.Replace(AdmnPage(p)); p.SendWindow(); })),
+                        RichListEntry.Button($"прибыль {moneyinside}$", moneyinside == 0 ? new Button() : new Button("Получить", "getprofit", (args) => { using var db = new DataBase(); p.money += moneyinside; moneyinside = 0; p.SendMoney(); db.SaveChanges(); p.win?.CurrentTab.Replace(AdmnPage(p)); p.SendWindow(); })),
                         RichListEntry.Bool("Клановый респ", "clan", cid > 0),
                         RichListEntry.UInt32("clanzone", "clanzone", (uint)clanzone)
                             ]
                 },
-                Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { AdminSaveChanges(p,args.RichList); })]
+                Buttons = [new Button("СОХРАНИТЬ", $"save:{ActionMacros.RichList}", (args) => { AdminSaveChanges(p, args.RichList); })]
             };
         }
         public override Window? GUIWin(Player p)

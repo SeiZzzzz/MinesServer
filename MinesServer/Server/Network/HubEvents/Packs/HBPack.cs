@@ -25,7 +25,7 @@ namespace MinesServer.Network.HubEvents.Packs
             var tmpx = Convert.ToUInt16(X);
             var tmpy = Convert.ToUInt16(Y);
             MemoryMarshal.Write(output[1..], in tmpx);
-            bytesWritten += sizeof(ushort); 
+            bytesWritten += sizeof(ushort);
             MemoryMarshal.Write(output[3..], in tmpy);
             bytesWritten += sizeof(ushort);
             output[5] = Convert.ToByte(ClanId);

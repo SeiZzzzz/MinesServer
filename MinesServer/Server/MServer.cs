@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using MinesServer.GameShit;
+﻿using MinesServer.GameShit;
 using NetCoreServer;
 using System.Net;
 using System.Net.Sockets;

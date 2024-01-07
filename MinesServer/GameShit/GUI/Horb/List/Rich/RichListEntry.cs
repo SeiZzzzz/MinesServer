@@ -7,7 +7,7 @@ namespace MinesServer.GameShit.GUI.Horb.List.Rich
         public required RichListEntryType Type { get; init; }
         public string Label { get; init; }
         public string Values { get; init; }
-        public string InitialValue { get; init; } 
+        public string InitialValue { get; init; }
         public string Action { get; init; }
         public Button[]? Buttons { get; init; }
         public RichCard[]? Cards { get; init; }

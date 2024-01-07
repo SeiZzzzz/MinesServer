@@ -1,6 +1,4 @@
-﻿using System.Windows.Threading;
-
-namespace MinesServer.GameShit
+﻿namespace MinesServer.GameShit
 {
     public static class Physics
     {
@@ -55,7 +53,7 @@ namespace MinesServer.GameShit
             var mod = 1;
             foreach (var dir in baseddirs)
             {
-                if (World.GetCell(x + dir.Item1,y + dir.Item2) == 119)
+                if (World.GetCell(x + dir.Item1, y + dir.Item2) == 119)
                 {
                     mod += 2;
                 }
@@ -72,12 +70,12 @@ namespace MinesServer.GameShit
                 CellType.AliveRed => AliveRed(x, y, mod),
                 CellType.AliveCyan => AliveCyan(x, y, mod),
                 CellType.AliveNigger => AliveNigger(x, y, mod),
-                CellType.AliveWhite => AliveWhite(x, y,mod),
+                CellType.AliveWhite => AliveWhite(x, y, mod),
                 _ => false
             };
         }
         private static (int, int)[] baseddirs = [(1, 0), (0, 1), (-1, 0), (0, -1)];
-        public static bool AliveBlue(int x, int y,int mod)
+        public static bool AliveBlue(int x, int y, int mod)
         {
             foreach (var i in baseddirs)
             {
@@ -101,7 +99,7 @@ namespace MinesServer.GameShit
                     {
                         if (World.IsEmpty(x + wx, y + wy) && World.W.GetPlayersFromPos(x + wx, y + wy).Count == 0)
                         {
-                            World.SetCell(x + wx, y + wy, (byte)CellType.White); 
+                            World.SetCell(x + wx, y + wy, (byte)CellType.White);
                             World.SetDurability(x + wx, y + wy, 9 * mod);
                         }
                     }
@@ -177,7 +175,7 @@ namespace MinesServer.GameShit
             var c = 0;
             foreach (var dir in baseddirs)
             {
-                if (World.IsEmpty(x + dir.Item1, y + dir.Item2) && World.W.GetPlayersFromPos(x + dir.Item1, y + dir.Item2).Count == 0 && !World.isAlive(World.GetCell(x + -dir.Item1, y + -dir.Item2)) && !World.GetProp(x + -dir.Item1,y + -dir.Item2).isEmpty && World.GetProp(x + -dir.Item1, y + -dir.Item2).is_diggable && World.GetProp(x + -dir.Item1, y + -dir.Item2).is_destructible)
+                if (World.IsEmpty(x + dir.Item1, y + dir.Item2) && World.W.GetPlayersFromPos(x + dir.Item1, y + dir.Item2).Count == 0 && !World.isAlive(World.GetCell(x + -dir.Item1, y + -dir.Item2)) && !World.GetProp(x + -dir.Item1, y + -dir.Item2).isEmpty && World.GetProp(x + -dir.Item1, y + -dir.Item2).is_diggable && World.GetProp(x + -dir.Item1, y + -dir.Item2).is_destructible)
                 {
                     World.SetCell(x + dir.Item1, y + dir.Item2, World.GetCell(x + -dir.Item1, y + -dir.Item2));
                     World.SetDurability(x + dir.Item1, y + dir.Item2, World.GetProp(x + dir.Item1, y + dir.Item2).durability * mod);

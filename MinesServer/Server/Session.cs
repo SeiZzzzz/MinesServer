@@ -9,7 +9,7 @@ using MinesServer.Network.HubEvents;
 using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using NetCoreServer;
-using System.Text;
+using System.Drawing.Imaging;
 
 namespace MinesServer.Server
 {
@@ -94,14 +94,14 @@ namespace MinesServer.Server
                 case SettPacket sett: Sett(packet, sett); break;
                 case ADMNPacket admn: ADMN(packet, admn); break;
                 case RESPPacket res: Res(packet, res); break;
-                case ClanPacket clan: Clan(packet, clan);break;
-                case PopePacket pp: Pope(packet, pp);break;
+                case ClanPacket clan: Clan(packet, clan); break;
+                case PopePacket pp: Pope(packet, pp); break;
                 default:
                     // Invalid event type
                     break;
             }
         }
-        private void Pope(TYPacket f,PopePacket p)
+        private void Pope(TYPacket f, PopePacket p)
         {
             Linker.OpenGui(player);
         }
@@ -163,7 +163,7 @@ namespace MinesServer.Server
                     player.dir = packet.Direction;
                     player.Bz();
                 }
-            }, 0.2);
+            },200);
         }
         private void GeoHandler(TYPacket parent, XgeoPacket packet)
         {
@@ -173,7 +173,7 @@ namespace MinesServer.Server
                 {
                     player.Geo();
                 }
-            }, 0.2);
+            },200);
         }
         private void BuildHandler(TYPacket parent, XbldPacket packet)
         {
@@ -183,7 +183,7 @@ namespace MinesServer.Server
                 {
                     player.dir = packet.Direction;
                     player.Build(packet.BlockType);
-                },0.2);
+                },200);
             }
         }
         private void AutoDiggHandler(TYPacket parent, TADGPacket packet)
@@ -199,7 +199,7 @@ namespace MinesServer.Server
                 {
                     var dir = packet.Direction;
                     player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
-                },0.0001);
+                },2);
             }
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)

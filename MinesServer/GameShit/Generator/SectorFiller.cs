@@ -1,5 +1,4 @@
 ﻿using RcherNZ.AccidentalNoise;
-using System;
 
 namespace MinesServer.GameShit.Generator
 {
@@ -25,7 +24,7 @@ namespace MinesServer.GameShit.Generator
         }
         public void CreateFillForCells(Sector s, bool gig = false, params CellType[] args)
         {
-            tme:
+        tme:
             Console.WriteLine("");
             var dick = new Dictionary<CellType, (float, float)>();
             var gt = 0;

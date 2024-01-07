@@ -1,12 +1,4 @@
-﻿using Microsoft.Identity.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MinesServer.GameShit.Programmator
+﻿namespace MinesServer.GameShit.Programmator
 {
     public static class Interpreter
     {
@@ -147,7 +139,7 @@ namespace MinesServer.GameShit.Programmator
                         player.ProgData.SetCondition(player.health.HP < player.health.MaxHP / 2);
                         break;
                     case ActionType.IsGreenBlock:
-                        player.ProgData.SetCheckCondition(player, bool (int x,int y) => World.GetCell(x,y) == (byte)CellType.GreenBlock);
+                        player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.GetCell(x, y) == (byte)CellType.GreenBlock);
                         break;
                     case ActionType.IsYellowBlock:
                         player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.GetCell(x, y) == (byte)CellType.YellowBlock);
@@ -168,7 +160,7 @@ namespace MinesServer.GameShit.Programmator
                         player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.GetCell(x, y) == (byte)CellType.Box);
                         break;
                     case ActionType.IsEmpty:
-                        player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.GetProp(x,y).isEmpty);
+                        player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.GetProp(x, y).isEmpty);
                         break;
                     case ActionType.IsNotEmpty:
                         player.ProgData.SetCheckCondition(player, bool (int x, int y) => !World.GetProp(x, y).isEmpty);
@@ -177,7 +169,7 @@ namespace MinesServer.GameShit.Programmator
                         player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.GetProp(x, y).isSand || World.GetProp(x, y).isBoulder);
                         break;
                     case ActionType.IsCrystal:
-                        player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.isCry(World.GetCell(x,y)));
+                        player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.isCry(World.GetCell(x, y)));
                         break;
                     case ActionType.IsLivingCrystal:
                         player.ProgData.SetCheckCondition(player, bool (int x, int y) => World.isAlive(World.GetCell(x, y)));

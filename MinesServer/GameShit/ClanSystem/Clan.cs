@@ -1,18 +1,12 @@
-﻿using Azure.Core;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
+﻿using Microsoft.EntityFrameworkCore;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List;
 using MinesServer.GameShit.GUI.Horb.List.Rich;
 using MinesServer.GameShit.GUI.UP;
-using MinesServer.GameShit.Marketext;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Validation;
-using System.Drawing;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace MinesServer.GameShit.ClanSystem
 {
@@ -36,7 +30,7 @@ namespace MinesServer.GameShit.ClanSystem
         public static InventoryItem[] ClanIcons()
         {
             using var db = new DataBase(); List<InventoryItem> l = new();
-            for (int i = 0;i < 8;i++)
+            for (int i = 0; i < 8; i++)
             {
                 var r = Physics.r.Next(1, 219);
                 if (db.clans.FirstOrDefault(i => i.id == r) == null && l.FirstOrDefault(i => i.Id == r) == default)
@@ -48,7 +42,7 @@ namespace MinesServer.GameShit.ClanSystem
         }
         public void OpenClanWin(Player p)
         {
-            Button[] buttons = [new Button("leave", "leave",(args) => LeaveClan(p))];
+            Button[] buttons = [new Button("leave", "leave", (args) => LeaveClan(p))];
             if (p.Id == ownerid && members.Count > 1)
             {
                 buttons = [];
@@ -62,7 +56,8 @@ namespace MinesServer.GameShit.ClanSystem
                     Card = new Card(CardImageType.Clan, id.ToString(), $"<color=white>{name}[{abr}]</color>\nУчастники: <color=white>{members.Count}</color>"),
                     Buttons = []
                 }
-            },new Tab()
+            },
+                new Tab()
                 {
                     Action = "list",
                     Label = "Список",
@@ -71,7 +66,7 @@ namespace MinesServer.GameShit.ClanSystem
                         ClanList = BuildClanlist(p),
                         Buttons = buttons
                     }
-            }];
+                }];
 
             if (reqs.Count > 0)
             {
@@ -80,10 +75,11 @@ namespace MinesServer.GameShit.ClanSystem
                     Action = "reqs",
                     Label = "Заявки",
                     InitialPage = new Page()
-                    { Buttons = [],
-                    List = Reqs(p)
+                    {
+                        Buttons = [],
+                        List = Reqs(p)
                     }
-                    
+
                 }).ToArray();
             }
             p.win = new Window()
@@ -94,21 +90,21 @@ namespace MinesServer.GameShit.ClanSystem
             };
             p.SendWindow();
         }
-         private ClanListEntry[] BuildClanlist(Player p)
+        private ClanListEntry[] BuildClanlist(Player p)
         {
             List<ClanListEntry> list = new();
             if (members != null)
             {
                 foreach (var player in members)
                 {
-                    list.Add(new ClanListEntry(new Button($"<color={player?.clanrank.colorhex}>{player?.name}</color> - {player?.clanrank.name}", $"listrow:{player?.Id}", (args) => OpenPlayerPrew(p,player)), 0, "онлайн?"));
+                    list.Add(new ClanListEntry(new Button($"<color={player?.clanrank.colorhex}>{player?.name}</color> - {player?.clanrank.name}", $"listrow:{player?.Id}", (args) => OpenPlayerPrew(p, player)), 0, "онлайн?"));
                 }
             }
             return list.ToArray();
         }
-        public void OpenPlayerPrew(Player p,Player target,bool changerank = false)
+        public void OpenPlayerPrew(Player p, Player target, bool changerank = false)
         {
-            Button[] buttons = [new Button("Прокачка","skills",(args) => OpenPlayerSkills(p,target))];
+            Button[] buttons = [new Button("Прокачка", "skills", (args) => OpenPlayerSkills(p, target))];
             RichListEntry[] list = [];
             if (changerank)
             {
@@ -128,13 +124,13 @@ namespace MinesServer.GameShit.ClanSystem
             }
             p.win.CurrentTab.Open(new Page()
             {
-                RichList = new RichListConfig(list,true),
+                RichList = new RichListConfig(list, true),
                 Text = $"@@ПРОФИЛЬ СОКЛАНА\n\nИмя: <color={target.clanrank?.colorhex}>{target.name}</color>\nЗвание: {target.clanrank.name}\nID:  <color=white>{target.Id}</color>",
                 Buttons = buttons
             });
             p.SendWindow();
         }
-        public void KickPlayer(Player p, Player target )
+        public void KickPlayer(Player p, Player target)
         {
             using var db = new DataBase();
             target = DataBase.GetPlayer(target.Id);
@@ -146,7 +142,7 @@ namespace MinesServer.GameShit.ClanSystem
             db.SaveChanges();
             OpenClanWin(p);
         }
-        public void OpenPlayerSkills(Player p,Player target)
+        public void OpenPlayerSkills(Player p, Player target)
         {
             target = DataBase.GetPlayer(target.Id);
             p.win.CurrentTab.Open(new UpPage()
@@ -248,14 +244,14 @@ namespace MinesServer.GameShit.ClanSystem
         }
         #endregion
         #region creating
-        public static void CreateClan(Player p,int icon,string name,string abr)
+        public static void CreateClan(Player p, int icon, string name, string abr)
         {
             using var db = new DataBase();
             db.Attach(p);
             if (db.clans.FirstOrDefault(i => i.id == icon || i.name == name) == null)
             {
                 var c = new Clan() { ownerid = p.Id, id = icon, abr = abr, name = name };
-                       c.ranks = new List<Rank>()
+                c.ranks = new List<Rank>()
             {
                 new Rank() { name = "хуесос",priority = 0,colorhex = "#00FF00",owner = c },
                 new Rank() { name = "уже смешарик",priority = 20,colorhex = "#ff0000",owner = c },
@@ -277,18 +273,18 @@ namespace MinesServer.GameShit.ClanSystem
         }
         public static void ChooseIcon(Player p)
         {
-            var goingtoend = (Player p, int icon, string name,string abr) =>
+            var goingtoend = (Player p, int icon, string name, string abr) =>
             {
                 p.win?.CurrentTab.Open(new Page()
                 {
                     Text = "@@\nВсе готово для создания клана.Остался последний этап.\n\n <color=#ff8888ff>Условия:</color>\n1. При создании спишется залог 1000 кредитов.\n2. При удалении клана 90% залога возвращается.\n3. При неактивности игроков в течение 2 месяцев клан удаляется.\n4. Мультоводство в игре запрещено. Использование нескольких\nаккаунтов одним человеком может повлечь штраф и санкции вплоть\nдо бана аккаунтов и удаления клана.\n",
                     Title = "ЗАВЕРШЕНИЕ СОЗДАНИЯ КЛАНА",
                     Card = new Card(CardImageType.Clan, icon.ToString(), $"<color=white>{name}[{abr}]</color>\n"),
-                    Buttons = [new Button("<color=#ff8888ff>ПРИНИМАЮ УСЛОВИЯ</color>", $"complete", (args) => CreateClan(p,icon,name,abr))]
+                    Buttons = [new Button("<color=#ff8888ff>ПРИНИМАЮ УСЛОВИЯ</color>", $"complete", (args) => CreateClan(p, icon, name, abr))]
                 });
                 p.SendWindow();
             };
-            var abrchoose = (Player p,int icon,string name) =>
+            var abrchoose = (Player p, int icon, string name) =>
             {
                 p.win?.CurrentTab.Open(new Page()
                 {
@@ -305,7 +301,7 @@ namespace MinesServer.GameShit.ClanSystem
                 });
                 p.SendWindow();
             };
-            var namechoose = (Player p,int iconid) =>
+            var namechoose = (Player p, int iconid) =>
             {
                 p.win?.CurrentTab.Open(new Page()
                 {
@@ -326,7 +322,7 @@ namespace MinesServer.GameShit.ClanSystem
                 Text = "@@Выберите значок клана. Всего значков больше сотни. Для удобства мы\nпоказываем их небольшими порциями. Нажмите ДРУГИЕ, чтобы посмотреть еще.\nДля выбора значка - кликните на него.\n\nВнимание! Значок клана нельзя будет изменить после создания.\n",
                 Buttons = [new Button("Другие", "nexticons", (args) => ChooseIcon(p))],
                 Inventory = ClanIcons(),
-                OnInventory = (i) => namechoose(p,i - 200)
+                OnInventory = (i) => namechoose(p, i - 200)
             });
             p.SendWindow();
         }
@@ -342,7 +338,7 @@ namespace MinesServer.GameShit.ClanSystem
                     {
                         Text = "@@\nУра! Вы собираетесь создать новый клан. После создания клана вы сможете\nвыполнять клановые квесты, создавать свои фермы, вести войны с другими\nкланами, защищать и отбивать территории, и многое другое.\n\nСоздание клана - ответственное действие, значок и название клана нельзя\nбудет изменить позже. Поэтому внимательно подумайте над тем, как будет\nзвучать и выглядеть ваш клан в игре.\n\nСоздание клана требует залога в 1000 кредитов.\n",
                         Buttons = [new Button("ВЫБРАТЬ ЗНАЧОК КЛАНА", "chooseicon", (args) => ChooseIcon(p))],
-                        
+
                     }
                 }]
             };

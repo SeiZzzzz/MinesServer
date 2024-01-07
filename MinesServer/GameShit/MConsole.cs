@@ -1,7 +1,6 @@
 ﻿using MinesServer.GameShit.ClanSystem;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
-using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
@@ -125,7 +124,7 @@ namespace MinesServer.GameShit
                             {
                                 commands[msg](p, msg);
                                 if (!msg.StartsWith("clans"))
-                                ShowConsole(p);
+                                    ShowConsole(p);
                                 return;
                             }
                             AddConsoleLine(p, "бля это че нахуй");

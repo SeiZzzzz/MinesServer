@@ -1,12 +1,5 @@
 ﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
-using MinesServer.Server;
-using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MinesServer.GameShit.Programmator
 {
@@ -43,7 +36,7 @@ namespace MinesServer.GameShit.Programmator
                     {
                         Buttons = [new Button("СОЗДАТЬ ПРОГРАММУ", "createprog", (args) => naming(p))]
                     }
-                    
+
                 }]
             };
             p.SendWindow();
