@@ -615,6 +615,10 @@ namespace MinesServer.GameShit
         {
             get => (int)Math.Floor(pos.Y / 32);
         }
+        public double Pause
+        {
+            get => World.GetCell(x, y) == 35 ? 2 : 2;
+        }
         #endregion
         #region actions
         public void Update()
@@ -822,28 +826,28 @@ namespace MinesServer.GameShit
         {
             if (CanAct)
             {
-                Delay = DateTime.Now + TimeSpan.FromMilliseconds(delay);
                 playerActions.Enqueue(a);
+                Delay = DateTime.Now + TimeSpan.FromMilliseconds(delay);
             }
         }
         public void Heal()
         {
 
         }
-        public bool Move(int x, int y, int dir)
+        public void Move(int x, int y, int dir)
         {
 
             if (!World.W.ValidCoord(x, y) || win != null)
             {
                 tp(this.x, this.y);
-                return false;
+                return;
             }
 
             var cell = World.GetCell(x, y);
             if (!World.GetProp(cell).isEmpty)
             {
                 tp(this.x, this.y);
-                return false;
+                return;
             }
             var newpos = new Vector2(x, y);
             this.dir = dir;
@@ -863,8 +867,8 @@ namespace MinesServer.GameShit
             }
             else
             {
-                tp(x, y);
-                return false;
+                tp(this.x, this.y);
+                return;
             }
             SendMyMove();
             SendMap();
@@ -873,7 +877,6 @@ namespace MinesServer.GameShit
                 win = pack.GUIWin(this)!;
                 SendWindow();
             }
-            return true;
         }
         public void Build(string type)
         {

@@ -199,7 +199,7 @@ namespace MinesServer.Server
                 {
                     var dir = packet.Direction;
                     player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
-                },2);
+                },0.20);
             }
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)
