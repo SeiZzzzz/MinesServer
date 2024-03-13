@@ -157,9 +157,6 @@ namespace MinesServer.GameShit
         {
             if (DateTime.Now - time >= TimeSpan.FromMilliseconds(400))
             {
-                p.AddAciton(() =>
-                {
-
                 if (typeditems.ContainsKey(selected) && !World.ContainsPack((int)p.GetDirCord().X, (int)p.GetDirCord().Y, out var pack) && (World.GetProp((int)p.GetDirCord().X, (int)p.GetDirCord().Y).can_place_over || selected == 40) && this[selected] > 0)
                 {
                     if (typeditems[selected](p))
@@ -168,8 +165,6 @@ namespace MinesServer.GameShit
                         p.SendInventory();
                     }
                 }
-
-            },0);
                 time = DateTime.Now;
             }
         }

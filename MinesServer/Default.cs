@@ -61,13 +61,8 @@ namespace MinesServer
             for (; ; )
             {
                 var l = Console.ReadLine();
-                if (l != null)
-                {
-                    if (commands.Keys.Contains(l))
-                    {
-                        commands[l]();
-                    }
-                }
+                if (l != null && commands.Keys.Contains(l))
+                    commands[l]();
             }
         }
         public static Config cfg;

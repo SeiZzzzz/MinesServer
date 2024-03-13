@@ -163,7 +163,7 @@ namespace MinesServer.Server
                     player.dir = packet.Direction;
                     player.Bz();
                 }
-            },200);
+            },200000);
         }
         private void GeoHandler(TYPacket parent, XgeoPacket packet)
         {
@@ -173,7 +173,7 @@ namespace MinesServer.Server
                 {
                     player.Geo();
                 }
-            },200);
+            },200000);
         }
         private void BuildHandler(TYPacket parent, XbldPacket packet)
         {
@@ -183,7 +183,7 @@ namespace MinesServer.Server
                 {
                     player.dir = packet.Direction;
                     player.Build(packet.BlockType);
-                },200);
+                }, 200000);
             }
         }
         private void AutoDiggHandler(TYPacket parent, TADGPacket packet)
@@ -193,13 +193,22 @@ namespace MinesServer.Server
         }
         private void MoveHandler(TYPacket parent, XmovPacket packet)
         {
+            var add = 500;
+            int time = 0;
+            if (player != null)
+            {
+                player.pause = 35;
+
+                player.SendSpeed();
+                time = (int)(player.OnRoad ? (player.pause * add) * 0.65 : player.pause * add);
+            }
             if (player != null)
             {
                 player.AddAciton(() =>
                 {
                     var dir = packet.Direction;
                     player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
-                },0.20);
+                },time);
             }
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)
@@ -291,12 +300,5 @@ namespace MinesServer.Server
             SendU(new GuPacket());
         }
         #endregion
-        public void UpdateMs()
-        {
-            if (starttime != 0)
-            {
-                starttime += 0.001f;
-            }
-        }
     }
 }

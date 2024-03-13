@@ -19,7 +19,7 @@ namespace MinesServer.Server
         {
             Task.Run(() =>
             {
-                var tps = 64;
+                var tps = 128;
                 var lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 while (true)
                 {
@@ -60,9 +60,11 @@ namespace MinesServer.Server
             for (int i = 0; i < DataBase.activeplayers.Count; i++)
             {
                 using var dbas = new DataBase();
-                var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
-                player?.connection?.UpdateMs();
-                player?.Update();
+                if (DataBase.activeplayers.Count > 0)
+                    {
+                    var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
+                    player?.Update();
+                }
             }
             for (int x = 0; x < World.ChunksW; x++)
             {

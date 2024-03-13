@@ -588,12 +588,14 @@ namespace MinesServer.GameShit
         public PlayerSkills skillslist { get; set; }
         public Stack<byte> geo = new Stack<byte>();
         public Queue<Line> console = new Queue<Line>();
+        private bool actionpertick = true;
         [NotMapped]
         public Window? win;
         [NotMapped]
         private float cb;
         public DateTime Delay = DateTime.Now;
         public bool CanAct { get => !(Delay > DateTime.Now); }
+        public bool OnRoad { get => World.GetCell(x, y) == 35 || World.GetCell(x, y) == 36; }
         public int dir { get; set; }
         public int x
         {
@@ -623,6 +625,7 @@ namespace MinesServer.GameShit
         #region actions
         public void Update()
         {
+            actionpertick = false;
             if (DateTime.Now - lastc190hit >= TimeSpan.FromMinutes(1))
             {
                 c190stacks = 1;
@@ -824,13 +827,14 @@ namespace MinesServer.GameShit
         }
         public void AddAciton(Action a,double delay)
         {
-            if (CanAct)
+            if (CanAct && !actionpertick)
             {
+                Delay = DateTime.Now + TimeSpan.FromMicroseconds(delay);
                 playerActions.Enqueue(a);
-                Delay = DateTime.Now + TimeSpan.FromMilliseconds(delay);
+                actionpertick = true;
             }
         }
-        public void Heal()
+        public void Heal(int count = -1)
         {
 
         }
@@ -1083,7 +1087,7 @@ namespace MinesServer.GameShit
         }
         public void SendSpeed()
         {
-            connection?.SendU(new SpeedPacket(pause, (int)(pause * 0.7), 100000));
+            connection?.SendU(new SpeedPacket(pause, (int)(pause * 0.6), 100000));
         }
         public void SendInventory()
         {
