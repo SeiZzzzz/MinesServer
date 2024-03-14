@@ -158,18 +158,17 @@ namespace MinesServer.GameShit.ClanSystem
         {
             using var db = new DataBase();
             p = DataBase.GetPlayer(p.Id);
-            db.Attach(this);
-            members.Remove(p);
+            db.players.Attach(p);
+            p.clan = null;
+            p.clanrank = null;
             if (p.Id == ownerid)
             {
-                db.Remove(this);
+                db.clans.Remove(this);
             }
-            p.clanrank = null;
-            p.win = null;
-            p.clan = null;
             p.SendClan();
             p.SendMyMove();
             p.SendWindow();
+            p.win = null;
             db.SaveChanges();
         }
         #endregion
@@ -178,6 +177,7 @@ namespace MinesServer.GameShit.ClanSystem
         {
             using var db = new DataBase();
             var p = DataBase.GetPlayer(id);
+            db.clans.Attach(this);
             if (reqs.FirstOrDefault(i => i.player?.Id == id) == null)
             {
                 var req = new Request() { player = p, reqtime = DateTime.Now };
@@ -233,7 +233,7 @@ namespace MinesServer.GameShit.ClanSystem
         {
             using var db = new DataBase();
             q.player = DataBase.GetPlayer(q.player.Id);
-            db.Attach(this);
+            db.clans.Attach(this);
             members.Add(q.player);
             q.player.clanrank = ranks.OrderBy(r => r.priority).First();
             foreach (var req in db.reqs.Where(r => r.player == q.player))
