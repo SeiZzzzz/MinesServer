@@ -566,7 +566,7 @@ namespace MinesServer.GameShit
         public string name { get; set; }
         public Clan? clan { get; set; }
         public Rank? clanrank { get; set; }
-        public int pause = 25;
+        public int pause = 3500;
         public List<Program> programs { get; set; }
         [NotMapped]
         public int cid { get => clan == null ? 0 : clan.id; }
@@ -1087,7 +1087,7 @@ namespace MinesServer.GameShit
         }
         public void SendSpeed()
         {
-            connection?.SendU(new SpeedPacket(pause, (int)(pause * 0.6), 100000));
+            connection?.SendU(new SpeedPacket(pause / 100, (int)(pause / 100 * 0.6), 100000));
         }
         public void SendInventory()
         {

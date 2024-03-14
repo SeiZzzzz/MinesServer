@@ -193,22 +193,13 @@ namespace MinesServer.Server
         }
         private void MoveHandler(TYPacket parent, XmovPacket packet)
         {
-            var add = 500;
-            int time = 0;
-            if (player != null)
-            {
-                player.pause = 35;
-
-                player.SendSpeed();
-                time = (int)(player.OnRoad ? (player.pause * add) * 0.65 : player.pause * add);
-            }
             if (player != null)
             {
                 player.AddAciton(() =>
                 {
                     var dir = packet.Direction;
                     player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
-                },time);
+                }, player.OnRoad ? (player.pause * 5) * 0.65 : player.pause * 5);
             }
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)
