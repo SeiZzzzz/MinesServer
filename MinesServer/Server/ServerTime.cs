@@ -61,7 +61,7 @@ namespace MinesServer.Server
             {
                 using var dbas = new DataBase();
                 if (DataBase.activeplayers.Count > i)
-                    {
+                {
                     var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
                     player?.Update();
                 }

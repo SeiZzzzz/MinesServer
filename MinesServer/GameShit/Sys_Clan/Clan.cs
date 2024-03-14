@@ -134,11 +134,11 @@ namespace MinesServer.GameShit.ClanSystem
         {
             using var db = new DataBase();
             target = DataBase.GetPlayer(target.Id);
-            db.Attach(target);
+            db.players.Attach(target);
             target.clanrank = null;
             target.clan = null;
-            members.Remove(target);
             target.SendClan();
+            target.win = null;
             db.SaveChanges();
             OpenClanWin(p);
         }

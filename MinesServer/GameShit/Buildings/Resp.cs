@@ -69,6 +69,23 @@ namespace MinesServer.GameShit.Buildings
             var r = new Random();
             return (r.Next(x + 2, x + 5), r.Next(y - 1, y + 3));
         }
+        public void Fill(Player p, long num)
+        {
+            using var db = new DataBase();
+            if (p.crys[Enums.CrystalType.Blue] < num)
+            {
+                num = p.crys[Enums.CrystalType.Blue];
+            }
+            db.Attach(this);
+            if (p.crys.RemoveCrys((int)Enums.CrystalType.Blue, num))
+            {
+                charge += (int)num;
+            }
+            p.win?.CurrentTab.Replace(AdmnPage(p));
+            p.SendWindow();
+            db.SaveChanges();
+        }
+        #region affectworld
         public override void Build()
         {
             World.SetCell(x, y, 37, true);
@@ -92,23 +109,7 @@ namespace MinesServer.GameShit.Buildings
             }
             base.Build();
         }
-        public void Fill(Player p, long num)
-        {
-            using var db = new DataBase();
-            if (p.crys[Enums.CrystalType.Blue] < num)
-            {
-                num = p.crys[Enums.CrystalType.Blue];
-            }
-            db.Attach(this);
-            if (p.crys.RemoveCrys((int)Enums.CrystalType.Blue, num))
-            {
-                charge += (int)num;
-            }
-            p.win?.CurrentTab.Replace(AdmnPage(p));
-            p.SendWindow();
-            db.SaveChanges();
-        }
-        public void ClearBuilding()
+        protected override void ClearBuilding()
         {
             World.SetCell(x, y, 32, false);
             World.SetCell(x + 1, y, 32, false);
@@ -143,6 +144,7 @@ namespace MinesServer.GameShit.Buildings
                 p.inventory[1]++;
             }
         }
+        #endregion
         public void AdminSaveChanges(Player p, Dictionary<string, string> d)
         {
             if (bool.TryParse(d["clan"], out var clan))

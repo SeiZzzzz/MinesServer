@@ -7,6 +7,7 @@
         Gun = 'G',
         Market = 'M',
         Up = 'U',
-        Storage = 'S'
+        Storage = 'L',
+        Craft = 'F'
     }
 }

@@ -26,6 +26,36 @@ namespace MinesServer.GameShit.Buildings
             charge = 1000;
             maxcharge = 10000;
         }
+        public Gun()
+        {
+
+        }
+        #region affectworld
+        public override void Build()
+        {
+            World.SetCell(x, y, 32, true);
+            World.SetCell(x + 1, y, 35, true);
+            World.SetCell(x - 1, y, 35, true);
+            World.SetCell(x, y - 1, 35, true);
+            World.SetCell(x, y + 1, 35, true);
+            World.SetCell(x + 1, y + 1, 106, true);
+            World.SetCell(x - 1, y + 1, 106, true);
+            World.SetCell(x + 1, y - 1, 106, true);
+            World.SetCell(x - 1, y - 1, 106, true);
+            base.Build();
+        }
+        protected override void ClearBuilding()
+        {
+            World.SetCell(x, y, 32, false);
+            World.SetCell(x + 1, y, 35, false);
+            World.SetCell(x - 1, y, 35, false);
+            World.SetCell(x, y - 1, 35, false);
+            World.SetCell(x, y + 1, 35, false);
+            World.SetCell(x + 1, y + 1, 106, false);
+            World.SetCell(x - 1, y + 1, 106, false);
+            World.SetCell(x + 1, y - 1, 106, false);
+            World.SetCell(x - 1, y - 1, 106, false);
+        }
         public void Destroy(Player p)
         {
             ClearBuilding();
@@ -39,6 +69,7 @@ namespace MinesServer.GameShit.Buildings
                 p.inventory[1]++;
             }
         }
+        #endregion
         public void Fill(Player p, long val)
         {
             if (charge == maxcharge)
@@ -83,31 +114,6 @@ namespace MinesServer.GameShit.Buildings
                     }
                 }]
             };
-        }
-        public override void Build()
-        {
-            World.SetCell(x, y, 32, true);
-            World.SetCell(x + 1, y, 35, true);
-            World.SetCell(x - 1, y, 35, true);
-            World.SetCell(x, y - 1, 35, true);
-            World.SetCell(x, y + 1, 35, true);
-            World.SetCell(x + 1, y + 1, 106, true);
-            World.SetCell(x - 1, y + 1, 106, true);
-            World.SetCell(x + 1, y - 1, 106, true);
-            World.SetCell(x - 1, y - 1, 106, true);
-            base.Build();
-        }
-        private void ClearBuilding()
-        {
-            World.SetCell(x, y, 32, false);
-            World.SetCell(x + 1, y, 35, false);
-            World.SetCell(x - 1, y, 35, false);
-            World.SetCell(x, y - 1, 35, false);
-            World.SetCell(x, y + 1, 35, false);
-            World.SetCell(x + 1, y + 1, 106, false);
-            World.SetCell(x - 1, y + 1, 106, false);
-            World.SetCell(x + 1, y - 1, 106, false);
-            World.SetCell(x - 1, y - 1, 106, false);
         }
         public override void Update()
         {

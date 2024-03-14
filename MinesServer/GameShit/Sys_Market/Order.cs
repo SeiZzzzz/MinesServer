@@ -1,6 +1,6 @@
 ﻿using MinesServer.Server;
 
-namespace MinesServer.GameShit.Marketext
+namespace MinesServer.GameShit.SysMarket
 {
     public class Order
     {

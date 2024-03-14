@@ -1,4 +1,5 @@
-﻿using MinesServer.GameShit.Buildings;
+﻿using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Consumables;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
@@ -14,97 +15,135 @@ namespace MinesServer.GameShit
             typeditems = new Dictionary<int, ItemUsage>
             {
                 {
-                    0,(p) =>
+                    0,
+                    (p) =>
                     {
                         return true;
                     }
                 },
                 {
-                    1,(p) =>
+                    1,
+                    (p) =>
                     {
                         var coord = p.GetDirCord(true);
-                        if (World.W.CanBuildPack(-2,6,-2,3,(int)coord.X,(int)coord.Y,p))
-                            {
-                        new Resp((int)coord.X,(int)coord.Y,p.Id).Build();
-                            return true;
-                            }
-                        return false;
-                    }
-                },
-                {
-                    2,(p) =>
-                    {
-                        var coord = p.GetDirCord(true);
-                         if (World.W.CanBuildPack(-2,2,-3,4,(int)coord.X,(int)coord.Y,p))
-                            {
-                        new Up((int)coord.X,(int)coord.Y,p.Id).Build();
-                            return true;
-                            }
-                        return false;
-                    }
-                },
-                {
-                    3,(p) =>
-                    {
-                        var coord = p.GetDirCord(true);
-                        if (World.W.CanBuildPack(-3,3,-3,3,(int)coord.X,(int)coord.Y,p))
-                            {
-                        new Market((int)coord.X,(int)coord.Y,p.Id).Build();
-                            return true;
-                            }
-                        return false;
-                    }
-                },
-                {
-                    4,(p) =>
-                    {
-                        return true;
-                    }
-                },
-                {
-                    5,(p) =>{
-                        if (!World.GunRadius((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p))
+                        if (World.W.CanBuildPack(-2, 6, -2, 3, (int)coord.X, (int)coord.Y, p))
                         {
-                            ShitClass.Boom((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
-                        return true;
-                        }
-                        return false;
-                        }
-                },
-                   {
-                    6,(p) =>{
-                    if (!World.GunRadius((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p))
-                        {
-                            ShitClass.Prot((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
-                        return true;
-                        }
-                        return false;
-                        }
-                },
-                 {
-                    7,(p) =>{
-                    ShitClass.Raz((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
-                        return true;
-                        }
-                },
-                  {
-                    26,(p) =>
-                    {
-                        var coord = p.GetDirCord(true);
-                        if (World.W.CanBuildPack(-2,2,-2,2,(int)coord.X,(int)coord.Y,p) && p.clan != null)
-                            {
-                        new Gun((int)coord.X,(int)coord.Y,p.Id,p.cid).Build();
+                            new Resp((int)coord.X, (int)coord.Y, p.Id).Build();
                             return true;
-                            }
+                        }
                         return false;
                     }
                 },
                 {
-                    40,(p) =>{
-                    ShitClass.C190Shot((int)p.GetDirCord().X,(int)p.GetDirCord().Y,p);
-                        return true;
+                    2,
+                    (p) =>
+                    {
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-2, 2, -3, 4, (int)coord.X, (int)coord.Y, p))
+                        {
+                            new Up((int)coord.X, (int)coord.Y, p.Id).Build();
+                            return true;
                         }
-                }
+                        return false;
+                    }
+                },
+                {
+                    3,
+                    (p) =>
+                    {
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-3, 3, -3, 3, (int)coord.X, (int)coord.Y, p))
+                        {
+                            new Market((int)coord.X, (int)coord.Y, p.Id).Build();
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    4,
+                    (p) =>
+                    {
+                        return true;
+                    }
+                },
+                {
+                    5,
+                    (p) =>
+                    {
+                        if (!World.GunRadius((int)p.GetDirCord().X, (int)p.GetDirCord().Y, p))
+                        {
+                            ShitClass.Boom((int)p.GetDirCord().X, (int)p.GetDirCord().Y, p);
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    6,
+                    (p) =>
+                    {
+                        if (!World.GunRadius((int)p.GetDirCord().X, (int)p.GetDirCord().Y, p))
+                        {
+                            ShitClass.Prot((int)p.GetDirCord().X, (int)p.GetDirCord().Y, p);
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    7,
+                    (p) =>
+                    {
+                        ShitClass.Raz((int)p.GetDirCord().X, (int)p.GetDirCord().Y, p);
+                        return true;
+                    }
+                },
+                {
+                    24,
+                    (p) =>
+                    {
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-2, 2, -2, 2, (int)coord.X, (int)coord.Y, p))
+                        {
+                            new Crafter((int)coord.X, (int)coord.Y, p.Id).Build();
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    26,
+                    (p) =>
+                    {
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-2, 2, -2, 2, (int)coord.X, (int)coord.Y, p) && p.clan != null)
+                        {
+                            new Gun((int)coord.X, (int)coord.Y, p.Id, p.cid).Build();
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    29, (p) => {
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-2, 2, -2, 1, (int)coord.X, (int)coord.Y, p))
+                        {
+                            new Storage((int)coord.X, (int)coord.Y, p.Id).Build();
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    40,
+                    (p) =>
+                    {
+                        ShitClass.C190Shot((int)p.GetDirCord().X, (int)p.GetDirCord().Y, p);
+                        return true;
+                    }
+                },
             };
         }
         public int this[int index]

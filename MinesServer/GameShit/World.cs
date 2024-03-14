@@ -363,6 +363,14 @@ namespace MinesServer.GameShit
                 _ => false
             };
         }
+        public static bool isRoad(byte cell)
+        {
+            return (CellType)cell switch
+            {
+                CellType.Road or CellType.GoldenRoad or CellType.PolymerRoad or CellType.BuildingDoor => true,
+                _ => false
+            };
+        }
         public static bool isCry(byte cell)
         {
             return ((CellType)cell) switch

@@ -2,29 +2,39 @@
 using MinesServer.GameShit;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
-using MinesServer.GameShit.Marketext;
+using MinesServer.GameShit.SysMarket;
 using MinesServer.GameShit.Programmator;
+using MinesServer.GameShit.Sys_Craft;
 
 namespace MinesServer.Server
 {
     public class DataBase : DbContext
     {
+        #region player
+        public DbSet<Program> progs { get; set; }
         public DbSet<Player> players { get; set; }
         public DbSet<Health> healths { get; set; }
         public DbSet<Inventory> inventories { get; set; }
         public DbSet<Basket> baskets { get; set; }
         public DbSet<PlayerSkills> skills { get; set; }
-        public DbSet<Box> boxes { get; set; }
         public DbSet<Settings> settings { get; set; }
-        public DbSet<Resp> resps { get; set; }
-        public DbSet<Market> markets { get; set; }
-        public DbSet<Up> ups { get; set; }
+        #endregion
+        #region Utils
+        public DbSet<Box> boxes { get; set; }
         public DbSet<Order> orders { get; set; }
         public DbSet<Clan> clans { get; set; }
         public DbSet<Request> reqs { get; set; }
         public DbSet<Rank> ranks { get; set; }
+        public DbSet<CraftEntry> craftentries { get; set; }
+        #endregion
+        #region packs
+        public DbSet<Resp> resps { get; set; }
+        public DbSet<Market> markets { get; set; }
+        public DbSet<Up> ups { get; set; }
         public DbSet<Gun> guns { get; set; }
-        public DbSet<Program> progs { get; set; }
+        public DbSet<Storage> storages { get; set; }
+        public DbSet<Crafter> crafts { get; set; }
+        #endregion
         public static bool created = false;
         public DataBase()
         {
@@ -54,6 +64,9 @@ namespace MinesServer.Server
                 .AutoInclude();
             modelBuilder.Entity<Request>()
                 .Navigation(c => c.player)
+                .AutoInclude();
+            modelBuilder.Entity<Crafter>()
+                .Navigation(c => c.currentcraft)
                 .AutoInclude();
         }
         public static void Save()
@@ -125,6 +138,14 @@ namespace MinesServer.Server
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.guns)
+                {
+                    World.AddPack(i.x, i.y, i);
+                }
+                foreach (var i in db.storages)
+                {
+                    World.AddPack(i.x, i.y, i);
+                }
+                foreach (var i in db.crafts)
                 {
                     World.AddPack(i.x, i.y, i);
                 }

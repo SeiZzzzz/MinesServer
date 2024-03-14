@@ -1,7 +1,7 @@
 ﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List.Rich;
-using MinesServer.GameShit.Marketext;
+using MinesServer.GameShit.SysMarket;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
@@ -25,6 +25,41 @@ namespace MinesServer.GameShit.Buildings
             db.markets.Add(this);
             db.SaveChanges();
         }
+        #region affectworld
+        protected override void ClearBuilding()
+        {
+            World.SetCell(x, y, 32, false);
+            for (int xx = -2; xx < 3; xx++)
+            {
+                for (int yy = -2; yy < 3; yy++)
+                {
+                    int px = x + xx, py = y + yy;
+                    if (px == x || py == y)
+                    {
+                        World.SetCell(px, py, 32, false);
+                        continue;
+                    }
+                    World.SetCell(px, py, 32, false);
+                }
+            }
+            World.SetCell(x + 2, y + 2, 32, false);
+            World.SetCell(x - 2, y + 2, 32, false);
+            World.SetCell(x + 2, y - 2, 32, false);
+            World.SetCell(x - 2, y - 2, 32, false);
+        }
+        public void Destroy(Player p)
+        {
+            ClearBuilding();
+            World.RemovePack(x, y);
+            using var db = new DataBase();
+            db.markets.Remove(this);
+            db.SaveChanges();
+            if (Physics.r.Next(1, 101) < 40)
+            {
+                p.connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "ШПАААК ВЫПАЛ")]));
+                p.inventory[3]++;
+            }
+        }
         public override void Build()
         {
             World.SetCell(x, y, 37, true);
@@ -47,6 +82,7 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x - 2, y - 2, 38, true);
             base.Build();
         }
+        #endregion
         public Action<Player, Market> onadmn = (p, m) =>
         {
             if (p.Id == m.ownerid)
@@ -120,40 +156,6 @@ namespace MinesServer.GameShit.Buildings
                         Label = "Auc"
                     }]
             };
-        }
-        public void ClearBuilding()
-        {
-            World.SetCell(x, y, 32, false);
-            for (int xx = -2; xx < 3; xx++)
-            {
-                for (int yy = -2; yy < 3; yy++)
-                {
-                    int px = x + xx, py = y + yy;
-                    if (px == x || py == y)
-                    {
-                        World.SetCell(px, py, 32, false);
-                        continue;
-                    }
-                    World.SetCell(px, py, 32, false);
-                }
-            }
-            World.SetCell(x + 2, y + 2, 32, false);
-            World.SetCell(x - 2, y + 2, 32, false);
-            World.SetCell(x + 2, y - 2, 32, false);
-            World.SetCell(x - 2, y - 2, 32, false);
-        }
-        public void Destroy(Player p)
-        {
-            ClearBuilding();
-            World.RemovePack(x, y);
-            using var db = new DataBase();
-            db.markets.Remove(this);
-            db.SaveChanges();
-            if (Physics.r.Next(1, 101) < 40)
-            {
-                p.connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "ШПАААК ВЫПАЛ")]));
-                p.inventory[3]++;
-            }
         }
     }
 }

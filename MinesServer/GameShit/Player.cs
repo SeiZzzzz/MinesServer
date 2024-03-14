@@ -15,7 +15,6 @@ using MinesServer.Network.Movement;
 using MinesServer.Network.Programmator;
 using MinesServer.Network.World;
 using MinesServer.Server;
-using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Numerics;
@@ -596,7 +595,7 @@ namespace MinesServer.GameShit
         private float cb;
         public DateTime Delay = DateTime.Now;
         public bool CanAct { get => !(Delay > DateTime.Now); }
-        public bool OnRoad { get => World.GetCell(x, y) == 35 || World.GetCell(x, y) == 36; }
+        public bool OnRoad { get => World.isRoad(World.GetCell(x, y)); }
         public int dir { get; set; }
         public int x
         {
@@ -636,18 +635,24 @@ namespace MinesServer.GameShit
             {
                 ReSendBots();
             }
-            var cellprop = World.GetProp(World.GetCell(x, y));
+            var cell = World.GetCell(x, y);
+            var cellprop = World.GetProp(cell);
             if (!cellprop.isEmpty)
             {
                 health.Hurt(cellprop.fall_damage);
-                if (cellprop.is_destructible)
+                if (cell == 90)
+                {
+                    GetBox(x, y);
+                    World.DamageCell(x, y, 1);
+                }
+                else if (cellprop.is_destructible)
                 {
                     World.Destroy(x, y);
                 }
             }
             while (playerActions.Count > 0)
             {
-                 playerActions.Dequeue()();
+                playerActions.Dequeue()();
             }
         }
         public void SetResp(Resp r)
@@ -826,7 +831,7 @@ namespace MinesServer.GameShit
                 }
             }
         }
-        public void AddAciton(Action a,double delay)
+        public void AddAciton(Action a, double delay)
         {
             if (CanAct && !actionpertick)
             {

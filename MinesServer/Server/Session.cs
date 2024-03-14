@@ -9,7 +9,6 @@ using MinesServer.Network.HubEvents;
 using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using NetCoreServer;
-using System.Drawing.Imaging;
 
 namespace MinesServer.Server
 {
@@ -163,7 +162,7 @@ namespace MinesServer.Server
                     player.dir = packet.Direction;
                     player.Bz();
                 }
-            },200000);
+            }, 200000);
         }
         private void GeoHandler(TYPacket parent, XgeoPacket packet)
         {
@@ -173,7 +172,7 @@ namespace MinesServer.Server
                 {
                     player.Geo();
                 }
-            },200000);
+            }, 200000);
         }
         private void BuildHandler(TYPacket parent, XbldPacket packet)
         {

@@ -77,6 +77,7 @@ namespace MinesServer.GameShit.Buildings
                 }]
             };
         }
+        #region affectworld
         public override void Build()
         {
             World.SetCell(x - 1, y - 2, 38, true);
@@ -93,7 +94,7 @@ namespace MinesServer.GameShit.Buildings
             World.SetCell(x, y + 1, 37, true);
             base.Build();
         }
-        public void ClearBuilding()
+        protected override void ClearBuilding()
         {
             World.SetCell(x - 1, y - 2, 32, false);
             World.SetCell(x + 1, y - 2, 32, false);
@@ -121,5 +122,6 @@ namespace MinesServer.GameShit.Buildings
                 p.inventory[2]++;
             }
         }
+        #endregion
     }
 }

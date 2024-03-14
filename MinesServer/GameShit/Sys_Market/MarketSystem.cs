@@ -6,7 +6,7 @@ using MinesServer.Server;
 using MoreLinq;
 using RT.Util.ExtensionMethods;
 
-namespace MinesServer.GameShit.Marketext
+namespace MinesServer.GameShit.SysMarket
 {
     public static class MarketSystem
     {

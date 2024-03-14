@@ -1,4 +1,5 @@
 ﻿using MinesServer.GameShit.GUI;
+using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 namespace MinesServer.GameShit.Buildings
 {
@@ -21,6 +22,15 @@ namespace MinesServer.GameShit.Buildings
         public virtual void Build()
         {
             World.AddPack(x, y, this);
+        }
+        protected abstract void ClearBuilding();
+        public void Dizz()
+        {
+            ClearBuilding();
+            using var db = new DataBase();
+            World.RemovePack(x, y);
+            db.Remove(this);
+            db.SaveChanges();
         }
         public virtual void Update()
         {
