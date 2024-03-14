@@ -158,13 +158,15 @@ namespace MinesServer.GameShit.ClanSystem
         {
             using var db = new DataBase();
             p = DataBase.GetPlayer(p.Id);
-            p.clanrank = null;
-            p.win = null;
-            p.clan = null;
+            db.Attach(this);
+            members.Remove(p);
             if (p.Id == ownerid)
             {
                 db.Remove(this);
             }
+            p.clanrank = null;
+            p.win = null;
+            p.clan = null;
             p.SendClan();
             p.SendMyMove();
             p.SendWindow();
@@ -176,7 +178,6 @@ namespace MinesServer.GameShit.ClanSystem
         {
             using var db = new DataBase();
             var p = DataBase.GetPlayer(id);
-            db.Attach(this);
             if (reqs.FirstOrDefault(i => i.player?.Id == id) == null)
             {
                 var req = new Request() { player = p, reqtime = DateTime.Now };
