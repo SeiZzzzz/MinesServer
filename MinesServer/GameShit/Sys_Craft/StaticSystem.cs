@@ -4,18 +4,20 @@ using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List;
 using MinesServer.GameShit.SysCraft;
 using MinesServer.GameShit.SysMarket;
+using MinesServer.Network.GUI;
 using MinesServer.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MinesServer.GameShit.Sys_Craft
 {
     public static class StaticSystem
     {
-        public static string[] crysnames = { "зель", "синь", "крась", "фиоль", "бель", "голь" };
+        public static string[] crysnames = { "<color=#00e600>зель</color>", "<color=#2929ff>синь</color>", "<color=#ff3333>крась</color>", "фиоль", "бель", "голь" };
         private static InventoryItem[] Items()
         {
             InventoryItem[] items = [];
@@ -26,7 +28,7 @@ namespace MinesServer.GameShit.Sys_Craft
             }
             return items;
         }
-        public static void OpenRecipie(Player p,int result_id)
+        public static void OpenRecipie(Player p, int result_id)
         {
             var recipie = RDes.recipies.FirstOrDefault(i => i.result.id == result_id);
             var text = recipie.costcrys?.Select(i => $"{crysnames[i.id]} x{i.num}").Aggregate("", (str, obj) => str + obj.ToString() + "\n");
@@ -37,19 +39,48 @@ namespace MinesServer.GameShit.Sys_Craft
                 Card = new Card(CardImageType.Item, result_id.ToString(), $" {MarketSystem.PackName(recipie.result.id)} x{recipie.result.num}\n Время сборки:{recipie.time} сек."),
                 Text = $"@@\n\nНужно для сборки четатам\n\n{text}\n\n",
                 Input = new InputConfig($"num", null, false),
-                Buttons = [new Button("craft", $"craft:{ActionMacros.Input}", (a) => {if (int.TryParse(a.Input,out var num)) Craft(p,recipie,num); })],
+                Buttons = [new Button("craft", $"craft:{ActionMacros.Input}", (a) => { if (int.TryParse(a.Input, out var num)) Craft(p, recipie, num); })],
             });
         }
-        public static void Craft(Player p,Recipie r,int num)
+        public static void Craft(Player p, Recipie r, int num)
         {
-            if (World.ContainsPack(p.x,p.y,out var craft))
+            if (World.ContainsPack(p.x, p.y, out var craft) && MeetReqs(p, r, num))
             {
+                DeleteReqs(p, r, num);
                 var c = (craft as Crafter);
                 using var db = new DataBase();
                 db.crafts.Attach(c);
-                c.currentcraft = new CraftEntry(r.result.id,num,DateTime.Now + (TimeSpan.FromSeconds(r.time) * num));
+                c.currentcraft = new CraftEntry(r.result.id, num, DateTime.Now + (TimeSpan.FromSeconds(r.time) * num));
                 db.SaveChanges();
+                p.win?.CurrentTab.Open(FilledPage(p, c));
+                return;
             }
+            p.connection?.SendU(new OKPacket("Недостаточно ресов", "..."));
+        }
+        public static void Claim(Player p, Crafter c)
+        {
+            var recipie = RDes.recipies.FirstOrDefault(i => i.result.id == c.currentcraft.result_id);
+            using var db = new DataBase();
+            db.crafts.Attach(c);
+            db.players.Attach(p);
+            p.inventory[recipie.result.id] += c.currentcraft.num * recipie.result.num;
+            db.craftentries.Remove(c.currentcraft);
+            c.currentcraft = null;
+            db.SaveChanges();
+            p.SendInventory();
+            p.win = c.GUIWin(p);
+        }
+        public static bool MeetReqs(Player p, Recipie r, int num) => (r.costcrys != null ? !r.costcrys.Select(i => { return p.crys.cry[i.id] >= (i.num * num); }).Contains(false) : true) && (r.costres != null ? !r.costres.Select(i => { return p.inventory[i.id] >= (i.num * num); }).Contains(false) : true);
+        public static void DeleteReqs(Player p,Recipie r,int num)
+        {
+            if (r.costcrys != null)
+                foreach (var i in r.costcrys)
+                    p.crys.cry[i.id] -= i.num * num;
+            if (r.costres != null)
+                foreach (var i in r.costres)
+                    p.inventory[i.id] -= i.num * num;
+            p.SendInventory();
+            p.crys.SendBasket();
         }
         public static IPage? FilledPage(Player p,Crafter c)
         {
@@ -63,7 +94,7 @@ namespace MinesServer.GameShit.Sys_Craft
                 {
                     Title = "Крафтер",
                     Text = $"@@\nprogress {progress}% {bar}\n\n{remain}",
-                    Buttons = [new Button("claim", "claim", (a) => { })]
+                    Buttons = [new Button("claim", "claim", (a) => Claim(p,c))]
                 };
             }
             return new Page()

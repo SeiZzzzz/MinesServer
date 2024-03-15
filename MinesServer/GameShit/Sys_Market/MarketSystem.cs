@@ -19,7 +19,7 @@ namespace MinesServer.GameShit.SysMarket
                 "PackRadar","x3 up","freeup","mine x4","Gypno","poli","nano bot","accum","transgender","Comp","c190","Fed","NiggerRock","RedRock","AntiMage","EMO",
                 "RainbowAlive","spot","NC","Money","Оперативные Порно Покемоны."
             };
-            if (i > 0 && names.Length > i)
+            if (i >= 0 && names.Length > i)
             {
                 return names[i];
             }

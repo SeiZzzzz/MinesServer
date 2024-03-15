@@ -34,8 +34,10 @@ namespace MinesServer.GameShit.Generator
             {
                 double start = rand.NextDouble();
                 double end = start + rand.NextDouble();
-                if (dick.Values.Any(segment => segment.Item1 <= end && segment.Item2 >= start))
+                while(dick.Values.Any(segment => segment.Item1 <= end && segment.Item2 >= start))
                 {
+                    start = rand.NextDouble();
+                    end = start + rand.NextDouble();
                     continue;
                 }
                 dick[d] = ((float)start, (float)end);
@@ -44,24 +46,59 @@ namespace MinesServer.GameShit.Generator
             var fr = NotTypedNoise();
             var max = (float)fr.Get(0, 0);
             var min = (float)fr.Get(0, 0);
+            var offsetx = 1;
+            var offsety = 1;
             foreach (var c in s.seccells)
             {
-                var v = (float)fr.Get((float)(c.pos.Item1 / (float)s.width), (float)(c.pos.Item2 / (float)s.height));
+                var v = (float)fr.Get((float)(c.pos.Item1 + offsetx / (float)s.width + offsetx), (float)(c.pos.Item2 + offsety / (float)s.height + offsety));
                 max = max < v ? v : max;
                 min = min < v ? min : v;
                 c.value = v;
             }
             var error = 0;
+            var types = new Dictionary<CellType, int>();
             foreach (var c in s.seccells)
             {
                 c.value = ((c.value - min) / (max - min));
                 for (int i = 0; i < dick.Count; i++)
                 {
                     c.type = c.value >= dick.ElementAt(i).Value.Item1 && c.value <= dick.ElementAt(i).Value.Item2 ? dick.ElementAt(i).Key : c.type;
+                    if (!types.ContainsKey(c.type))
+                        types[c.type] = 1;
+                    else
+                    {
+                        types[c.type]++;
+                    }
                 }
                 if (c.type == CellType.Empty)
                 {
                     error++;
+                }
+            }
+            if (types.Count < args.Length)
+            {
+                gte++;
+                Console.Write($"\rnot enouth types {gte}");
+                if (gte > 3)
+                {
+                    Console.Write($"\rtypes restart");
+                    goto tme;
+                }
+                goto reg;
+            }
+            foreach(var i in types)
+            {
+                var check = s.seccells.Count / dick.Count * 0.4 > i.Value;
+                if (check)
+                {
+                    gte++;
+                    Console.Write($"\rto small segment {gte}");
+                    if (gte > 3)
+                    {
+                        Console.Write($"\ra lots of errors restart segmentation");
+                        goto tme;
+                    }
+                    goto reg;
                 }
             }
             if (error > ((s.seccells.Count) * 0.6f))
