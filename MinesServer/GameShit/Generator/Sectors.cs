@@ -278,7 +278,7 @@ namespace MinesServer.GameShit.Generator
             }
         }
         private (int, int)[] dirs = { (0, 1), (0, -1), (-1, 0), (1, 0) };
-        public float min, mid, max;
+        public double min, mid, max;
         public SectorCell[] map { get; private set; }
         private ImplicitFractal fr;
         public (int, int) size { get; private set; }

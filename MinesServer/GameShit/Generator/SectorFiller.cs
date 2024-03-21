@@ -24,9 +24,10 @@ namespace MinesServer.GameShit.Generator
         }
         public void CreateFillForCells(Sector s, bool gig = false, params CellType[] args)
         {
+            args = args.Append(CellType.Empty).ToArray();
         tme:
             Console.WriteLine("");
-            var dick = new Dictionary<CellType, (float, float)>();
+            var dick = new Dictionary<CellType, (double, double)>();
             var gt = 0;
             var gt1 = 0;
             var gte = 0;
@@ -40,17 +41,23 @@ namespace MinesServer.GameShit.Generator
                     end = start + rand.NextDouble();
                     continue;
                 }
-                dick[d] = ((float)start, (float)end);
+                dick[d] = (start, end);
             }
         reg:
             var fr = NotTypedNoise();
-            var max = (float)fr.Get(0, 0);
-            var min = (float)fr.Get(0, 0);
-            var offsetx = 1;
-            var offsety = 1;
+            double max = fr.Get(10000, 10000);
+            double min = fr.Get(0, 0);
+            double offsetx = 5;
+            double offsety = 5;
             foreach (var c in s.seccells)
             {
-                var v = (float)fr.Get((float)(c.pos.Item1 + offsetx / (float)s.width + offsetx), (float)(c.pos.Item2 + offsety / (float)s.height + offsety));
+                var v = fr.Get((c.pos.Item1 + offsetx) / s.width % 10, (c.pos.Item2 + offsety) / s.height % 10);
+                while (v == double.NaN)
+                {
+                    offsetx++;
+                    offsety++;
+                    v = fr.Get((c.pos.Item1 + offsetx) / s.width % 10, (c.pos.Item2 + offsety) / s.height % 10);
+                }
                 max = max < v ? v : max;
                 min = min < v ? min : v;
                 c.value = v;
@@ -79,7 +86,7 @@ namespace MinesServer.GameShit.Generator
             {
                 gte++;
                 Console.Write($"\rnot enouth types {gte}");
-                if (gte > 3)
+                if (gte > 6)
                 {
                     Console.Write($"\rtypes restart");
                     goto tme;

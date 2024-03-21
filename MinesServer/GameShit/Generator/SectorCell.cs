@@ -2,7 +2,7 @@
 {
     public class SectorCell
     {
-        public float value;
+        public double value;
         public int sector;
         public (int, int) pos;
         public CellType type = CellType.Empty;
