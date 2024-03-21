@@ -20,10 +20,10 @@ namespace MinesServer.GameShit
             using var db = new DataBase();
             return db.boxes.FirstOrDefault(t => t.x == x && t.y == y);
         }
-        public static void BuildBox(int x, int y, long[] cry, Player p)
+        public static void BuildBox(int x, int y, long[] cry, Player p,bool force = false)
         {
             var cell = World.GetCell(x, y);
-            if (!(World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over && !World.PackPart(x, y)))
+            if (!(World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over && !World.PackPart(x, y)) && !force)
             {
                 return;
             }

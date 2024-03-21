@@ -5,6 +5,10 @@ using System.Reflection;
 
 namespace MinesServer
 {
+    /// <summary>
+    ///  MinetServer
+    ///  GUI and Network implementation by Darkar25
+    /// </summary>
     // <image src="a.jpg"/>
     public static class Default
     {
@@ -55,7 +59,8 @@ namespace MinesServer
                 Console.WriteLine($"online {DataBase.activeplayers.Count}");
                 for (int i = 0; i < DataBase.activeplayers.Count; i++)
                 {
-                    Console.WriteLine($"id: {DataBase.activeplayers.ElementAt(i).Id}\n name :[{DataBase.activeplayers.ElementAt(i).name}]");
+                    var player = DataBase.activeplayers.ElementAt(i);
+                    Console.WriteLine($"id: {player.Id}\n name :[{player.name}] online:{player.online}");
                 }
             });
             for (; ; )

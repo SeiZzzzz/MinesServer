@@ -11,7 +11,7 @@ namespace MinesServer.Network.Programmator
 
         public string PacketName => packetName;
 
-        public int Length => 30 + Id.Digits() + Encoding.UTF8.GetByteCount(Title) + Source.Length;
+        public int Length => 30 + Id.Digits() + Encoding.UTF8.GetByteCount(Title) + Encoding.UTF8.GetByteCount(Source);
 
         public static OpenProgrammatorPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {

@@ -78,8 +78,9 @@ namespace MinesServer.Server
                 initiator.SendWin(authwin.ToString());
                 return;
             }
-            else if (player != null && player.connection == null && CalculateMD5Hash(player.hash + sid) == p.token)
+            else if (player != null && CalculateMD5Hash(player.hash + sid) == p.token)
             {
+                player.connection = null;
                 player.connection = initiator;
                 initiator.player = player;
                 player.Init();

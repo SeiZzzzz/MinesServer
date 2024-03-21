@@ -51,12 +51,12 @@ namespace MinesServer.GameShit.Generator
             double offsety = 5;
             foreach (var c in s.seccells)
             {
-                var v = fr.Get((c.pos.Item1 + offsetx) / s.width % 10, (c.pos.Item2 + offsety) / s.height % 10);
+                var v = fr.Get((c.pos.Item1 + offsetx) / (s.width % 10), (c.pos.Item2 + offsety) / (s.height % 10));
                 while (v == double.NaN)
                 {
                     offsetx++;
                     offsety++;
-                    v = fr.Get((c.pos.Item1 + offsetx) / s.width % 10, (c.pos.Item2 + offsety) / s.height % 10);
+                    v = fr.Get((c.pos.Item1 + offsetx) / (s.width % 10), (c.pos.Item2 + offsety) / (s.height % 10));
                 }
                 max = max < v ? v : max;
                 min = min < v ? min : v;
@@ -82,7 +82,7 @@ namespace MinesServer.GameShit.Generator
                     error++;
                 }
             }
-            if (types.Count < args.Length)
+            if (types.Count < args.Length - 1)
             {
                 gte++;
                 Console.Write($"\rnot enouth types {gte}");

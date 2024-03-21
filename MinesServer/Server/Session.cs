@@ -59,7 +59,8 @@ namespace MinesServer.Server
             using var db = new DataBase();
             db.players.Update(player);
             db.SaveChanges();
-            DataBase.activeplayers.Remove(player);
+            player.afkstarttime = DateTime.Now;
+            player.connection = null;
             player = null;
             Dispose();
         }
@@ -95,14 +96,19 @@ namespace MinesServer.Server
                 case RESPPacket res: Res(packet, res); break;
                 case ClanPacket clan: Clan(packet, clan); break;
                 case PopePacket pp: Pope(packet, pp); break;
+                case PROGPacket prog: PROG(packet, prog);break;
                 default:
                     // Invalid event type
                     break;
             }
         }
+        private void PROG(TYPacket f, PROGPacket p)
+        {
+            StaticGUI.StartedProg(player, p.prog);
+        }
         private void Pope(TYPacket f, PopePacket p)
         {
-            Linker.OpenGui(player);
+            StaticGUI.OpenGui(player);
         }
         private void Clan(TYPacket f, ClanPacket p)
         {
@@ -197,7 +203,7 @@ namespace MinesServer.Server
                 player.AddAciton(() =>
                 {
                     var dir = packet.Direction;
-                    player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
+                    player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir : -1);
                 }, player.OnRoad ? (player.pause * 5) * 0.65 : player.pause * 5);
             }
         }

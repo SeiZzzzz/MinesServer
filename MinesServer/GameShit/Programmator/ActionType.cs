@@ -2,6 +2,7 @@
 {
     public enum ActionType
     {
+        None,
         MoveUp,
         MoveLeft,
         MoveDown,

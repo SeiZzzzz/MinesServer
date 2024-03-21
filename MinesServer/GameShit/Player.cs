@@ -18,549 +18,41 @@ using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Numerics;
+using System.Windows.Controls;
 
 namespace MinesServer.GameShit
 {
     public class Player
     {
         #region forprogs
-        public class ProgAction
+        ProgsData _pdata;
+        public ProgsData programsData
         {
-            public ActionType Type;
-            public string Label;
-
-            public ProgAction(ActionType type, string label = "")
+            get
             {
-                Type = type;
-                Label = label;
+                _pdata ??= new ProgsData(this);
+                return _pdata;
             }
         }
-        public void SwitchProg()
+        public void RunProgramm(Program p)
         {
-            ProgData ??= new pd();
-            connection?.SendU(new ProgrammatorPacket(false));
-            if (ProgData != null && !ProgData.IsActive)
-            {
-                ProgData.IsActive = false;
-                win = null;
-            }
-            else if (ProgData != null)
-            {
-                ProgData.IsActive = false;
-            }
+            programsData.current = p;
+            programsData.Run();
+            tp(x, y);
         }
-        public class pd
-        {
-            public ProgAction[,] ActionMatrix;
-            public DateTime NextRun = DateTime.Now;
-            public int X = 0;
-            public int Y = 0;
-            public int startx;
-            public int starty;
-            public bool IsActive = false;
-            public int ReturnX;
-            public int ReturnY;
-            public bool Condition;
-            public int CheckX;
-            public int CheckY;
-            public ActionType? ConditionMode;
-            public void SetCondition(bool condition)
-            {
-                Condition = ConditionMode switch
-                {
-                    null => condition,
-                    ActionType.Or => Condition || condition,
-                    ActionType.And => Condition && condition,
-                    _ => Condition
-                };
-
-                ConditionMode = null;
-            }
-            public void SetCheckCondition(Player player, Func<int, int, bool> checkFunc)
-            {
-                SetCondition(checkFunc((int)player.x + CheckX, (int)player.y + CheckY));
-            }
-
-
-            public void AddDelay(int ms)
-            {
-                NextRun = DateTime.Now + TimeSpan.FromMilliseconds(ms);
-            }
-
-            public (int X, int Y) IndexOf(string label)
-            {
-                for (var i = 0; i < ActionMatrix.GetLength(0); i++)
-                {
-                    for (var j = 0; j < ActionMatrix.GetLength(1); j++)
-                    {
-                        var action = ActionMatrix[i, j];
-                        if (action == null)
-                        {
-                            continue;
-                        }
-
-                        if (action.Label == label && action.Type == ActionType.Label)
-                        {
-                            return (j, i);
-                        }
-                    }
-                }
-
-                return (0, 0);
-            }
-            public static pd FromString(string text)
-            {
-                var index = text.IndexOf("$");
-                text = text.Substring(index + 1);
-                var data = new pd
-                {
-                    ActionMatrix = new ProgAction[180, 16],
-                    X = 0,
-                    Y = 0,
-                    IsActive = true,
-                    NextRun = DateTime.Now
-                };
-                var x = 0;
-                var y = 0;
-                for (var i = 0; i < text.Length; i++)
-                {
-                    int next;
-                    switch (text[i])
-                    {
-                        case 'w':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.RotateUp);
-                            break;
-                        case 'a':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.RotateLeft);
-                            break;
-                        case 's':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.RotateDown);
-                            break;
-                        case 'd':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.RotateRight);
-                            break;
-                        case 'z':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.Dig);
-                            break;
-                        case 'b':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.BuildBlock);
-                            break;
-                        case 'q':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.BuildPillar);
-                            break;
-                        case 'r':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.BuildRoad);
-                            break;
-                        case 'g':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.Geology);
-                            break;
-                        case 'h':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.Heal);
-                            break;
-                        case ',':
-                            data.ActionMatrix[y, x] = new ProgAction(ActionType.NextRow);
-                            break;
-                        case '?':
-                            next = text[(i + 1)..].IndexOf('<');
-                            if (next != -1)
-                            {
-                                next++;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.RunIfFalse,
-                                    text[i..][1..next]);
-                                i += next;
-                            }
-
-                            break;
-                        case '!':
-                            i++;
-                            if (text[i] == '?')
-                            {
-                                next = text[(i + 1)..].IndexOf('<');
-                                if (next != -1)
-                                {
-                                    next++;
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.RunIfTrue,
-                                        text[i..][1..next]);
-                                    i += next;
-                                }
-                            }
-
-                            break;
-                        case '[':
-                            i++;
-                            next = text[i..].IndexOf(']');
-                            var option = text[i..][..next];
-                            i += next;
-                            switch (option)
-                            {
-                                case "W":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckUp);
-                                    break;
-                                case "A":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckLeft);
-                                    break;
-                                case "S":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckDown);
-                                    break;
-                                case "D":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckRight);
-                                    break;
-                                case "w":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.ShiftUp);
-                                    break;
-                                case "a":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.ShiftLeft);
-                                    break;
-                                case "s":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.ShiftDown);
-                                    break;
-                                case "d":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.ShiftRight);
-                                    break;
-                                case "AS":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckDownLeft);
-                                    break;
-                                case "WA":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckUpLeft);
-                                    break;
-                                case "DW":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckUpRight);
-                                    break;
-                                case "SD":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckDownRight);
-                                    break;
-                                case "F":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckForward);
-                                    break;
-                                case "f":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.ShiftForward);
-                                    break;
-                                case "r":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckRightRelative);
-                                    break;
-                                case "l":
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.CheckLeftRelative);
-                                    break;
-                            }
-
-                            break;
-                        case '#':
-                            i++;
-                            switch (text[i])
-                            {
-                                case 'S':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.Start);
-                                    break;
-                                case 'E':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.Stop);
-                                    break;
-                                case 'R':
-                                    next = text[(i + 1)..].IndexOf('>');
-                                    if (next != -1)
-                                    {
-                                        next++;
-                                        data.ActionMatrix[y, x] =
-                                            new ProgAction(ActionType.RunOnRespawn, text[i..][1..next]);
-                                        i += next;
-                                    }
-
-                                    break;
-                            }
-
-                            break;
-                        case ':':
-                            i++;
-                            switch (text[i])
-                            {
-                                case '>':
-                                    next = text[(i + 1)..].IndexOf('>');
-                                    if (next != -1)
-                                    {
-                                        next++;
-                                        data.ActionMatrix[y, x] = new ProgAction(ActionType.RunSub, text[i..][1..next]);
-                                        i += next;
-                                    }
-
-                                    break;
-                            }
-
-                            break;
-                        case '-':
-                            i++;
-                            switch (text[i])
-                            {
-                                case '>':
-                                    next = text[(i + 1)..].IndexOf('>');
-                                    if (next != -1)
-                                    {
-                                        next++;
-                                        data.ActionMatrix[y, x] =
-                                            new ProgAction(ActionType.RunFunction, text[i..][1..next]);
-                                        i += next;
-                                    }
-
-                                    break;
-                            }
-
-                            break;
-                        case '=':
-                            i++;
-                            switch (text[i])
-                            {
-                                case '>':
-                                    next = text[(i + 1)..].IndexOf('>');
-                                    if (next != -1)
-                                    {
-                                        next++;
-                                        data.ActionMatrix[y, x] = new ProgAction(ActionType.RunState, text[i..][1..next]);
-                                        i += next;
-                                    }
-
-                                    break;
-                                case 'n':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsNotEmpty);
-                                    break;
-                                case 'e':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsEmpty);
-                                    break;
-                                case 'f':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsFalling);
-                                    break;
-                                case 'c':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsCrystal);
-                                    break;
-                                case 'a':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsLivingCrystal);
-                                    break;
-                                case 'b':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsBoulder);
-                                    break;
-                                case 's':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsSand);
-                                    break;
-                                case 'k':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsBreakableRock);
-                                    break;
-                                case 'd':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsUnbreakable);
-                                    break;
-                                case 'A':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsAcid);
-                                    break;
-                                case 'B':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsRedRock);
-                                    break;
-                                case 'K':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsBlackRock);
-                                    break;
-                                case 'g':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsGreenBlock);
-                                    break;
-                                case 'y':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsYellowBlock);
-                                    break;
-                                case 'r':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsRedBlock);
-                                    break;
-                                case 'o':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsSupport);
-                                    break;
-                                case 'q':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsQuadBlock);
-                                    break;
-                                case 'R':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsRoad);
-                                    break;
-                                case 'x':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.IsBox);
-                                    break;
-                            }
-
-                            break;
-                        case '>':
-                            next = text[(i + 1)..].IndexOf('|');
-                            if (next != -1)
-                            {
-                                next++;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.GoTo, text[i..][1..next]);
-                                i += next;
-                            }
-
-                            break;
-                        case '|':
-                            next = text[(i + 1)..].IndexOf(':');
-                            if (next != -1)
-                            {
-                                next++;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.Label, text[i..][1..next]);
-                                i += next;
-                            }
-
-                            break;
-                        case '<':
-                            i++;
-                            switch (text[i])
-                            {
-                                case '|':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.Return);
-
-                                    break;
-                                case '-':
-                                    i++;
-                                    if (text[i] == '|')
-                                    {
-                                        data.ActionMatrix[y, x] = new ProgAction(ActionType.ReturnFunction);
-                                    }
-
-                                    break;
-                                case '=':
-                                    i++;
-                                    if (text[i] == '|')
-                                    {
-                                        data.ActionMatrix[y, x] = new ProgAction(ActionType.ReturnState);
-                                    }
-
-                                    break;
-                            }
-
-                            break;
-                        case '^':
-                            i++;
-                            switch (text[i])
-                            {
-                                case 'W':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.MoveUp);
-                                    break;
-                                case 'A':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.MoveLeft);
-                                    break;
-                                case 'S':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.MoveDown);
-                                    break;
-                                case 'D':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.MoveRight);
-                                    break;
-                                case 'F':
-                                    data.ActionMatrix[y, x] = new ProgAction(ActionType.MoveForward);
-                                    break;
-                            }
-
-                            break;
-                        default:
-                            var currentText = text[i..];
-                            if (currentText.StartsWith("CCW;"))
-                            {
-                                i += 3;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.RotateLeftRelative);
-                            }
-                            else if (currentText.StartsWith("CW;"))
-                            {
-                                i += 2;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.RotateRightRelative);
-                            }
-                            else if (currentText.StartsWith("RAND;"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.RotateRandom);
-                            }
-                            else if (currentText.StartsWith("VB;"))
-                            {
-                                i += 2;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.BuildMilitaryBlock);
-                            }
-                            else if (currentText.StartsWith("DIGG;"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.MacrosDig);
-                            }
-                            else if (currentText.StartsWith("BUILD;"))
-                            {
-                                i += 5;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.MacrosBuild);
-                            }
-                            else if (currentText.StartsWith("HEAL;"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.MacrosHeal);
-                            }
-                            else if (currentText.StartsWith("MINE;"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.MacrosMine);
-                            }
-                            else if (currentText.StartsWith("FLIP;"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.Flip);
-                            }
-                            else if (currentText.StartsWith("BEEP;"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.Beep);
-                            }
-                            else if (currentText.StartsWith("OR"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.Or);
-                            }
-                            else if (currentText.StartsWith("AND"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.And);
-                            }
-                            else if (currentText.StartsWith("AUT+"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.EnableAutoDig);
-                            }
-                            else if (currentText.StartsWith("AUT-"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.DisableAutoDig);
-                            }
-                            else if (currentText.StartsWith("ARG+"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.EnableAgression);
-                            }
-                            else if (currentText.StartsWith("ARG-"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.DisableAgression);
-                            }
-                            else if (currentText.StartsWith("=hp-"))
-                            {
-                                i += 3;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.IsHpLower100);
-                            }
-                            else if (currentText.StartsWith("=hp50"))
-                            {
-                                i += 4;
-                                data.ActionMatrix[y, x] = new ProgAction(ActionType.IsHpLower50);
-                            }
-
-                            break;
-                    }
-
-                    x++;
-                    if (x == 16 || text[i] == '\n')
-                    {
-                        x = 0;
-                        y++;
-                    }
-                }
-
-                return data;
-            }
-        }
-        public pd ProgData = new();
         #endregion
         #region fields
         [NotMapped]
         public Session? connection { get; set; }
+        [NotMapped]
+        public bool online
+        {
+            get => connection != null;
+        }
         public Player() => Delay = DateTime.Now;
         public DateTime lastPlayersend = DateTime.Now;
         public DateTime lastPacks = DateTime.Now;
+        public DateTime afkstarttime = DateTime.Now;
         public Queue<Action> playerActions = new();
         public int Id { get; set; }
         public string name { get; set; }
@@ -575,8 +67,18 @@ namespace MinesServer.GameShit
         public long creds { get; set; }
         public string hash { get; set; }
         public string passwd { get; set; }
-        public int tail { get => tail; }
-        public int skin { get; set; }
+        [NotMapped]
+        public int tail { get => programsData.ProgRunning ? 1 : 0; }
+        public int skin { 
+            get
+            {
+                if (online)
+                    return _skin;
+                return 1;
+            }
+            set => _skin = value;
+        }
+        private int _skin;
         public bool autoDig { get; set; }
         public Vector2 pos = Vector2.Zero;
         public int c190stacks = 1;
@@ -623,6 +125,14 @@ namespace MinesServer.GameShit
         }
         #endregion
         #region actions
+        public void UnlimitedUpdate()
+        {
+            if (programsData.ProgRunning)
+            {
+                programsData.Step();
+                return;
+            }
+        }
         public void Update()
         {
             actionpertick = false;
@@ -630,6 +140,15 @@ namespace MinesServer.GameShit
             {
                 c190stacks = 1;
                 lastc190hit = DateTime.Now;
+            }
+            if (!online)
+            {
+                if (DateTime.Now - afkstarttime > TimeSpan.FromSeconds(5))
+                {
+                    DataBase.activeplayers.Remove(this);
+                    health.Death();
+                }
+                return;
             }
             if (DateTime.Now - lastPlayersend > TimeSpan.FromSeconds(4))
             {
@@ -650,6 +169,8 @@ namespace MinesServer.GameShit
                     World.Destroy(x, y);
                 }
             }
+            if (programsData.ProgRunning)
+                return;
             while (playerActions.Count > 0)
             {
                 playerActions.Dequeue()();
@@ -844,7 +365,7 @@ namespace MinesServer.GameShit
         {
 
         }
-        public void Move(int x, int y, int dir)
+        public void Move(int x, int y,int dir = -1)
         {
 
             if (!World.W.ValidCoord(x, y) || win != null)
@@ -860,7 +381,6 @@ namespace MinesServer.GameShit
                 return;
             }
             var newpos = new Vector2(x, y);
-            this.dir = dir;
             if (Vector2.Distance(pos, newpos) < 1.2f)
             {
                 foreach (var c in skillslist.skills.Values)
@@ -872,6 +392,10 @@ namespace MinesServer.GameShit
                             c.AddExp(this);
                         }
                     }
+                }
+                if (dir != -1)
+                {
+                    this.dir = pos.X > x ? 1 : pos.X < x ? 3 : pos.Y > y ? 0 : 2;
                 }
                 pos = newpos;
             }
@@ -982,18 +506,12 @@ namespace MinesServer.GameShit
             {
                 DataBase.activeplayers.Add(this);
             }
-            else
-            {
-                DataBase.activeplayers.Remove(DataBase.activeplayers.FirstOrDefault(p => p.Id == Id));
-                connection.Disconnect();
-                connection.Dispose();
-            }
             connection.auth = null;
             crys.player = this;
             skillslist.LoadSkills();
             health.LoadHealth(this);
-            connection.SendPing();
-            connection.SendWorldInfo();
+            connection?.SendPing();
+            connection?.SendWorldInfo();
             SendAutoDigg();
             SendGeo();
             tp(x, y);
@@ -1018,13 +536,18 @@ namespace MinesServer.GameShit
             {
                 MConsole.AddConsoleLine(this);
             }
-            SendMap();
             settings.SendSettings(this);
-            SendClan();
-
+            OnLoad();
         }
         #endregion
         #region senders
+        private void OnLoad()
+        {
+            SendClan();
+            SendMap();
+            foreach (var p in World.W.GetChunk(ChunkX, ChunkY).packs.Values)
+                connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off)])]));
+        }
         public void Beep() => connection?.SendU(new BibikaPacket());
 
         public void SendWindow()
@@ -1131,7 +654,7 @@ namespace MinesServer.GameShit
                             var player = DataBase.GetPlayer(id.Key);
                             if (player != null)
                             {
-                                packets.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.cid, 0));
+                                packets.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, player.skin, player.cid, player.tail));
                             }
                         }
                     }
@@ -1184,7 +707,7 @@ namespace MinesServer.GameShit
                             cx *= 32; cy *= 32;
                             foreach (var id in ch.bots)
                             {
-                                DataBase.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBBotPacket(Id, this.x, this.y, dir, 0, cid, 0)]));
+                                DataBase.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBBotPacket(Id, this.x, this.y, dir, skin, cid, tail)]));
                             }
                         }
                     }
@@ -1250,7 +773,7 @@ namespace MinesServer.GameShit
                                     var player = DataBase.GetPlayer(id.Key);
                                     if (player != null)
                                     {
-                                        packetsmap.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, 0, player.cid, 0));
+                                        packetsmap.Add(new HBBotPacket(player.Id, player.x, player.y, player.dir, player.skin, player.cid, player.tail));
                                     }
                                 }
                             }

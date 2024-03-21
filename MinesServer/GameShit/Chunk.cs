@@ -35,6 +35,7 @@ namespace MinesServer.GameShit
         {
             if (shouldbeloaded())
             {
+                CheckBots();
                 updlasttick = false;
                 var currenttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 if (currenttick - lasttick > 700)
@@ -168,6 +169,16 @@ namespace MinesServer.GameShit
             {
                 packs.Remove(x + y * 32);
                 ClearPack(WorldX + x, WorldY + y);
+            }
+        }
+        private void CheckBots()
+        {
+            foreach (var i in bots)
+            {
+                if (i.Value.ChunkX != pos.Item1 || i.Value.ChunkY != pos.Item2 || !DataBase.activeplayers.Contains(i.Value))
+                {
+                    bots.Remove(i.Value.Id, out var p);
+                }
             }
         }
         private void UpdateCells()

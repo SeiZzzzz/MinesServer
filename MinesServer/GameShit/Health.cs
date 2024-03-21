@@ -1,4 +1,5 @@
-﻿using MinesServer.GameShit.Skills;
+﻿using Microsoft.Identity.Client;
+using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -36,7 +37,9 @@ namespace MinesServer.GameShit
         {
             var dirs = new (int, int)[] { (0, 1), (1, 0), (-1, 0), (0, -1) };
             var q = new Queue<(int, int)>();
-            if (!World.IsEmpty(x, y))
+            var valid = bool (int x, int y) => World.GetProp(x, y).isEmpty && !World.PackPart(x, y) && World.W.ValidCoord(x,y);
+            var a = World.PackPart(x, y);
+            if (!valid(x,y))
             {
                 q.Enqueue((x, y));
             }
@@ -45,14 +48,12 @@ namespace MinesServer.GameShit
                 var b = q.Dequeue();
                 foreach (var dir in dirs)
                 {
-                    if (!World.IsEmpty(b.Item1 + dir.Item1, b.Item2 + dir.Item2))
+                    if (!valid(b.Item1 + dir.Item1, b.Item2 + dir.Item2))
                     {
                         q.Enqueue((b.Item1 + dir.Item1, b.Item2 + dir.Item2));
+                        continue;
                     }
-                    else
-                    {
-                        return (b.Item1 + dir.Item1, b.Item2 + dir.Item2);
-                    }
+                    return (b.Item1 + dir.Item1, b.Item2 + dir.Item2);
                 }
             }
             return (x, y);
@@ -62,7 +63,7 @@ namespace MinesServer.GameShit
             if (player.crys.AllCry > 0)
             {
                 var c = FindEmptyForBox(player.x, player.y);
-                Box.BuildBox(c.Item1, c.Item2, player.crys.cry, player);
+                Box.BuildBox(c.Item1, c.Item2, player.crys.cry, player,true);
                 player.crys.ClearCrys();
             }
             player.win = null;
