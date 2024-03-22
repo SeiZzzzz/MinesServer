@@ -11,7 +11,7 @@ namespace MinesServer.GameShit.prog2try
         public int id;
         public string name;
         public string data;
-        public Dictionary<string,IFunction> programm
+        public Dictionary<string,PFunction> programm
         {
             get
             {
@@ -19,11 +19,11 @@ namespace MinesServer.GameShit.prog2try
                 return _programm;
             }
         }
-        private Dictionary<string, IFunction> Parse()
+        private Dictionary<string, PFunction> Parse()
         {
             
             return null;
         }
-        private Dictionary<string, IFunction> _programm;
+        private Dictionary<string, PFunction> _programm;
     }
 }

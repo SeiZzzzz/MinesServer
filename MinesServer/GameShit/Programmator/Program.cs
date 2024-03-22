@@ -13,8 +13,8 @@ namespace MinesServer.GameShit.Programmator
         private Program() { }
         public void Print()
         {
-            Dictionary<string,IFunction> functions = new();
-            functions["main"] = new BaseFunction();
+            Dictionary<string,PFunction> functions = new();
+            functions["main"] = new PFunction();
             string currentFunc = "main";
             var index = progtext.IndexOf("$");
             progtext = progtext.Substring(index + 1);
@@ -288,7 +288,7 @@ namespace MinesServer.GameShit.Programmator
                             next++;
                             functions[currentFunc] += new PAction(ActionType.CreateFunction, progtext[i..][1..next]);
                             currentFunc = progtext[i..][1..next];
-                            functions[currentFunc] = new BaseFunction();
+                            functions[currentFunc] = new PFunction();
                             i += next;
                         }
 
