@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations.Operations;
-using MinesServer.GameShit.Buildings;
+﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Consumables;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;

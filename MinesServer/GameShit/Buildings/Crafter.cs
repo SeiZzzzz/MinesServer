@@ -1,5 +1,4 @@
 ﻿using MinesServer.GameShit.GUI;
-using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.Sys_Craft;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -44,7 +43,7 @@ namespace MinesServer.GameShit.Buildings
         }
         public void Destroy(Player p)
         {
-            
+
         }
         #endregion
 

@@ -14,7 +14,7 @@ namespace MinesServer.Server
         {
             Instance = this;
             MConsole.InitCommands();
-            MinesServer.GameShit.SysCraft.RDes.Init();
+            GameShit.SysCraft.RDes.Init();
             time = new ServerTime();
             new World(Default.cfg.WorldName);
             time.Start();

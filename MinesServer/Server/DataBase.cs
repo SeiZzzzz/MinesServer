@@ -2,9 +2,9 @@
 using MinesServer.GameShit;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
-using MinesServer.GameShit.SysMarket;
 using MinesServer.GameShit.Programmator;
 using MinesServer.GameShit.Sys_Craft;
+using MinesServer.GameShit.SysMarket;
 
 namespace MinesServer.Server
 {

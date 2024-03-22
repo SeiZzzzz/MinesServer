@@ -1,5 +1,4 @@
-﻿using MinesServer.GameShit.Programmator;
-using MinesServer.Network.Constraints;
+﻿using MinesServer.Network.Constraints;
 using System.Text;
 
 namespace MinesServer.Network.TypicalEvents
@@ -8,11 +7,11 @@ namespace MinesServer.Network.TypicalEvents
     {
         // TODO: Perhaps chenge this to an actual prgram type?
         public readonly byte[] program;
-        public readonly (int id,string source) prog
+        public readonly (int id, string source) prog
         {
             get
             {
-                
+
                 int id = BitConverter.ToInt32(program[4..8]);
                 string source = Encoding.Default.GetString(program[8..(Length)]);
                 source = source[source.IndexOf('$')..source.Length];

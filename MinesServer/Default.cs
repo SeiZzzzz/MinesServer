@@ -2,6 +2,7 @@
 using MinesServer.Server;
 using Newtonsoft.Json;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace MinesServer
 {
@@ -71,6 +72,7 @@ namespace MinesServer
             }
         }
         public static Config cfg;
+        public static Regex def = new Regex("^[a-zA-Z0-9]*$");
         public static void WriteError(string ex)
         {
             var trace = new System.Diagnostics.StackTrace();

@@ -1,17 +1,10 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
-using MinesServer.GameShit.GUI.Horb.List;
 using MinesServer.GameShit.SysCraft;
 using MinesServer.GameShit.SysMarket;
 using MinesServer.Network.GUI;
 using MinesServer.Server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace MinesServer.GameShit.Sys_Craft
 {
@@ -71,7 +64,7 @@ namespace MinesServer.GameShit.Sys_Craft
             p.win = c.GUIWin(p);
         }
         public static bool MeetReqs(Player p, Recipie r, int num) => (r.costcrys != null ? !r.costcrys.Select(i => { return p.crys.cry[i.id] >= (i.num * num); }).Contains(false) : true) && (r.costres != null ? !r.costres.Select(i => { return p.inventory[i.id] >= (i.num * num); }).Contains(false) : true);
-        public static void DeleteReqs(Player p,Recipie r,int num)
+        public static void DeleteReqs(Player p, Recipie r, int num)
         {
             if (r.costcrys != null)
                 foreach (var i in r.costcrys)
@@ -82,7 +75,7 @@ namespace MinesServer.GameShit.Sys_Craft
             p.SendInventory();
             p.crys.SendBasket();
         }
-        public static IPage? FilledPage(Player p,Crafter c)
+        public static IPage? FilledPage(Player p, Crafter c)
         {
             var progress = c.currentcraft?.progress <= 100 ? c.currentcraft?.progress : 100;
             string bar = "<color=#aaeeaa>" + new string('|', (int)(progress / 2)) + "</color>" + new string('-', 50 - (int)(progress / 2));
@@ -94,7 +87,7 @@ namespace MinesServer.GameShit.Sys_Craft
                 {
                     Title = "Крафтер",
                     Text = $"@@\nprogress {progress}% {bar}\n\n{remain}",
-                    Buttons = [new Button("claim", "claim", (a) => Claim(p,c))]
+                    Buttons = [new Button("claim", "claim", (a) => Claim(p, c))]
                 };
             }
             return new Page()
@@ -106,7 +99,7 @@ namespace MinesServer.GameShit.Sys_Craft
         }
         public static IPage? GlobalFirstPage(Player p)
         {
-            var oninventory = (int type) => {  OpenRecipie(p, type); };
+            var oninventory = (int type) => { OpenRecipie(p, type); };
             return new Page()
             {
                 OnInventory = oninventory,

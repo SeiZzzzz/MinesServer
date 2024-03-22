@@ -76,6 +76,7 @@ namespace MinesServer.Network
             PingPacket.packetName => x => PingPacket.Decode(x), // PI
             HBPacket.packetName => x => HBPacket.Decode(x), // HB
             InventoryPacket.packetName => x => InventoryPacket.Decode(x), // IN
+            UpdateProgrammatorPacket.packetName => x => UpdateProgrammatorPacket.Decode(x),
             _ => null
         };
 

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MinesServer.GameShit.prog2try
+﻿namespace MinesServer.GameShit.Programmator
 {
     public class PFunction
     {
@@ -16,18 +9,27 @@ namespace MinesServer.GameShit.prog2try
             {
                 var c = actions[current];
                 current++;
-                if (actions.Count > current)
+                if (actions.Count <= current)
                 {
                     current = 0;
                 }
                 return c;
             }
         }
+        public string calledfrom { get; set; }
+        public void Reset() => current = 0;
+        public bool? state { get; set; }
+        public ActionType? laststateaction { get; set; }
+        public void Close()
+        {
+            foreach (var i in actions)
+                i.SetFather(this);
+        }
         public static PFunction operator +(PFunction a, PAction b)
         {
             a.actions.Add(b);
             return a;
         }
-        public List<PAction> actions { get; init; } = new();
+        public List<PAction> actions { get; set; } = new();
     }
 }

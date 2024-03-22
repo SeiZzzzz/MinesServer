@@ -10,7 +10,7 @@ namespace MinesServer.GameShit
             {
                 types = depth switch
                 {
-                    (< 500) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Green,CellType.YellowSand,CellType.Rock } : new CellType[] { CellType.Green, CellType.XGreen },
+                    (< 500) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Green, CellType.YellowSand, CellType.Rock } : new CellType[] { CellType.Green, CellType.XGreen },
                     (< 1000) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Green, CellType.XGreen } : new CellType[] { CellType.Blue, CellType.Green, CellType.XGreen },
                     (< 1500) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Blue, CellType.XGreen } : new CellType[] { CellType.Blue, CellType.Green, CellType.XBlue },
                     (< 2000) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Blue } : new CellType[] { CellType.Blue, CellType.Green },

@@ -18,27 +18,30 @@ using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Numerics;
-using System.Windows.Controls;
 
 namespace MinesServer.GameShit
 {
     public class Player
     {
         #region forprogs
-        ProgsData _pdata;
-        public ProgsData programsData
+        PData _pdata;
+        public PData programsData
         {
             get
             {
-                _pdata ??= new ProgsData(this);
+                _pdata ??= new PData(this);
                 return _pdata;
             }
         }
-        public void RunProgramm(Program p)
+        public void RunProgramm(Program p = null)
         {
-            programsData.current = p;
-            programsData.Run();
-            tp(x, y);
+            if (p == null)
+            {
+                programsData.Run();
+                return;
+            }
+            
+            programsData.Run(p);
         }
         #endregion
         #region fields
@@ -69,7 +72,8 @@ namespace MinesServer.GameShit
         public string passwd { get; set; }
         [NotMapped]
         public int tail { get => programsData.ProgRunning ? 1 : 0; }
-        public int skin { 
+        public int skin
+        {
             get
             {
                 if (online)
@@ -98,7 +102,10 @@ namespace MinesServer.GameShit
         public DateTime Delay = DateTime.Now;
         public bool CanAct { get => !(Delay > DateTime.Now); }
         public bool OnRoad { get => World.isRoad(World.GetCell(x, y)); }
-        public int dir { get; set; }
+        public int dir { 
+            get;
+            set;
+        }
         public int x
         {
             get => (int)pos.X;
@@ -360,20 +367,32 @@ namespace MinesServer.GameShit
         {
 
         }
-        public void Move(int x, int y,int dir = -1)
+        public bool Move(int x, int y, int dir = -1)
         {
 
             if (!World.W.ValidCoord(x, y) || win != null)
             {
                 tp(this.x, this.y);
-                return;
+                return false;
             }
-
+            if (dir == -1)
+            {
+                this.dir = pos.X > x ? 1 : pos.X < x ? 3 : pos.Y > y ? 2 : 0;
+            }
             var cell = World.GetCell(x, y);
             if (!World.GetProp(cell).isEmpty)
             {
+                if (dir == -1)
+                {
+                    if (autoDig)
+                    {
+                        Bz();
+                    }
+                    tp(this.x, this.y);
+                    return true;
+                }
                 tp(this.x, this.y);
-                return;
+                return false;
             }
             var newpos = new Vector2(x, y);
             if (Vector2.Distance(pos, newpos) < 1.2f)
@@ -388,24 +407,21 @@ namespace MinesServer.GameShit
                         }
                     }
                 }
-                if (dir != -1)
-                {
-                    this.dir = pos.X > x ? 1 : pos.X < x ? 3 : pos.Y > y ? 0 : 2;
-                }
                 pos = newpos;
             }
             else
             {
                 tp(this.x, this.y);
-                return;
+                return false;
             }
             SendMyMove();
             SendMap();
-            if (World.ContainsPack(x, y, out var pack) && (pack.cid == cid || pack.cid == 0))
+            if (World.ContainsPack(x, y, out var pack) && (pack.cid == cid || pack.cid == 0) && !programsData.ProgRunning)
             {
                 win = pack.GUIWin(this)!;
                 SendWindow();
             }
+            return false;
         }
         public void Build(string type)
         {

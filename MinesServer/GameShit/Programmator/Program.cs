@@ -1,29 +1,40 @@
-﻿
-using MinesServer.GameShit.prog2try;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity;
-using System.Runtime.CompilerServices;
-using System.Windows.Controls;
-using static System.Net.Mime.MediaTypeNames;
-
-namespace MinesServer.GameShit.Programmator
+﻿namespace MinesServer.GameShit.Programmator
 {
     public class Program
     {
-        private Program() { }
-        public void Print()
+        private Program()
         {
-            Dictionary<string,PFunction> functions = new();
-            functions["main"] = new PFunction();
-            string currentFunc = "main";
-            var index = progtext.IndexOf("$");
-            progtext = progtext.Substring(index + 1);
-            for(int i = 0;i < progtext.Length; i++
+
+        }
+        public Program(Player P,string name,string data)
+        {
+            owner = P;
+            this.name = name;this.data = data;
+        }
+        public int id { get; set; }
+        public string name { get; set; }
+        public string data { get; set; }
+        public Player owner { get; set; }
+        public Dictionary<string, PFunction> programm
+        {
+            get
+            {
+                _programm ??= Parse();
+                return _programm;
+            }
+        }
+        private Dictionary<string, PFunction> Parse()
+        {
+            Dictionary<string, PFunction> functions = new();
+            functions[""] = new PFunction();
+            string currentFunc = "";
+            var index = data.IndexOf("$");
+            data = data.Substring(index + 1);
+            for (int i = 0; i < data.Length; i++
                 )
             {
-                Console.WriteLine("starting main");
                 int next;
-                switch (progtext[i])
+                switch (data[i])
                 {
                     case 'w':
                         functions[currentFunc] += new PAction(ActionType.RotateUp);
@@ -32,51 +43,51 @@ namespace MinesServer.GameShit.Programmator
                         functions[currentFunc] += new PAction(ActionType.RotateLeft);
                         break;
                     case 's':
-                        Console.WriteLine("rotatedown");
+                        functions[currentFunc] += new PAction(ActionType.RotateDown);
                         break;
                     case 'd':
-                        Console.WriteLine("rotateright");
+                        functions[currentFunc] += new PAction(ActionType.RotateRight);
                         break;
                     case 'z':
-                        Console.WriteLine("dig");
+                        functions[currentFunc] += new PAction(ActionType.Dig);
                         break;
                     case 'b':
-                        Console.WriteLine("buildblock");
+                        functions[currentFunc] += new PAction(ActionType.BuildBlock);
                         break;
                     case 'q':
-                        Console.WriteLine("buildpillar");
+                        functions[currentFunc] += new PAction(ActionType.BuildPillar);
                         break;
                     case 'r':
-                        Console.WriteLine("buildRoad");
+                        functions[currentFunc] += new PAction(ActionType.BuildRoad);
                         break;
                     case 'g':
-                        Console.WriteLine("geology");
+                        functions[currentFunc] += new PAction(ActionType.Geology);
                         break;
                     case 'h':
-                        Console.WriteLine("heal");
+                        functions[currentFunc] += new PAction(ActionType.Heal);
                         break;
                     case ',':
-                        Console.WriteLine("nextrow");
+                        functions[currentFunc] += new PAction(ActionType.NextRow);
                         break;
                     case '?':
-                        next = progtext[(i + 1)..].IndexOf('<');
+                        next = data[(i + 1)..].IndexOf('<');
                         if (next != -1)
                         {
                             next++;
-                            Console.WriteLine($"runiffalse{progtext[i..][1..next]}");
+                            functions[currentFunc] += new PAction(ActionType.RunIfFalse, data[i..][1..next]);
                             i += next;
                         }
 
                         break;
                     case '!':
                         i++;
-                        if (progtext[i] == '?')
+                        if (data[i] == '?')
                         {
-                            next = progtext[(i + 1)..].IndexOf('<');
+                            next = data[(i + 1)..].IndexOf('<');
                             if (next != -1)
                             {
                                 next++;
-                                Console.WriteLine($"runiftrue{progtext[i..][1..next]}");
+                                functions[currentFunc] += new PAction(ActionType.RunIfTrue, data[i..][1..next]);
                                 i += next;
                             }
                         }
@@ -84,78 +95,78 @@ namespace MinesServer.GameShit.Programmator
                         break;
                     case '[':
                         i++;
-                        next = progtext[i..].IndexOf(']');
-                        var option = progtext[i..][..next];
+                        next = data[i..].IndexOf(']');
+                        var option = data[i..][..next];
                         i += next;
                         switch (option)
                         {
                             case "W":
-                                Console.WriteLine($"checkup");
+                                functions[currentFunc] += new PAction(ActionType.CheckUp);
                                 break;
                             case "A":
-                                Console.WriteLine($"checkleft");
+                                functions[currentFunc] += new PAction(ActionType.CheckLeft);
                                 break;
                             case "S":
-                                Console.WriteLine($"checkdown");
+                                functions[currentFunc] += new PAction(ActionType.CheckDown);
                                 break;
                             case "D":
-                                Console.WriteLine($"checkright");
+                                functions[currentFunc] += new PAction(ActionType.CheckRight);
                                 break;
                             case "w":
-                                Console.WriteLine($"shiftup");
+                                functions[currentFunc] += new PAction(ActionType.ShiftUp);
                                 break;
                             case "a":
-                                Console.WriteLine($"shiftleft");
+                                functions[currentFunc] += new PAction(ActionType.ShiftLeft);
                                 break;
                             case "s":
-                                Console.WriteLine($"shiftdown");
+                                functions[currentFunc] += new PAction(ActionType.ShiftDown);
                                 break;
                             case "d":
-                                Console.WriteLine($"shiftright");
+                                functions[currentFunc] += new PAction(ActionType.ShiftRight);
                                 break;
                             case "AS":
-                                Console.WriteLine($"check down left");
+                                functions[currentFunc] += new PAction(ActionType.CheckDownLeft);
                                 break;
                             case "WA":
-                                Console.WriteLine($"check up left");
+                                functions[currentFunc] += new PAction(ActionType.CheckUpLeft);
                                 break;
                             case "DW":
-                                Console.WriteLine($"check up right");
+                                functions[currentFunc] += new PAction(ActionType.CheckUpRight);
                                 break;
                             case "SD":
-                                Console.WriteLine($"check down right");
+                                functions[currentFunc] += new PAction(ActionType.CheckDownRight);
                                 break;
                             case "F":
-                                Console.WriteLine($"check forward");
+                                functions[currentFunc] += new PAction(ActionType.CheckForward);
                                 break;
                             case "f":
-                                Console.WriteLine($"shift forward");
+                                functions[currentFunc] += new PAction(ActionType.ShiftForward);
                                 break;
                             case "r":
-                                Console.WriteLine($"check right relative");
+                                functions[currentFunc] += new PAction(ActionType.CheckRightRelative);
                                 break;
                             case "l":
-                                Console.WriteLine($"check left relative");
+                                functions[currentFunc] += new PAction(ActionType.CheckLeftRelative);
                                 break;
                         }
 
                         break;
                     case '#':
                         i++;
-                        switch (progtext[i])
+                        switch (data[i])
                         {
                             case 'S':
-                                Console.WriteLine("start");
+                                functions[currentFunc] += new PAction(ActionType.Stop);
                                 break;
                             case 'E':
-                                Console.WriteLine("stop");
+                                functions[currentFunc] += new PAction(ActionType.Start);
                                 break;
                             case 'R':
-                                next = progtext[(i + 1)..].IndexOf('>');
+                                next = data[(i + 1)..].IndexOf('>');
                                 if (next != -1)
                                 {
                                     next++;
-                                    Console.WriteLine($"runonrespawn {progtext[i..][1..next]}");
+                                    functions[currentFunc] += new PAction(ActionType.RunOnRespawn, data[i..][1..next]);
                                     i += next;
                                 }
 
@@ -165,14 +176,14 @@ namespace MinesServer.GameShit.Programmator
                         break;
                     case ':':
                         i++;
-                        switch (progtext[i])
+                        switch (data[i])
                         {
                             case '>':
-                                next = progtext[(i + 1)..].IndexOf('>');
+                                next = data[(i + 1)..].IndexOf('>');
                                 if (next != -1)
                                 {
                                     next++;
-                                    Console.WriteLine($"runSub {progtext[i..][1..next]}");
+                                    functions[currentFunc] += new PAction(ActionType.RunSub, data[i..][1..next]);
                                     i += next;
                                 }
 
@@ -182,14 +193,14 @@ namespace MinesServer.GameShit.Programmator
                         break;
                     case '-':
                         i++;
-                        switch (progtext[i])
+                        switch (data[i])
                         {
                             case '>':
-                                next = progtext[(i + 1)..].IndexOf('>');
+                                next = data[(i + 1)..].IndexOf('>');
                                 if (next != -1)
                                 {
                                     next++;
-                                    Console.WriteLine($"runFunction {progtext[i..][1..next]}");
+                                    functions[currentFunc] += new PAction(ActionType.RunFunction, data[i..][1..next]);
                                     i += next;
                                 }
 
@@ -199,14 +210,14 @@ namespace MinesServer.GameShit.Programmator
                         break;
                     case '=':
                         i++;
-                        switch (progtext[i])
+                        switch (data[i])
                         {
                             case '>':
-                                next = progtext[(i + 1)..].IndexOf('>');
+                                next = data[(i + 1)..].IndexOf('>');
                                 if (next != -1)
                                 {
                                     next++;
-                                    Console.WriteLine($"RunState {progtext[i..][1..next]}");
+                                    functions[currentFunc] += new PAction(ActionType.RunState, data[i..][1..next]);
                                     i += next;
                                 }
 
@@ -272,22 +283,21 @@ namespace MinesServer.GameShit.Programmator
 
                         break;
                     case '>':
-                        next = progtext[(i + 1)..].IndexOf('|');
+                        next = data[(i + 1)..].IndexOf('|');
                         if (next != -1)
                         {
                             next++;
-                            functions[currentFunc] += new PAction(ActionType.GoTo, progtext[i..][1..next]);
+                            functions[currentFunc] += new PAction(ActionType.GoTo, data[i..][1..next]);
                             i += next;
                         }
 
                         break;
                     case '|':
-                        next = progtext[(i + 1)..].IndexOf(':');
+                        next = data[(i + 1)..].IndexOf(':');
                         if (next != -1)
                         {
                             next++;
-                            functions[currentFunc] += new PAction(ActionType.CreateFunction, progtext[i..][1..next]);
-                            currentFunc = progtext[i..][1..next];
+                            currentFunc = data[i..][1..next];
                             functions[currentFunc] = new PFunction();
                             i += next;
                         }
@@ -295,14 +305,14 @@ namespace MinesServer.GameShit.Programmator
                         break;
                     case '<':
                         i++;
-                        switch (progtext[i])
+                        switch (data[i])
                         {
                             case '|':
                                 functions[currentFunc] += new PAction(ActionType.Return);
                                 break;
                             case '-':
                                 i++;
-                                if (progtext[i] == '|')
+                                if (data[i] == '|')
                                 {
                                     functions[currentFunc] += new PAction(ActionType.ReturnFunction);
                                 }
@@ -310,7 +320,7 @@ namespace MinesServer.GameShit.Programmator
                                 break;
                             case '=':
                                 i++;
-                                if (progtext[i] == '|')
+                                if (data[i] == '|')
                                 {
                                     functions[currentFunc] += new PAction(ActionType.ReturnState);
                                 }
@@ -321,7 +331,7 @@ namespace MinesServer.GameShit.Programmator
                         break;
                     case '^':
                         i++;
-                        switch (progtext[i])
+                        switch (data[i])
                         {
                             case 'W':
                                 functions[currentFunc] += new PAction(ActionType.MoveUp);
@@ -342,572 +352,102 @@ namespace MinesServer.GameShit.Programmator
 
                         break;
                     default:
-                        var currentprogtext = progtext[i..];
-                        if (currentprogtext.StartsWith("CCW;"))
+                        var currentdata = data[i..];
+                        if (currentdata.StartsWith("CCW;"))
                         {
                             i += 3;
-                            Console.WriteLine("rotate left relative");
+                            functions[currentFunc] += new PAction(ActionType.RotateLeftRelative);
                         }
-                        else if (currentprogtext.StartsWith("CW;"))
+                        else if (currentdata.StartsWith("CW;"))
                         {
                             i += 2;
-                            Console.WriteLine("rotate right relative");
+                            functions[currentFunc] += new PAction(ActionType.RotateRightRelative);
                         }
-                        else if (currentprogtext.StartsWith("RAND;"))
+                        else if (currentdata.StartsWith("RAND;"))
                         {
                             i += 4;
-                            Console.WriteLine("rotate random");
+                            functions[currentFunc] += new PAction(ActionType.RotateRandom);
                         }
-                        else if (currentprogtext.StartsWith("VB;"))
+                        else if (currentdata.StartsWith("VB;"))
                         {
                             i += 2;
-                            Console.WriteLine("build VB");
+                            functions[currentFunc] += new PAction(ActionType.BuildMilitaryBlock);
                         }
-                        else if (currentprogtext.StartsWith("DIGG;"))
+                        else if (currentdata.StartsWith("DIGG;"))
                         {
                             i += 4;
-                            Console.WriteLine("macros DIG");
+                            functions[currentFunc] += new PAction(ActionType.MacrosDig);
                         }
-                        else if (currentprogtext.StartsWith("BUILD;"))
+                        else if (currentdata.StartsWith("BUILD;"))
                         {
                             i += 5;
-                            Console.WriteLine("macros BUILD");
+                            functions[currentFunc] += new PAction(ActionType.MacrosBuild);
                         }
-                        else if (currentprogtext.StartsWith("HEAL;"))
+                        else if (currentdata.StartsWith("HEAL;"))
                         {
                             i += 4;
-                            Console.WriteLine("macros HEAL");
+                            functions[currentFunc] += new PAction(ActionType.MacrosHeal);
                         }
-                        else if (currentprogtext.StartsWith("MINE;"))
+                        else if (currentdata.StartsWith("MINE;"))
                         {
                             i += 4;
-                            Console.WriteLine("macros MINE");
+                            functions[currentFunc] += new PAction(ActionType.MacrosMine);
                         }
-                        else if (currentprogtext.StartsWith("FLIP;"))
+                        else if (currentdata.StartsWith("FLIP;"))
                         {
                             i += 4;
-                            Console.WriteLine("macros FLIP");
+                            functions[currentFunc] += new PAction(ActionType.Flip);
                         }
-                        else if (currentprogtext.StartsWith("BEEP;"))
+                        else if (currentdata.StartsWith("BEEP;"))
                         {
                             i += 4;
-                            Console.WriteLine("BEEP");
+                            functions[currentFunc] += new PAction(ActionType.Beep);
                         }
-                        else if (currentprogtext.StartsWith("OR"))
+                        else if (currentdata.StartsWith("OR"))
                         {
-                            i += 4;
-                            Console.WriteLine("OR");
+                            i += 1;
+                            functions[currentFunc] += new PAction(ActionType.Or);
                         }
-                        else if (currentprogtext.StartsWith("AND"))
-                        {
-                            i += 4;
-                            Console.WriteLine("AND");
-                        }
-                        else if (currentprogtext.StartsWith("AUT+"))
-                        {
-                            i += 4;
-                            Console.WriteLine("AUTO DIG ENABLE");
-                        }
-                        else if (currentprogtext.StartsWith("AUT-"))
-                        {
-                            i += 4;
-                            Console.WriteLine("AUTO DIG DISABLE");
-                        }
-                        else if (currentprogtext.StartsWith("ARG+"))
-                        {
-                            i += 4;
-                            Console.WriteLine("AGR ENABLE");
-                        }
-                        else if (currentprogtext.StartsWith("ARG-"))
-                        {
-                            i += 4;
-                            Console.WriteLine("AGR DISABLE");
-                        }
-                        else if (currentprogtext.StartsWith("=hp-"))
-                        {
-                            i += 3;
-                            Console.WriteLine("is hp lower 100");
-                        }
-                        else if (currentprogtext.StartsWith("=hp50"))
-                        {
-                            i += 4;
-                            Console.WriteLine("is hp lower 50");
-                        }
-
-                        break;
-                }
-            }
-            Console.WriteLine("function list");
-            foreach (var i in functions)
-            {
-                Console.WriteLine($"[FUNC] {i.Key}");
-                Console.WriteLine($"[content] {string.Join(" ",i.Value.actions.Select(i => i.type.ToString()))}");
-            }
-        }
-        public void Decode()
-        {
-            Print();
-            prog = new();
-            var index = progtext.IndexOf("$");
-            progtext = progtext.Substring(index + 1);
-            int x = 0, y = 0, page = 0;
-            for (var i = 0; i < progtext.Length; i++)
-            {
-                int next;
-                switch (progtext[i])
-                {
-                    case 'w':
-                        prog[x, y, page] = new ProgAction(ActionType.RotateUp);
-                        break;
-                    case 'a':
-                        prog[x, y, page] = new ProgAction(ActionType.RotateLeft);
-                        break;
-                    case 's':
-                        prog[x, y, page] = new ProgAction(ActionType.RotateDown);
-                        break;
-                    case 'd':
-                        prog[x, y, page] = new ProgAction(ActionType.RotateRight);
-                        break;
-                    case 'z':
-                        prog[x, y, page] = new ProgAction(ActionType.Dig);
-                        break;
-                    case 'b':
-                        prog[x, y, page] = new ProgAction(ActionType.BuildBlock);
-                        break;
-                    case 'q':
-                        prog[x, y, page] = new ProgAction(ActionType.BuildPillar);
-                        break;
-                    case 'r':
-                        prog[x, y, page] = new ProgAction(ActionType.BuildRoad);
-                        break;
-                    case 'g':
-                        prog[x, y, page] = new ProgAction(ActionType.Geology);
-                        break;
-                    case 'h':
-                        prog[x, y, page] = new ProgAction(ActionType.Heal);
-                        break;
-                    case ',':
-                        prog[x, y, page] = new ProgAction(ActionType.NextRow);
-                        break;
-                    case '?':
-                        next = progtext[(i + 1)..].IndexOf('<');
-                        if (next != -1)
-                        {
-                            next++;
-                            prog[x, y, page] = new ProgAction(ActionType.RunIfFalse,
-                                progtext[i..][1..next]);
-                            i += next;
-                        }
-
-                        break;
-                    case '!':
-                        i++;
-                        if (progtext[i] == '?')
-                        {
-                            next = progtext[(i + 1)..].IndexOf('<');
-                            if (next != -1)
-                            {
-                                next++;
-                                prog[x, y, page] = new ProgAction(ActionType.RunIfTrue,
-                                    progtext[i..][1..next]);
-                                i += next;
-                            }
-                        }
-
-                        break;
-                    case '[':
-                        i++;
-                        next = progtext[i..].IndexOf(']');
-                        var option = progtext[i..][..next];
-                        i += next;
-                        switch (option)
-                        {
-                            case "W":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckUp);
-                                break;
-                            case "A":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckLeft);
-                                break;
-                            case "S":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckDown);
-                                break;
-                            case "D":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckRight);
-                                break;
-                            case "w":
-                                prog[x, y, page] = new ProgAction(ActionType.ShiftUp);
-                                break;
-                            case "a":
-                                prog[x, y, page] = new ProgAction(ActionType.ShiftLeft);
-                                break;
-                            case "s":
-                                prog[x, y, page] = new ProgAction(ActionType.ShiftDown);
-                                break;
-                            case "d":
-                                prog[x, y, page] = new ProgAction(ActionType.ShiftRight);
-                                break;
-                            case "AS":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckDownLeft);
-                                break;
-                            case "WA":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckUpLeft);
-                                break;
-                            case "DW":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckUpRight);
-                                break;
-                            case "SD":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckDownRight);
-                                break;
-                            case "F":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckForward);
-                                break;
-                            case "f":
-                                prog[x, y, page] = new ProgAction(ActionType.ShiftForward);
-                                break;
-                            case "r":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckRightRelative);
-                                break;
-                            case "l":
-                                prog[x, y, page] = new ProgAction(ActionType.CheckLeftRelative);
-                                break;
-                        }
-
-                        break;
-                    case '#':
-                        i++;
-                        switch (progtext[i])
-                        {
-                            case 'S':
-                                prog[x, y, page] = new ProgAction(ActionType.Start);
-                                break;
-                            case 'E':
-                                prog[x, y, page] = new ProgAction(ActionType.Stop);
-                                break;
-                            case 'R':
-                                next = progtext[(i + 1)..].IndexOf('>');
-                                if (next != -1)
-                                {
-                                    next++;
-                                    prog[x, y, page] =
-                                        new ProgAction(ActionType.RunOnRespawn, progtext[i..][1..next]);
-                                    i += next;
-                                }
-
-                                break;
-                        }
-
-                        break;
-                    case ':':
-                        i++;
-                        switch (progtext[i])
-                        {
-                            case '>':
-                                next = progtext[(i + 1)..].IndexOf('>');
-                                if (next != -1)
-                                {
-                                    next++;
-                                    prog[x, y, page] = new ProgAction(ActionType.RunSub, progtext[i..][1..next]);
-                                    i += next;
-                                }
-
-                                break;
-                        }
-
-                        break;
-                    case '-':
-                        i++;
-                        switch (progtext[i])
-                        {
-                            case '>':
-                                next = progtext[(i + 1)..].IndexOf('>');
-                                if (next != -1)
-                                {
-                                    next++;
-                                    prog[x, y, page] =
-                                        new ProgAction(ActionType.RunFunction, progtext[i..][1..next]);
-                                    i += next;
-                                }
-
-                                break;
-                        }
-
-                        break;
-                    case '=':
-                        i++;
-                        switch (progtext[i])
-                        {
-                            case '>':
-                                next = progtext[(i + 1)..].IndexOf('>');
-                                if (next != -1)
-                                {
-                                    next++;
-                                    prog[x, y, page] = new ProgAction(ActionType.RunState, progtext[i..][1..next]);
-                                    i += next;
-                                }
-
-                                break;
-                            case 'n':
-                                prog[x, y, page] = new ProgAction(ActionType.IsNotEmpty);
-                                break;
-                            case 'e':
-                                prog[x, y, page] = new ProgAction(ActionType.IsEmpty);
-                                break;
-                            case 'f':
-                                prog[x, y, page] = new ProgAction(ActionType.IsFalling);
-                                break;
-                            case 'c':
-                                prog[x, y, page] = new ProgAction(ActionType.IsCrystal);
-                                break;
-                            case 'a':
-                                prog[x, y, page] = new ProgAction(ActionType.IsLivingCrystal);
-                                break;
-                            case 'b':
-                                prog[x, y, page] = new ProgAction(ActionType.IsBoulder);
-                                break;
-                            case 's':
-                                prog[x, y, page] = new ProgAction(ActionType.IsSand);
-                                break;
-                            case 'k':
-                                prog[x, y, page] = new ProgAction(ActionType.IsBreakableRock);
-                                break;
-                            case 'd':
-                                prog[x, y, page] = new ProgAction(ActionType.IsUnbreakable);
-                                break;
-                            case 'A':
-                                prog[x, y, page] = new ProgAction(ActionType.IsAcid);
-                                break;
-                            case 'B':
-                                prog[x, y, page] = new ProgAction(ActionType.IsRedRock);
-                                break;
-                            case 'K':
-                                prog[x, y, page] = new ProgAction(ActionType.IsBlackRock);
-                                break;
-                            case 'g':
-                                prog[x, y, page] = new ProgAction(ActionType.IsGreenBlock);
-                                break;
-                            case 'y':
-                                prog[x, y, page] = new ProgAction(ActionType.IsYellowBlock);
-                                break;
-                            case 'r':
-                                prog[x, y, page] = new ProgAction(ActionType.IsRedBlock);
-                                break;
-                            case 'o':
-                                prog[x, y, page] = new ProgAction(ActionType.IsSupport);
-                                break;
-                            case 'q':
-                                prog[x, y, page] = new ProgAction(ActionType.IsQuadBlock);
-                                break;
-                            case 'R':
-                                prog[x, y, page] = new ProgAction(ActionType.IsRoad);
-                                break;
-                            case 'x':
-                                prog[x, y, page] = new ProgAction(ActionType.IsBox);
-                                break;
-                        }
-
-                        break;
-                    case '>':
-                        next = progtext[(i + 1)..].IndexOf('|');
-                        if (next != -1)
-                        {
-                            next++;
-                            prog[x, y, page] = new ProgAction(ActionType.GoTo, progtext[i..][1..next]);
-                            i += next;
-                        }
-
-                        break;
-                    case '|':
-                        next = progtext[(i + 1)..].IndexOf(':');
-                        if (next != -1)
-                        {
-                            next++;
-                            prog[x, y, page] = new ProgAction(ActionType.CreateFunction, progtext[i..][1..next]);
-                            i += next;
-                        }
-
-                        break;
-                    case '<':
-                        i++;
-                        switch (progtext[i])
-                        {
-                            case '|':
-                                prog[x, y, page] = new ProgAction(ActionType.Return);
-
-                                break;
-                            case '-':
-                                i++;
-                                if (progtext[i] == '|')
-                                {
-                                    prog[x, y, page] = new ProgAction(ActionType.ReturnFunction);
-                                }
-
-                                break;
-                            case '=':
-                                i++;
-                                if (progtext[i] == '|')
-                                {
-                                    prog[x, y, page] = new ProgAction(ActionType.ReturnState);
-                                }
-
-                                break;
-                        }
-
-                        break;
-                    case '^':
-                        i++;
-                        switch (progtext[i])
-                        {
-                            case 'W':
-                                prog[x, y, page] = new ProgAction(ActionType.MoveUp);
-                                break;
-                            case 'A':
-                                prog[x, y, page] = new ProgAction(ActionType.MoveLeft);
-                                break;
-                            case 'S':
-                                prog[x, y, page] = new ProgAction(ActionType.MoveDown);
-                                break;
-                            case 'D':
-                                prog[x, y, page] = new ProgAction(ActionType.MoveRight);
-                                break;
-                            case 'F':
-                                prog[x, y, page] = new ProgAction(ActionType.MoveForward);
-                                break;
-                        }
-
-                        break;
-                    default:
-                        var currentprogtext = progtext[i..];
-                        if (currentprogtext.StartsWith("CCW;"))
-                        {
-                            i += 3;
-                            prog[x, y, page] = new ProgAction(ActionType.RotateLeftRelative);
-                        }
-                        else if (currentprogtext.StartsWith("CW;"))
+                        else if (currentdata.StartsWith("AND"))
                         {
                             i += 2;
-                            prog[x, y, page] = new ProgAction(ActionType.RotateRightRelative);
+                            functions[currentFunc] += new PAction(ActionType.And);
                         }
-                        else if (currentprogtext.StartsWith("RAND;"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.RotateRandom);
-                        }
-                        else if (currentprogtext.StartsWith("VB;"))
-                        {
-                            i += 2;
-                            prog[x, y, page] = new ProgAction(ActionType.BuildMilitaryBlock);
-                        }
-                        else if (currentprogtext.StartsWith("DIGG;"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.MacrosDig);
-                        }
-                        else if (currentprogtext.StartsWith("BUILD;"))
-                        {
-                            i += 5;
-                            prog[x, y, page] = new ProgAction(ActionType.MacrosBuild);
-                        }
-                        else if (currentprogtext.StartsWith("HEAL;"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.MacrosHeal);
-                        }
-                        else if (currentprogtext.StartsWith("MINE;"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.MacrosMine);
-                        }
-                        else if (currentprogtext.StartsWith("FLIP;"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.Flip);
-                        }
-                        else if (currentprogtext.StartsWith("BEEP;"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.Beep);
-                        }
-                        else if (currentprogtext.StartsWith("OR"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.Or);
-                        }
-                        else if (currentprogtext.StartsWith("AND"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.And);
-                        }
-                        else if (currentprogtext.StartsWith("AUT+"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.EnableAutoDig);
-                        }
-                        else if (currentprogtext.StartsWith("AUT-"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.DisableAutoDig);
-                        }
-                        else if (currentprogtext.StartsWith("ARG+"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.EnableAgression);
-                        }
-                        else if (currentprogtext.StartsWith("ARG-"))
-                        {
-                            i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.DisableAgression);
-                        }
-                        else if (currentprogtext.StartsWith("=hp-"))
+                        else if (currentdata.StartsWith("AUT+"))
                         {
                             i += 3;
-                            prog[x, y, page] = new ProgAction(ActionType.IsHpLower100);
+                            functions[currentFunc] += new PAction(ActionType.EnableAutoDig);
                         }
-                        else if (currentprogtext.StartsWith("=hp50"))
+                        else if (currentdata.StartsWith("AUT-"))
+                        {
+                            i += 3;
+                            functions[currentFunc] += new PAction(ActionType.DisableAutoDig);
+                        }
+                        else if (currentdata.StartsWith("ARG+"))
+                        {
+                            i += 3;
+                            functions[currentFunc] += new PAction(ActionType.EnableAgression);
+                        }
+                        else if (currentdata.StartsWith("ARG-"))
+                        {
+                            i += 3;
+                            functions[currentFunc] += new PAction(ActionType.DisableAgression);
+                        }
+                        else if (currentdata.StartsWith("=hp-"))
+                        {
+                            i += 3;
+                            functions[currentFunc] += new PAction(ActionType.IsHpLower100);
+                        }
+                        else if (currentdata.StartsWith("=hp50"))
                         {
                             i += 4;
-                            prog[x, y, page] = new ProgAction(ActionType.IsHpLower50);
+                            functions[currentFunc] += new PAction(ActionType.IsHpLower50);
                         }
-
                         break;
                 }
-
-                x++;
-                if (page == 12)
-                {
-                    break;
-                }
-                else if (y == 16)
-                {
-                    page++;
-                    y = 0;
-                    x = 0;
-                }
-                else if (x == 16)
-                {
-                    x = 0;
-                    y++;
-                }
-                else if (progtext[i] == '\n' && y < 16)
-                {
-                    x = 0;
-                    y++;
-                }
-                else
-                {
-                    y = 0;
-                    x = 0;
-                    page++;
-                }
             }
+            return functions;
         }
-        public Program(Player owner, string progtext, string title)
-        {
-            this.owner = owner; this.progtext = progtext; this.title = title;
-        }
-        public pActionMatrix prog;
-        public int id { get; set; }
-        public string progtext { get; set; }
-        public string title { get; set; }
-        public Player owner { get; set; }
+        private Dictionary<string, PFunction> _programm;
     }
 }

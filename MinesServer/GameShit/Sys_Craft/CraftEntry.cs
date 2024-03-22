@@ -1,12 +1,4 @@
-﻿using MinesServer.GameShit.Buildings;
-using RT.Util;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Data.Entity.Core.Common.CommandTrees.ExpressionBuilder;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit.Sys_Craft
 {
@@ -14,16 +6,16 @@ namespace MinesServer.GameShit.Sys_Craft
     {
         public CraftEntry()
         {
-            
+
         }
-        public CraftEntry(int res_id,int num,DateTime end)
+        public CraftEntry(int res_id, int num, DateTime end)
         {
-           starttime = DateTime.Now;
-           endtime = end;
-           result_id = res_id; this.num = num;
+            starttime = DateTime.Now;
+            endtime = end;
+            result_id = res_id; this.num = num;
         }
         [NotMapped]
-        public double progress { get => Math.Round((((endtime - starttime) - (endtime - DateTime.Now)) / (endtime - starttime)) * 100,2); }
+        public double progress { get => Math.Round((((endtime - starttime) - (endtime - DateTime.Now)) / (endtime - starttime)) * 100, 2); }
         public int id { get; set; }
         public int result_id { get; set; }
         public int num { get; set; }

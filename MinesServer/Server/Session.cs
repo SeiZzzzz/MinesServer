@@ -6,6 +6,7 @@ using MinesServer.Network.ConnectionStatus;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Network.HubEvents;
+using MinesServer.Network.Programmator;
 using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using NetCoreServer;
@@ -39,14 +40,22 @@ namespace MinesServer.Server
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            var p = Packet.Decode(buffer);
-            switch (p.data)
+            Packet p = default;
+            try
             {
-                case AUPacket au: AU(au); break;
-                case TYPacket ty: father.time.AddAction(() => TY(ty)); break;
-                default:
-                    // Invalid packet
-                    break;
+                p = Packet.Decode(buffer);
+                switch (p.data)
+                {
+                    case AUPacket au: AU(au); break;
+                    case TYPacket ty: father.time.AddAction(() => TY(ty)); break;
+                    default:
+                        // Invalid packet
+                        break;
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"invalid packet from {player.Id} {ex}");
             }
         }
         protected override void OnDisconnected()
@@ -96,15 +105,33 @@ namespace MinesServer.Server
                 case RESPPacket res: Res(packet, res); break;
                 case ClanPacket clan: Clan(packet, clan); break;
                 case PopePacket pp: Pope(packet, pp); break;
-                case PROGPacket prog: PROG(packet, prog);break;
+                case PROGPacket prog: PROG(packet, prog); break;
+                case PDELPacket pdel: Pdel(packet, pdel);break;
+                case pRSTPacket prst: Prst(packet, prst); break;
+                case PRENPacket pren: Pren(packet, pren); break;
                 default:
                     // Invalid event type
                     break;
             }
         }
+        private void Pren(TYPacket f,PRENPacket pren)
+        {
+            StaticGUI.Rename(player, pren.Id);
+        }
+        private void Prst(TYPacket f, pRSTPacket prst)
+        {
+            if (player.programsData.ProgRunning)
+                player.RunProgramm();
+            SendU(new ProgrammatorPacket(false));
+        }
+        private void Pdel(TYPacket f,PDELPacket pdel)
+        {
+            StaticGUI.DeleteProg(player, pdel.Id);
+        }
         private void PROG(TYPacket f, PROGPacket p)
         {
             StaticGUI.StartedProg(player, p.prog);
+            SendU(new ProgrammatorPacket(player.programsData.ProgRunning));
         }
         private void Pope(TYPacket f, PopePacket p)
         {

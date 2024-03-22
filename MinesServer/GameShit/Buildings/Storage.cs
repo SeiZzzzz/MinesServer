@@ -1,13 +1,9 @@
-﻿using MinesServer.Enums;
-using MinesServer.GameShit.GUI;
+﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
-using MinesServer.GameShit.GUI.UP;
-using MinesServer.GameShit.SysMarket;
 using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Numerics;
 
 namespace MinesServer.GameShit.Buildings
 {
@@ -98,8 +94,8 @@ namespace MinesServer.GameShit.Buildings
             World.RemovePack(x, y);
             if (crysinside.Sum() > 0)
             {
-                 Box.BuildBox(x, y, crysinside, null);
-                 crysinside = new long[6];
+                Box.BuildBox(x, y, crysinside, null);
+                crysinside = new long[6];
             }
             using var db = new DataBase();
             db.storages.Remove(this);
@@ -114,7 +110,7 @@ namespace MinesServer.GameShit.Buildings
         {
             if (sliders == null)
                 return;
-            for(int i = 0;i < 6;i++)
+            for (int i = 0; i < 6; i++)
             {
                 var count = p.crys.cry[i] + crysinside[i];
                 if (count - sliders[i] >= 0 && sliders[i] >= 0)
@@ -129,12 +125,12 @@ namespace MinesServer.GameShit.Buildings
         #endregion
         public override Window? GUIWin(Player p)
         {
-            var ok = new Button("transfer", $"transfer:{ActionMacros.CrystalSliders}", (args) => StockTransfer(args.CrystalSliders,p));
+            var ok = new Button("transfer", $"transfer:{ActionMacros.CrystalSliders}", (args) => StockTransfer(args.CrystalSliders, p));
             var cryslines = crysinside.Select((cry, id) => new CrysLine("", 0, 0, p.crys.cry[id] + cry, (int)(cry))).ToArray();
             var page = new Page()
             {
                 Title = "Склад",
-                CrystalConfig = new CrystalConfig(" ", " ",cryslines),
+                CrystalConfig = new CrystalConfig(" ", " ", cryslines),
                 Buttons = [ok]
             };
             return new Window()

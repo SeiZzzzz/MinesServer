@@ -35,7 +35,7 @@ namespace MinesServer.GameShit.Generator
             {
                 double start = rand.NextDouble();
                 double end = start + rand.NextDouble();
-                while(dick.Values.Any(segment => segment.Item1 <= end && segment.Item2 >= start))
+                while (dick.Values.Any(segment => segment.Item1 <= end && segment.Item2 >= start))
                 {
                     start = rand.NextDouble();
                     end = start + rand.NextDouble();
@@ -93,7 +93,7 @@ namespace MinesServer.GameShit.Generator
                 }
                 goto reg;
             }
-            foreach(var i in types)
+            foreach (var i in types)
             {
                 var check = s.seccells.Count / dick.Count * 0.4 > i.Value;
                 if (check)
