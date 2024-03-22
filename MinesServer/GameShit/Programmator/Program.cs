@@ -1,5 +1,7 @@
 ﻿
+using MinesServer.GameShit.prog2try;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Data.Entity;
 using System.Runtime.CompilerServices;
 using System.Windows.Controls;
 using static System.Net.Mime.MediaTypeNames;
@@ -9,8 +11,442 @@ namespace MinesServer.GameShit.Programmator
     public class Program
     {
         private Program() { }
+        public void Print()
+        {
+            Dictionary<string,IFunction> functions = new();
+            functions["main"] = new BaseFunction();
+            string currentFunc = "main";
+            var index = progtext.IndexOf("$");
+            progtext = progtext.Substring(index + 1);
+            for(int i = 0;i < progtext.Length; i++
+                )
+            {
+                Console.WriteLine("starting main");
+                int next;
+                switch (progtext[i])
+                {
+                    case 'w':
+                        functions[currentFunc] += new PAction(ActionType.RotateUp);
+                        break;
+                    case 'a':
+                        functions[currentFunc] += new PAction(ActionType.RotateLeft);
+                        break;
+                    case 's':
+                        Console.WriteLine("rotatedown");
+                        break;
+                    case 'd':
+                        Console.WriteLine("rotateright");
+                        break;
+                    case 'z':
+                        Console.WriteLine("dig");
+                        break;
+                    case 'b':
+                        Console.WriteLine("buildblock");
+                        break;
+                    case 'q':
+                        Console.WriteLine("buildpillar");
+                        break;
+                    case 'r':
+                        Console.WriteLine("buildRoad");
+                        break;
+                    case 'g':
+                        Console.WriteLine("geology");
+                        break;
+                    case 'h':
+                        Console.WriteLine("heal");
+                        break;
+                    case ',':
+                        Console.WriteLine("nextrow");
+                        break;
+                    case '?':
+                        next = progtext[(i + 1)..].IndexOf('<');
+                        if (next != -1)
+                        {
+                            next++;
+                            Console.WriteLine($"runiffalse{progtext[i..][1..next]}");
+                            i += next;
+                        }
+
+                        break;
+                    case '!':
+                        i++;
+                        if (progtext[i] == '?')
+                        {
+                            next = progtext[(i + 1)..].IndexOf('<');
+                            if (next != -1)
+                            {
+                                next++;
+                                Console.WriteLine($"runiftrue{progtext[i..][1..next]}");
+                                i += next;
+                            }
+                        }
+
+                        break;
+                    case '[':
+                        i++;
+                        next = progtext[i..].IndexOf(']');
+                        var option = progtext[i..][..next];
+                        i += next;
+                        switch (option)
+                        {
+                            case "W":
+                                Console.WriteLine($"checkup");
+                                break;
+                            case "A":
+                                Console.WriteLine($"checkleft");
+                                break;
+                            case "S":
+                                Console.WriteLine($"checkdown");
+                                break;
+                            case "D":
+                                Console.WriteLine($"checkright");
+                                break;
+                            case "w":
+                                Console.WriteLine($"shiftup");
+                                break;
+                            case "a":
+                                Console.WriteLine($"shiftleft");
+                                break;
+                            case "s":
+                                Console.WriteLine($"shiftdown");
+                                break;
+                            case "d":
+                                Console.WriteLine($"shiftright");
+                                break;
+                            case "AS":
+                                Console.WriteLine($"check down left");
+                                break;
+                            case "WA":
+                                Console.WriteLine($"check up left");
+                                break;
+                            case "DW":
+                                Console.WriteLine($"check up right");
+                                break;
+                            case "SD":
+                                Console.WriteLine($"check down right");
+                                break;
+                            case "F":
+                                Console.WriteLine($"check forward");
+                                break;
+                            case "f":
+                                Console.WriteLine($"shift forward");
+                                break;
+                            case "r":
+                                Console.WriteLine($"check right relative");
+                                break;
+                            case "l":
+                                Console.WriteLine($"check left relative");
+                                break;
+                        }
+
+                        break;
+                    case '#':
+                        i++;
+                        switch (progtext[i])
+                        {
+                            case 'S':
+                                Console.WriteLine("start");
+                                break;
+                            case 'E':
+                                Console.WriteLine("stop");
+                                break;
+                            case 'R':
+                                next = progtext[(i + 1)..].IndexOf('>');
+                                if (next != -1)
+                                {
+                                    next++;
+                                    Console.WriteLine($"runonrespawn {progtext[i..][1..next]}");
+                                    i += next;
+                                }
+
+                                break;
+                        }
+
+                        break;
+                    case ':':
+                        i++;
+                        switch (progtext[i])
+                        {
+                            case '>':
+                                next = progtext[(i + 1)..].IndexOf('>');
+                                if (next != -1)
+                                {
+                                    next++;
+                                    Console.WriteLine($"runSub {progtext[i..][1..next]}");
+                                    i += next;
+                                }
+
+                                break;
+                        }
+
+                        break;
+                    case '-':
+                        i++;
+                        switch (progtext[i])
+                        {
+                            case '>':
+                                next = progtext[(i + 1)..].IndexOf('>');
+                                if (next != -1)
+                                {
+                                    next++;
+                                    Console.WriteLine($"runFunction {progtext[i..][1..next]}");
+                                    i += next;
+                                }
+
+                                break;
+                        }
+
+                        break;
+                    case '=':
+                        i++;
+                        switch (progtext[i])
+                        {
+                            case '>':
+                                next = progtext[(i + 1)..].IndexOf('>');
+                                if (next != -1)
+                                {
+                                    next++;
+                                    Console.WriteLine($"RunState {progtext[i..][1..next]}");
+                                    i += next;
+                                }
+
+                                break;
+                            case 'n':
+                                Console.WriteLine("is not empty");
+                                break;
+                            case 'e':
+                                Console.WriteLine("is empty");
+                                break;
+                            case 'f':
+                                Console.WriteLine("is falling");
+                                break;
+                            case 'c':
+                                Console.WriteLine("is crystal");
+                                break;
+                            case 'a':
+                                Console.WriteLine("is living crystal");
+                                break;
+                            case 'b':
+                                Console.WriteLine("is boulder");
+                                break;
+                            case 's':
+                                Console.WriteLine("is sand");
+                                break;
+                            case 'k':
+                                Console.WriteLine("is breakablerock");
+                                break;
+                            case 'd':
+                                Console.WriteLine("is unbreakablerock");
+                                break;
+                            case 'A':
+                                Console.WriteLine("is acid");
+                                break;
+                            case 'B':
+                                Console.WriteLine("is redrock");
+                                break;
+                            case 'K':
+                                Console.WriteLine("is blackrock");
+                                break;
+                            case 'g':
+                                Console.WriteLine("is green block");
+                                break;
+                            case 'y':
+                                Console.WriteLine("is yellow block");
+                                break;
+                            case 'r':
+                                Console.WriteLine("is red block");
+                                break;
+                            case 'o':
+                                Console.WriteLine("is pillar");
+                                break;
+                            case 'q':
+                                Console.WriteLine("is quadro");
+                                break;
+                            case 'R':
+                                Console.WriteLine("is road");
+                                break;
+                            case 'x':
+                                Console.WriteLine("is box");
+                                break;
+                        }
+
+                        break;
+                    case '>':
+                        next = progtext[(i + 1)..].IndexOf('|');
+                        if (next != -1)
+                        {
+                            next++;
+                            functions[currentFunc] += new PAction(ActionType.GoTo, progtext[i..][1..next]);
+                            i += next;
+                        }
+
+                        break;
+                    case '|':
+                        next = progtext[(i + 1)..].IndexOf(':');
+                        if (next != -1)
+                        {
+                            next++;
+                            functions[currentFunc] += new PAction(ActionType.CreateFunction, progtext[i..][1..next]);
+                            currentFunc = progtext[i..][1..next];
+                            functions[currentFunc] = new BaseFunction();
+                            i += next;
+                        }
+
+                        break;
+                    case '<':
+                        i++;
+                        switch (progtext[i])
+                        {
+                            case '|':
+                                functions[currentFunc] += new PAction(ActionType.Return);
+                                break;
+                            case '-':
+                                i++;
+                                if (progtext[i] == '|')
+                                {
+                                    functions[currentFunc] += new PAction(ActionType.ReturnFunction);
+                                }
+
+                                break;
+                            case '=':
+                                i++;
+                                if (progtext[i] == '|')
+                                {
+                                    functions[currentFunc] += new PAction(ActionType.ReturnState);
+                                }
+
+                                break;
+                        }
+
+                        break;
+                    case '^':
+                        i++;
+                        switch (progtext[i])
+                        {
+                            case 'W':
+                                functions[currentFunc] += new PAction(ActionType.MoveUp);
+                                break;
+                            case 'A':
+                                functions[currentFunc] += new PAction(ActionType.MoveLeft);
+                                break;
+                            case 'S':
+                                functions[currentFunc] += new PAction(ActionType.MoveDown);
+                                break;
+                            case 'D':
+                                functions[currentFunc] += new PAction(ActionType.MoveRight);
+                                break;
+                            case 'F':
+                                functions[currentFunc] += new PAction(ActionType.MoveForward);
+                                break;
+                        }
+
+                        break;
+                    default:
+                        var currentprogtext = progtext[i..];
+                        if (currentprogtext.StartsWith("CCW;"))
+                        {
+                            i += 3;
+                            Console.WriteLine("rotate left relative");
+                        }
+                        else if (currentprogtext.StartsWith("CW;"))
+                        {
+                            i += 2;
+                            Console.WriteLine("rotate right relative");
+                        }
+                        else if (currentprogtext.StartsWith("RAND;"))
+                        {
+                            i += 4;
+                            Console.WriteLine("rotate random");
+                        }
+                        else if (currentprogtext.StartsWith("VB;"))
+                        {
+                            i += 2;
+                            Console.WriteLine("build VB");
+                        }
+                        else if (currentprogtext.StartsWith("DIGG;"))
+                        {
+                            i += 4;
+                            Console.WriteLine("macros DIG");
+                        }
+                        else if (currentprogtext.StartsWith("BUILD;"))
+                        {
+                            i += 5;
+                            Console.WriteLine("macros BUILD");
+                        }
+                        else if (currentprogtext.StartsWith("HEAL;"))
+                        {
+                            i += 4;
+                            Console.WriteLine("macros HEAL");
+                        }
+                        else if (currentprogtext.StartsWith("MINE;"))
+                        {
+                            i += 4;
+                            Console.WriteLine("macros MINE");
+                        }
+                        else if (currentprogtext.StartsWith("FLIP;"))
+                        {
+                            i += 4;
+                            Console.WriteLine("macros FLIP");
+                        }
+                        else if (currentprogtext.StartsWith("BEEP;"))
+                        {
+                            i += 4;
+                            Console.WriteLine("BEEP");
+                        }
+                        else if (currentprogtext.StartsWith("OR"))
+                        {
+                            i += 4;
+                            Console.WriteLine("OR");
+                        }
+                        else if (currentprogtext.StartsWith("AND"))
+                        {
+                            i += 4;
+                            Console.WriteLine("AND");
+                        }
+                        else if (currentprogtext.StartsWith("AUT+"))
+                        {
+                            i += 4;
+                            Console.WriteLine("AUTO DIG ENABLE");
+                        }
+                        else if (currentprogtext.StartsWith("AUT-"))
+                        {
+                            i += 4;
+                            Console.WriteLine("AUTO DIG DISABLE");
+                        }
+                        else if (currentprogtext.StartsWith("ARG+"))
+                        {
+                            i += 4;
+                            Console.WriteLine("AGR ENABLE");
+                        }
+                        else if (currentprogtext.StartsWith("ARG-"))
+                        {
+                            i += 4;
+                            Console.WriteLine("AGR DISABLE");
+                        }
+                        else if (currentprogtext.StartsWith("=hp-"))
+                        {
+                            i += 3;
+                            Console.WriteLine("is hp lower 100");
+                        }
+                        else if (currentprogtext.StartsWith("=hp50"))
+                        {
+                            i += 4;
+                            Console.WriteLine("is hp lower 50");
+                        }
+
+                        break;
+                }
+            }
+            Console.WriteLine("function list");
+            foreach (var i in functions)
+            {
+                Console.WriteLine($"[FUNC] {i.Key}");
+                Console.WriteLine($"[content] {string.Join(" ",i.Value.actions.Select(i => i.type.ToString()))}");
+            }
+        }
         public void Decode()
         {
+            Print();
             prog = new();
             var index = progtext.IndexOf("$");
             progtext = progtext.Substring(index + 1);
@@ -285,7 +721,7 @@ namespace MinesServer.GameShit.Programmator
                         if (next != -1)
                         {
                             next++;
-                            prog[x, y, page] = new ProgAction(ActionType.Label, progtext[i..][1..next]);
+                            prog[x, y, page] = new ProgAction(ActionType.CreateFunction, progtext[i..][1..next]);
                             i += next;
                         }
 

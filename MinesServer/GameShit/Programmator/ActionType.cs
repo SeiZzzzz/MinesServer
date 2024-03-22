@@ -23,7 +23,7 @@
         Geology,
         Heal,
         NextRow,
-        Label,
+        CreateFunction,
         GoTo,
         RunSub,
         RunFunction,

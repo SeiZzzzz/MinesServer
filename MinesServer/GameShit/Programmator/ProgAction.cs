@@ -28,7 +28,7 @@ namespace MinesServer.GameShit.Programmator
                     p.Move(p.x, p.y + 1);
                     return;
                 case ActionType.None:
-                    break;
+                    return;
             }
         }
     }

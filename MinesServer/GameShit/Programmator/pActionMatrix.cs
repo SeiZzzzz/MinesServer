@@ -23,9 +23,9 @@ namespace MinesServer.GameShit.Programmator
         public static bool operator ==(pActionMatrix f1, pActionMatrix f2) { return false; }
         public static bool operator !=(pActionMatrix f1, pActionMatrix f2) { return false; }
         #endregion
-        const int pages = 12 + 1;
-        const int rows = 16 + 1;
-        const int cols = 16 + 1;
+        const int pages = 12;
+        const int rows = 16;
+        const int cols = 16;
         public pActionMatrix()
         {
             matrix = new ProgAction[rows, cols, pages];
@@ -75,7 +75,7 @@ namespace MinesServer.GameShit.Programmator
                     for (var y = 0; y < matrix.GetLength(1); y++)
                     {
                         var action = matrix[x, y, page];
-                        if (action.label == label && action.type == ActionType.Label)
+                        if (action.label == label && action.type == ActionType.CreateFunction)
                         {
                             return (x, y,page);
                         }

@@ -125,14 +125,6 @@ namespace MinesServer.GameShit
         }
         #endregion
         #region actions
-        public void UnlimitedUpdate()
-        {
-            if (programsData.ProgRunning)
-            {
-                programsData.Step();
-                return;
-            }
-        }
         public void Update()
         {
             actionpertick = false;
@@ -170,7 +162,10 @@ namespace MinesServer.GameShit
                 }
             }
             if (programsData.ProgRunning)
+            {
+                programsData.Step();
                 return;
+            }
             while (playerActions.Count > 0)
             {
                 playerActions.Dequeue()();
