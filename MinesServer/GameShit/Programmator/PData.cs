@@ -31,6 +31,10 @@ namespace MinesServer.GameShit.Programmator
             selected = p;
             cFunction = "";
             currentprog = p.programm;
+            foreach (var i in currentprog)
+            {
+                Console.WriteLine($"{i.Key} - {string.Join(' ', i.Value.actions.Select(i => i.type))}");
+            }
             foreach (var i in currentprog.Values)
                 i.Close();
             delay = DateTime.Now;
@@ -93,7 +97,7 @@ namespace MinesServer.GameShit.Programmator
                             break;
                     }
                     break;
-                default:
+                case null:
                     switch (action.type)
                     {
                         case ActionType.Return:

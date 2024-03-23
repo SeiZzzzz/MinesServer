@@ -78,6 +78,10 @@ namespace MinesServer.GameShit
             player.SendMap();
             SendHp();
         }
+        public void Heal(int count = -1)
+        {
+
+        }
         public void Hurt(int d, DamageType t = DamageType.Pure)
         {
             if (player is null) return;

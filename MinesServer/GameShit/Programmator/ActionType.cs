@@ -81,7 +81,7 @@
         IsGreenBlock,
         IsYellowBlock,
         IsRedBlock,
-        IsSupport,
+        IsPillar,
         IsQuadBlock,
         IsRoad,
         IsBox

@@ -363,10 +363,6 @@ namespace MinesServer.GameShit
                 actionpertick = true;
             }
         }
-        public void Heal(int count = -1)
-        {
-
-        }
         public bool Move(int x, int y, int dir = -1)
         {
 
@@ -375,6 +371,7 @@ namespace MinesServer.GameShit
                 tp(this.x, this.y);
                 return false;
             }
+            this.dir = dir;
             if (dir == -1)
             {
                 this.dir = pos.X > x ? 1 : pos.X < x ? 3 : pos.Y > y ? 2 : 0;

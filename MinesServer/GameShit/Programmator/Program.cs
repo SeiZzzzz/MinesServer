@@ -223,61 +223,61 @@
 
                                 break;
                             case 'n':
-                                Console.WriteLine("is not empty");
+                                functions[currentFunc] += new PAction(ActionType.IsNotEmpty);
                                 break;
                             case 'e':
-                                Console.WriteLine("is empty");
+                                functions[currentFunc] += new PAction(ActionType.IsEmpty);
                                 break;
                             case 'f':
-                                Console.WriteLine("is falling");
+                                functions[currentFunc] += new PAction(ActionType.IsFalling);
                                 break;
                             case 'c':
-                                Console.WriteLine("is crystal");
+                                functions[currentFunc] += new PAction(ActionType.IsCrystal);
                                 break;
                             case 'a':
-                                Console.WriteLine("is living crystal");
+                                functions[currentFunc] += new PAction(ActionType.IsLivingCrystal);
                                 break;
                             case 'b':
-                                Console.WriteLine("is boulder");
+                                functions[currentFunc] += new PAction(ActionType.IsBoulder);
                                 break;
                             case 's':
-                                Console.WriteLine("is sand");
+                                functions[currentFunc] += new PAction(ActionType.IsSand);
                                 break;
                             case 'k':
-                                Console.WriteLine("is breakablerock");
+                                functions[currentFunc] += new PAction(ActionType.IsBreakableRock);
                                 break;
                             case 'd':
-                                Console.WriteLine("is unbreakablerock");
+                                functions[currentFunc] += new PAction(ActionType.IsUnbreakable);
                                 break;
                             case 'A':
-                                Console.WriteLine("is acid");
+                                functions[currentFunc] += new PAction(ActionType.IsAcid);
                                 break;
                             case 'B':
-                                Console.WriteLine("is redrock");
+                                functions[currentFunc] += new PAction(ActionType.IsRedRock);
                                 break;
                             case 'K':
-                                Console.WriteLine("is blackrock");
+                                functions[currentFunc] += new PAction(ActionType.IsBlackRock);
                                 break;
                             case 'g':
-                                Console.WriteLine("is green block");
+                                functions[currentFunc] += new PAction(ActionType.IsGreenBlock);
                                 break;
                             case 'y':
-                                Console.WriteLine("is yellow block");
+                                functions[currentFunc] += new PAction(ActionType.IsYellowBlock);
                                 break;
                             case 'r':
-                                Console.WriteLine("is red block");
+                                functions[currentFunc] += new PAction(ActionType.IsRedRock);
                                 break;
                             case 'o':
-                                Console.WriteLine("is pillar");
+                                functions[currentFunc] += new PAction(ActionType.IsPillar);
                                 break;
                             case 'q':
-                                Console.WriteLine("is quadro");
+                                functions[currentFunc] += new PAction(ActionType.IsQuadBlock);
                                 break;
                             case 'R':
-                                Console.WriteLine("is road");
+                                functions[currentFunc] += new PAction(ActionType.IsRoad);
                                 break;
                             case 'x':
-                                Console.WriteLine("is box");
+                                functions[currentFunc] += new PAction(ActionType.IsBox);
                                 break;
                         }
 
