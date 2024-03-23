@@ -5,6 +5,9 @@ using MinesServer.GameShit.GUI.Horb;
 using MinesServer.Network.Auth;
 using MinesServer.Network.GUI;
 using MinesServer.Network.World;
+using NetCoreServer;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -39,19 +42,29 @@ namespace MinesServer.Server
                 Buttons = [new("OK", "%I%", (args) => TryToAuthByPlayer(args.Input, initiator))]
             });
         }
-        public void TryToAuth(AUPacket p, string sid, Session initiator)
+        public void TryToAuth(AUPacket p, string sid, Session initiator, System.Net.IPAddress ip)
         {
-            Console.WriteLine("auth?");
             int res;
             Player player = null;
             if (p.user_id.HasValue)
             {
+                try
+                {
+                    Console.WriteLine(DataBase.GetPlayer(p.user_id.Value).name + " connected (" + ip + ")");
+                }
+                catch
+                {
+                    Console.WriteLine("Null connected(" + ip + ")");
+                }
                 player = DataBase.GetPlayer(p.user_id.Value)!;
             }
-            if (player == null)
+            if (player == null || p.token != CalculateMD5Hash(player.hash + sid))
             {
+
                 initiator.SendPing();
-                initiator.SendU(new WorldInfoPacket(World.W.name, World.CellsWidth, World.CellsHeight, 0, "COCK", "http://pi.door/", "ok"));
+                initiator.SendU(new WorldInfoPacket2(World.W.name, World.CellsWidth, World.CellsHeight, 3410, "3410", "http://pi.door/", "ok"));
+                initiator.SendU(new WorldInfoPacket(World.W.name, World.CellsWidth, World.CellsHeight, 3410, "3410", "http://pi.door/", "ok"));
+
                 authwin = new Window()
                 {
                     Title = "ВХОД",
@@ -64,13 +77,8 @@ namespace MinesServer.Server
                             Text = "Авторизация",
                             Buttons = [
                                 new Button("Новый акк", "newakk", (args) => CreateNew(initiator)),
-                                new Button("ok", $"nick:{ActionMacros.Input}", (args) => TryToFindByNick(args.Input!, initiator))
+                                new Button("ok",$"login:", (args) => Login(initiator))
                             ],
-                            Input = new InputConfig()
-                            {
-                                IsConsole = true,
-                                Placeholder = " "
-                            }
                         }
                     }],
                     ShowTabs = false
@@ -78,9 +86,9 @@ namespace MinesServer.Server
                 initiator.SendWin(authwin.ToString());
                 return;
             }
-            else if (player != null && CalculateMD5Hash(player.hash + sid) == p.token)
+            else if (player != null && player.connection == null && CalculateMD5Hash(player.hash + sid) == p.token)
             {
-                player.connection = null;
+               
                 player.connection = initiator;
                 initiator.player = player;
                 player.Init();
@@ -153,6 +161,22 @@ namespace MinesServer.Server
             initiator.player.connection = initiator;
             initiator.player.Init();
             initiator.auth = null;
+        }
+        public void Login(Session initiator)
+        {
+            authwin.CurrentTab.Open(new Page
+            {
+                Title = "ВХОД",
+                Text = "Логин",
+                Input = new InputConfig
+                {
+                    IsConsole = true,
+                    Placeholder = " "
+                },
+                Buttons = [new("OK", $"nick:{ActionMacros.Input}", (args) => TryToFindByNick(args.Input!, initiator))]
+            });
+            initiator.SendWin(authwin.ToString());
+            return;
         }
         public void TryToFindByNick(string name, Session initiator)
         {

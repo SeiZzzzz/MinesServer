@@ -36,7 +36,11 @@ namespace MinesServer.GameShit
             this.cry[index] += val;
             if (cry[index] < 0)
             {
-                cry[index] = long.MaxValue;
+                cry[index] = 0;
+            }
+            else if (cry[index] > 1000000000000)
+            {
+                cry[index] = 1000000000000;
             }
             SendBasket();
         }
@@ -87,7 +91,7 @@ namespace MinesServer.GameShit
                 Title = "Создание бокса",
                 Tabs = [new Tab()
                 {
-                    Label = "хуй",
+                    Label = "Бокс",
                     Action = "dropbox",
                     InitialPage = new Page()
                     {
@@ -97,7 +101,7 @@ namespace MinesServer.GameShit
                             new CrysLine("", 0, 0, cry[3], 0),
                             new CrysLine("", 0, 0, cry[4], 0),
                             new CrysLine("", 0, 0, cry[5], 0)]),
-                        Text = "\nИспользуйте полосы прокрутки, чтобы выбрать сколько положить в бокс\",\r\n                    \"ВНИМАНИЕ! При создании бокса теряется нихуя кристаллов\n",
+                        Text = "\nИспользуйте полосы прокрутки, чтобы выбрать сколько положить в бокс,\r\nВНИМАНИЕ! При создании кристаллы не теряются!\n",
                         Buttons = [new Button("<color=green>В БОКС</color>", $"dropbox:{ActionMacros.CrystalSliders}", (args) => { player.BBox(args.CrystalSliders); })]
                     }
                 }]

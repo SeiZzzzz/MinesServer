@@ -7,6 +7,7 @@ namespace MinesServer.GameShit.Skills
     {
         public int lvl = 1;
         public float exp = 0;
+        public float count = 0;
         public SkillType type;
         public float GetEffect()
         {
@@ -36,14 +37,28 @@ namespace MinesServer.GameShit.Skills
         {
             if (isUpReady())
             {
-                Dictionary<string, int> v = new();
-                lvl += 1;
-                exp -= GetExp();
-                v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
-                p.connection?.SendU(new SkillsPacket(v));
-                p.SendLvl();
-                p.health.SendHp();
-                p.skillslist.Save();
+                if (p.money - (long)GetCost() < (long)100000000000000)
+                { if (p.money - (long)GetCost() > (long)0)
+                    {
+                        if (exp - GetExp() >= 0)
+                        {
+                            Dictionary<string, int> v = new();
+                            exp = exp - GetExp();
+                            lvl += 1;
+
+                            p.money -= (long)GetCost();
+                            v.Add(type.GetCode(), (int)exp);
+
+
+                            p.skillslist.Save();
+                            p.connection?.SendU(new SkillsPacket(v));
+                            p.SendLvl();
+                            p.SendMoney();
+                            p.SendSpeed();
+                            p.health.SendHp();
+                        }
+                    }
+                }
             }
         }
         public void AddExp(Player p, float expv = 1)

@@ -10,12 +10,12 @@ namespace MinesServer.GameShit
             {
                 types = depth switch
                 {
-                    (< 500) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Green, CellType.YellowSand, CellType.Rock } : new CellType[] { CellType.Green, CellType.XGreen },
-                    (< 1000) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Green, CellType.XGreen } : new CellType[] { CellType.Blue, CellType.Green, CellType.XGreen },
-                    (< 1500) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Blue, CellType.XGreen } : new CellType[] { CellType.Blue, CellType.Green, CellType.XBlue },
-                    (< 2000) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Blue } : new CellType[] { CellType.Blue, CellType.Green },
-                    (< 3000) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Red, CellType.Blue } : new CellType[] { CellType.Blue, CellType.Red, CellType.Green },
-                    (< 4000) => new Random().Next(1, 101) > 80 ? new CellType[] { CellType.Red, CellType.Violet } : new CellType[] { CellType.Blue, CellType.Red, CellType.Violet },
+                    (< 500) => new Random().Next(1, 101) > 65 ? new CellType[] { CellType.Green, CellType.YellowSand, CellType.Rock } : new CellType[] { CellType.Green, CellType.XGreen },
+                    (< 1000) => new Random().Next(1, 101) > 65 ? new CellType[] { CellType.Blue, CellType.XGreen } : new CellType[] { CellType.Blue, CellType.Green, CellType.XBlue },
+                    (< 1500) => new Random().Next(1, 101) > 65 ? new CellType[] { CellType.Blue } : new CellType[] { CellType.Blue, CellType.Green },
+                    (< 2000) => new Random().Next(1, 101) > 65 ? new CellType[] { CellType.Red, CellType.Blue } : new CellType[] { CellType.Blue, CellType.Red, CellType.Green },
+                    (< 2500) => new Random().Next(1, 101) > 65 ? new CellType[] { CellType.Red, CellType.Violet } : new CellType[] { CellType.Blue, CellType.Red, CellType.Violet },
+                    (< 3000) => new Random().Next(1, 101) > 65 ? new CellType[] { CellType.Violet, CellType.White } : new CellType[] { CellType.White, CellType.Red, CellType.Violet },
                     _ => new CellType[] { CellType.Cyan, CellType.Violet, CellType.Red, CellType.White, CellType.XCyan, CellType.XViolet, CellType.XRed }
                 };
             }

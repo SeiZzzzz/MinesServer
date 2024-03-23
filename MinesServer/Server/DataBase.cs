@@ -2,9 +2,9 @@
 using MinesServer.GameShit;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
+using MinesServer.GameShit.SysMarket;
 using MinesServer.GameShit.Programmator;
 using MinesServer.GameShit.Sys_Craft;
-using MinesServer.GameShit.SysMarket;
 
 namespace MinesServer.Server
 {
@@ -42,7 +42,7 @@ namespace MinesServer.Server
         }
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Server=(localdb)\\MSSqlLocalDB;MultipleActiveResultSets=true;Database=M;Trusted_Connection=True;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DESKTOP-BORVF4Q\\SQLEXPRESS;MultipleActiveResultSets=true;Database=M;Trusted_Connection=True;Trust Server Certificate=True;");
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -127,32 +127,26 @@ namespace MinesServer.Server
                 }
                 foreach (var i in db.resps)
                 {
-                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.markets)
                 {
-                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.ups)
                 {
-                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.guns)
                 {
-                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.storages)
                 {
-                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.crafts)
                 {
-                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
             }

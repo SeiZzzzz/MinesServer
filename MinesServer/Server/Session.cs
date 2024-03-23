@@ -6,10 +6,10 @@ using MinesServer.Network.ConnectionStatus;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Network.HubEvents;
-using MinesServer.Network.Programmator;
 using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using NetCoreServer;
+using System.Net;
 
 namespace MinesServer.Server
 {
@@ -34,28 +34,19 @@ namespace MinesServer.Server
         protected override void OnConnected()
         {
             sid = Auth.GenerateSessionId();
-            Console.WriteLine($"{this.ToString()} connected");
-            SendU(new StatusPacket("черный хуй в твоей жопе"));
+            SendU(new StatusPacket("Inited"));
             SendU(new AUPacket(sid));
         }
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
-            Packet p = default;
-            try
+            var p = Packet.Decode(buffer);
+            switch (p.data)
             {
-                p = Packet.Decode(buffer);
-                switch (p.data)
-                {
-                    case AUPacket au: AU(au); break;
-                    case TYPacket ty: father.time.AddAction(() => TY(ty)); break;
-                    default:
-                        // Invalid packet
-                        break;
-                }
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"invalid packet from {player.Id} {ex}");
+                case AUPacket au: AU(au); break;
+                case TYPacket ty: father.time.AddAction(() => TY(ty)); break;
+                default:
+                    // Invalid packet
+                    break;
             }
         }
         protected override void OnDisconnected()
@@ -66,10 +57,10 @@ namespace MinesServer.Server
             }
             Console.WriteLine(player.name + " disconnected");
             using var db = new DataBase();
+            
             db.players.Update(player);
             db.SaveChanges();
-            player.afkstarttime = DateTime.Now;
-            player.connection = null;
+            DataBase.activeplayers.Remove(player);
             player = null;
             Dispose();
         }
@@ -82,7 +73,7 @@ namespace MinesServer.Server
         private void AU(AUPacket p)
         {
             auth = new Auth();
-            auth.TryToAuth(p, sid, this);
+            auth.TryToAuth(p, sid, this, IPAddress.Parse(((IPEndPoint)Socket.RemoteEndPoint).Address.ToString()));
         }
         private void TY(TYPacket packet)
         {
@@ -106,32 +97,14 @@ namespace MinesServer.Server
                 case ClanPacket clan: Clan(packet, clan); break;
                 case PopePacket pp: Pope(packet, pp); break;
                 case PROGPacket prog: PROG(packet, prog); break;
-                case PDELPacket pdel: Pdel(packet, pdel);break;
-                case pRSTPacket prst: Prst(packet, prst); break;
-                case PRENPacket pren: Pren(packet, pren); break;
                 default:
                     // Invalid event type
                     break;
             }
         }
-        private void Pren(TYPacket f,PRENPacket pren)
-        {
-            StaticGUI.Rename(player, pren.Id);
-        }
-        private void Prst(TYPacket f, pRSTPacket prst)
-        {
-            if (player.programsData.ProgRunning)
-                player.RunProgramm();
-            SendU(new ProgrammatorPacket(false));
-        }
-        private void Pdel(TYPacket f,PDELPacket pdel)
-        {
-            StaticGUI.DeleteProg(player, pdel.Id);
-        }
         private void PROG(TYPacket f, PROGPacket p)
         {
             StaticGUI.StartedProg(player, p.prog);
-            SendU(new ProgrammatorPacket(player.programsData.ProgRunning));
         }
         private void Pope(TYPacket f, PopePacket p)
         {
@@ -165,7 +138,7 @@ namespace MinesServer.Server
         }
         private void Ping(TYPacket f, PongPacket p)
         {
-            SendU(new PingPacket(0, 0, "f"));
+            SendU(new PingPacket(0, 0, "20"));
         }
         private void Inus(TYPacket f, INUSPacket inus)
         {
@@ -230,8 +203,8 @@ namespace MinesServer.Server
                 player.AddAciton(() =>
                 {
                     var dir = packet.Direction;
-                    player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir : -1);
-                }, player.OnRoad ? (player.pause * 5) * 0.65 : player.pause * 5);
+                    player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
+                }, player.OnRoad ? (player.pause) * 0.65 : player.pause);
             }
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)
@@ -264,8 +237,14 @@ namespace MinesServer.Server
             {
                 return;
             }
+            Console.WriteLine(button.ToString());
             if ((auth != null && !auth.complited))
             {
+                
+                if (button.ToString() == "exit:0")
+                {
+                    return;
+                    }
                 if (button.ToString() == "exit")
                 {
                     auth.exit();
@@ -276,24 +255,36 @@ namespace MinesServer.Server
             }
             father.time.AddAction(() =>
             {
-                if (button.ToString() == "exit")
+                
+                if (button.ToString() == "exit" | button.ToString() == "exit:0")
                 {
                     CloseWindow();
                     return;
                 }
-                player.CallWinAction(button);
-                player.SendWindow();
+                else if (button.ToString() == "clan" | button.ToString() == "sellall" | button.ToString() == "buycrys" | button.ToString() == "sellcrys" | button.ToString() == "auc" | button.ToString() == "getprofit" | button.StartsWith("save") | button.StartsWith("buy") | button.StartsWith("sell") | button.StartsWith("bet") | button.StartsWith("openorder") | button.StartsWith("createorder") | button.StartsWith("choose") | button.StartsWith("skill") | button.StartsWith("delete") | button.StartsWith("install") | button.StartsWith("confirm") | button.StartsWith("upgrade") | button.StartsWith("create") | button.StartsWith("setitem") | button.StartsWith("open") | button.StartsWith("dropbox"))
+                {
+                    player.CallWinAction(button);
+                    player.SendWindow();
+                    }
+                else
+                {
+                        return;
+                }
+
+                
+                return; 
             });
         }
         #endregion
         #region senders
         public void SendWorldInfo()
         {
-            SendU(new WorldInfoPacket(World.W.name, World.CellsWidth, World.CellsHeight, 123, "COCK", "http://pi.door/", "ok"));
+            SendU(new WorldInfoPacket(World.W.name, World.CellsWidth, World.CellsHeight, 3410, "3410", "http://pi.door/", "ok"));
+            SendU(new WorldInfoPacket2(World.W.name, World.CellsWidth, World.CellsHeight, 3410, "3410", "http://pi.door/", "ok"));
         }
         public void SendPing()
         {
-            SendU(new PingPacket(0, 0, "sosi"));
+            SendU(new PingPacket(0, 0, "20"));
         }
         public void SendWin(string win)
         {
@@ -319,7 +310,10 @@ namespace MinesServer.Server
         public void CloseWindow()
         {
             player.win = null;
-            player.skillslist.selectedslot = -1;
+            if (player.skillslist.selectedslot != -1 && player.skillslist.selectedslot != null) 
+            { 
+                player.skillslist.selectedslot = -1;
+            }
             SendU(new GuPacket());
         }
         #endregion

@@ -44,18 +44,18 @@ namespace MinesServer.Server
             }
             for (int i = 0; i < gameActions.Count; i++)
             {
-                /*try
-                {*/
+                try
+                {
                 var action = gameActions.Dequeue();
                 if (action != null)
                 {
                     action();
                 }
-                /*}
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
-                }*/
+                }
             }
             for (int i = 0; i < DataBase.activeplayers.Count; i++)
             {

@@ -10,18 +10,36 @@ namespace MinesServer.GameShit.SysMarket
         public int num { get; set; }
         public long cost { get; set; }
         public DateTime bettime { get; set; }
-        public void Bet(Player p, long money)
+        public void Bet(Player p, long money, int order)
         {
-            if ((buyerid > 0 ? Math.Ceiling(cost + (cost * 0.01f)) : cost) > money || p.money < cost)
+            if ((buyerid > 0 ? Math.Ceiling(cost + (cost * 0.001f)) : cost) > money || p.money < cost)
             {
                 return;
             }
             using var db = new DataBase();
             Player? buyer = null;
+            Console.WriteLine(order);
+            if (cost == 0)
+            {
+                return;
+            }
             if (buyerid != 0)
             {
                 buyer = db.players.First(i => i.Id == buyerid);
-                buyer.money += cost;
+                if (buyer.money + cost > 1000000000)
+                {
+                    buyer.money = 1000000000;
+                }
+                else
+                {
+                    buyer.money += cost;
+                }
+            }
+            var buyno = DataBase.GetPlayer(buyerid);
+            if (buyno != null)
+            {
+                buyno.money += cost;
+                buyno.SendMoney();
             }
             cost = money;
             buyerid = p.Id;
@@ -35,8 +53,11 @@ namespace MinesServer.GameShit.SysMarket
             if (TimeSpan.FromMinutes(5) <= (DateTime.Now - bettime) && buyerid > 0)
             {
                 using var db = new DataBase();
-                db.orders.Remove(this);
                 var buyer = DataBase.GetPlayer(buyerid);
+                if (cost == 0)
+                {
+                    return;
+                }
                 if (buyer != null && buyer.inventory != null)
                 {
                     buyer.inventory[itemid] += num;
@@ -51,6 +72,7 @@ namespace MinesServer.GameShit.SysMarket
                     initiator.money += cost;
                     initiator.SendMoney();
                 }
+                cost = 0;
                 db.SaveChanges();
             }
         }

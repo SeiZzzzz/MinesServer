@@ -107,7 +107,7 @@ namespace MinesServer.GameShit.Buildings
             return new Window()
             {
                 ShowTabs = true,
-                Title = "Market",
+                Title = "МАРКЕТ",
                 Tabs = [new Tab()
                 {
                     Label = "ПРОДАЖА",
@@ -115,7 +115,7 @@ namespace MinesServer.GameShit.Buildings
                     InitialPage = new Page()
                     {
                         OnAdmin = adminaction,
-                        CrystalConfig = new CrystalConfig(" ", "цена",
+                        CrystalConfig = new CrystalConfig(" ", "ЦЕНА   ",
                             [new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0)}$</color>", 0, 0, p.crys[Enums.CrystalType.Green], 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1)}$</color>", 0, 0, p.crys[Enums.CrystalType.Blue], 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2)}$</color>", 0, 0, p.crys[Enums.CrystalType.Red], 0),
@@ -123,29 +123,29 @@ namespace MinesServer.GameShit.Buildings
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4)}$</color>", 0, 0, p.crys[Enums.CrystalType.White], 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5)}$</color>", 0, 0, p.crys[Enums.CrystalType.Cyan], 0)]
                                 ),
-                        Text = "Продажа кри",
-                        Buttons = [new Button("sellall", $"sellall", (args) => MarketSystem.Sell(p.crys.cry, p, this)),
-                            new Button("sell", $"sell:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Sell(args.CrystalSliders, p, this))]
+                        Text = "Здесь вы можете продать кристаллы.\n Для продажи нажмите кнопку ПРОДАТЬ",
+                        Buttons = [new Button("ПРОДАТЬ ВСЕ", $"sellall", (args) => MarketSystem.Sell(p.crys.cry, p, this)),
+                            new Button("ПРОДАТЬ", $"sell:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Sell(args.CrystalSliders, p, this))]
                     }
                 },
                     new Tab()
                     {
-                        Label = "Покупка",
+                        Label = "ПОКУПКА",
                         Action = "buycrys",
                         InitialPage = new Page()
                         {
                             OnAdmin = adminaction,
-                            CrystalConfig = new CrystalConfig(" ", "цена", [
+                CrystalConfig = new CrystalConfig(" ", "ЦЕНА   ", [
                             new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(0) * 10)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(1) * 10)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(2) * 10)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(3) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(3) * 10)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(4) * 10)), 0),
-                                new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(5) * 10)), 0)
+                    new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(1) * 10)), 0),
+                    new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(2) * 10)), 0),
+                    new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(3) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(3) * 10)), 0),
+                    new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(4) * 10)), 0),
+                    new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(5) * 10)), 0)
 
                             ], true),
-                            Text = "Покупка",
-                            Buttons = [new Button("buy", $"buy:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Buy(args.CrystalSliders, p, this))
+                            Text = "Здесь вы можете купить кристаллы.\n Для покупки нажмите кнопку КУПИТЬ",
+                            Buttons = [new Button("КУПИТЬ", $"buy:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Buy(args.CrystalSliders, p, this))
                         ]
                         }
                     },
@@ -153,7 +153,7 @@ namespace MinesServer.GameShit.Buildings
                     {
                         InitialPage = MarketSystem.GlobalFirstPage(p)!,
                         Action = "auc",
-                        Label = "Auc"
+                        Label = "ПРОЧЕЕ"
                     }]
             };
         }

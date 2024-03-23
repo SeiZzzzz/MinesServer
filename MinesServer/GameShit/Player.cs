@@ -213,7 +213,7 @@ namespace MinesServer.GameShit
             {
                 return;
             }
-            var cell = World.GetCell(x, y);
+            /*var cell = World.GetCell(x, y);
             if (World.GetProp(cell).isPickable && !World.GetProp(cell).isEmpty)
             {
                 geo.Push(cell);
@@ -225,7 +225,7 @@ namespace MinesServer.GameShit
                 World.SetCell(x, y, cplaceable);
                 World.SetDurability(x, y, World.isCry(cplaceable) ? 0 : Physics.r.Next(1, 101) > 99 ? 0 : World.GetProp(cplaceable).durability);
             }
-            SendGeo();
+            SendGeo();*/
         }
         public void BBox(long[]? c)
         {
@@ -240,15 +240,24 @@ namespace MinesServer.GameShit
         }
         private void Mine(byte cell, int x, int y)
         {
-            float dob = 1 + (float)Math.Truncate(cb);
+            float dob = 1f;
+            Random rand = new Random();
             foreach (var c in skillslist.skills.Values)
             {
                 if (c != null && c.UseSkill(SkillEffectType.OnDigCrys, this))
                 {
                     if (c.type == SkillType.MineGeneral)
                     {
-                        dob += c.GetEffect();
-                        c.AddExp(this, (float)Math.Truncate(dob));
+                        c.AddExp(this, 1);
+                        if (rand.Next(100) < (int)(((double)c.GetEffect() - (int)c.GetEffect()) * 100))
+                        {
+
+                            dob += (int)c.GetEffect() + 1;
+                        }
+                        else
+                        {
+                            dob += (int)c.GetEffect();
+                        }
                     }
                 }
             }
@@ -261,13 +270,10 @@ namespace MinesServer.GameShit
                 CellType.XCyan => 2,
                 _ => 1
             };
-            cb -= (float)Math.Truncate(cb);
-            long odob = (long)Math.Truncate(dob);
             var type = ParseCryType((CellType)cell);
-            cb += dob - odob;
-            crys.AddCrys(type, odob);
-            World.AddDob(type, odob);
-            SendDFToBots(2, x, y, this.Id, (int)(odob < 255 ? odob : 255), (type == 1 ? 3 : type == 2 ? 1 : type == 3 ? 2 : type));
+            crys.AddCrys(type, (long)dob);
+            World.AddDob(type, (long)dob);
+            SendDFToBots(2, x, y, this.Id, (int)((long)dob < 255 ? (long)dob : 255), (type == 1 ? 3 : type == 2 ? 1 : type == 3 ? 2 : type));
         }
         public void GetBox(int x, int y)
         {
@@ -295,7 +301,12 @@ namespace MinesServer.GameShit
         }
         public void Bz()
         {
+            Random rand = new Random();
             int x = (int)GetDirCord().X, y = (int)GetDirCord().Y;
+            foreach (var player in World.W.GetPlayersFromPos(x, y))
+            {
+                player.health.Hurt(1);
+            }
             if (!World.W.ValidCoord(x, y))
             {
                 return;
@@ -308,6 +319,7 @@ namespace MinesServer.GameShit
             }
             if (!World.GetProp(cell).is_diggable)
             {
+
                 return;
             }
             if (cell == 90)
@@ -316,27 +328,52 @@ namespace MinesServer.GameShit
                 World.DamageCell(x, y, 1);
                 return;
             }
-            float hitdmg = 0.2f;
-            if (World.isCry(cell))
+            float hitdmg = 1f;
+            foreach (var c in skillslist.skills.Values)
             {
-                hitdmg = 1f;
-                Mine(cell, x, y);
+                if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
+                {
+                    hitdmg = c.GetEffect() / 100;
+                }
             }
-            else
+            var kopa = rand.Next(100) < (int)(((double)hitdmg - (int)hitdmg) * 100);
+            if (World.isCry(cell))
             {
                 foreach (var c in skillslist.skills.Values)
                 {
                     if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
                     {
-                        hitdmg = c.type switch
+                        if (World.GetProp(cell).durability > hitdmg / 100)
                         {
-                            SkillType.Digging => hitdmg * (c.GetEffect() / 100f),
-                            _ => 1f
-                        };
+                            if (rand.Next(((int)((float)World.GetProp(cell).durability) - ((int)hitdmg / 100)) * 100) < ((int)hitdmg) * 100)
+                            {
+                                Mine(cell, x, y);
+                                c.AddExp(this);
+                                World.DamageCell(x, y, 1);
+                            }
+                        }
+                        else if (World.GetProp(cell).durability < (hitdmg / 100))
+                        {
+                            Mine(cell, x, y);
+                            c.AddExp(this);
+                            World.DamageCell(x, y, 1);
+                        }
+                    }
+                }
+                return;
+            }
+            if (World.DamageCell(x, y, hitdmg)) OnDestroy(cell);
+            else
+            {
+                if (y < 100)
+                {
+
+                    if (World.GetProp(cell).is_destructible)
+                    {
+                        World.DamageCell(x, y, 2); //playerActions.connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "ПОВЕРХНОСТЬ!!! Блоки разрушаются быстрее")]));
                     }
                 }
             }
-            if (World.DamageCell(x, y, hitdmg)) OnDestroy(cell);
             if (World.GetProp(cell).isBoulder)
             {
                 var plusy = dir == 2 ? -1 : dir == 0 ? 1 : 0;
@@ -353,6 +390,7 @@ namespace MinesServer.GameShit
                     }
                 }
             }
+
         }
         public void AddAciton(Action a, double delay)
         {
@@ -402,12 +440,20 @@ namespace MinesServer.GameShit
                         {
                             c.AddExp(this);
                         }
+                        if (World.GetProp(cell).type == 35 | World.GetProp(cell).type == 36 | World.GetProp(cell).type == 39)
+                        {
+                            if (c.type == SkillType.RoadMovement)
+                            {
+                                c.AddExp(this);
+                            }
+                        }
                     }
                 }
                 pos = newpos;
             }
             else
             {
+                Console.WriteLine("Пидр пакеты " + name);
                 tp(this.x, this.y);
                 return false;
             }
@@ -504,7 +550,7 @@ namespace MinesServer.GameShit
         private void AddBasicSkills()
         {
             //базовые скиллы
-            skillslist.InstallSkill(SkillType.MineGeneral.GetCode(), 0, this);
+            skillslist.InstallSkill(SkillType.Health.GetCode(), 0, this);
             skillslist.InstallSkill(SkillType.Digging.GetCode(), 1, this);
             skillslist.InstallSkill(SkillType.Movement.GetCode(), 2, this);
         }
@@ -569,14 +615,10 @@ namespace MinesServer.GameShit
         }
         public void SendMoney()
         {
-            if (this.money < 0)
-            {
-                this.money = long.MaxValue;
-            }
-            if (this.creds < 0)
-            {
-                this.creds = long.MaxValue;
-            }
+            if (this.money < 0) this.money = 0;
+            else if (this.money > 1000000000000000) this.money = 1000000000000000;
+            if (this.creds < 0) this.creds = 0;
+            else if (this.creds > 1000000000000000) this.creds = 1000000000000000;
             new MoneyPacket(this.money, this.creds);
             connection?.SendU(new MoneyPacket(this.money, this.creds));
         }
@@ -624,7 +666,23 @@ namespace MinesServer.GameShit
         }
         public void SendSpeed()
         {
-            connection?.SendU(new SpeedPacket(pause / 100, (int)(pause / 100 * 0.6), 100000));
+            var speed = 150;
+            var todoor = 0;
+            foreach (var c in skillslist.skills.Values)
+            {
+                if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
+                {
+                    if (c.type == SkillType.Movement)
+                    {
+                        speed -= (int)c.GetEffect() / 2;
+                    }
+                    if (c.type == SkillType.RoadMovement)
+                    {
+                        todoor = (int)c.GetEffect() / 10;
+                    }
+                }
+            }
+            connection?.SendU(new SpeedPacket(speed, speed - todoor, 100000));
         }
         public void SendInventory()
         {

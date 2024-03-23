@@ -99,6 +99,20 @@ namespace MinesServer.GameShit
                     }
                 },
                 {
+                    11,
+                    (p) =>
+                    {
+                        var cell = World.GetCell((int)p.GetDirCord().X, (int)p.GetDirCord().Y);
+                        var cellprop = World.GetProp(cell);
+                        if (cellprop.isEmpty)
+                        {
+                            World.SetCell((int)p.GetDirCord().X ,(int)p.GetDirCord().Y, 50);
+                            return true;
+                        }
+                        return false;
+                    }
+                },
+                {
                     24,
                     (p) =>
                     {
@@ -141,6 +155,25 @@ namespace MinesServer.GameShit
                     {
                         ShitClass.C190Shot((int)p.GetDirCord().X, (int)p.GetDirCord().Y, p);
                         return true;
+                    }
+                },
+                {
+                    41,
+                    (p) =>
+                    {
+                        var cell = World.GetCell((int)p.GetDirCord().X, (int)p.GetDirCord().Y);
+                        var cellprop = World.GetProp(cell);
+                        if(cell == 36)
+                        {
+                            World.SetCell((int)p.GetDirCord().X ,(int)p.GetDirCord().Y, 104);
+                            return true;
+                        }
+                        else if (cellprop.isEmpty)
+                        {
+                            World.SetCell((int)p.GetDirCord().X ,(int)p.GetDirCord().Y, 36);
+                            return true;
+                        }
+                        return false;
                     }
                 },
             };
@@ -210,7 +243,7 @@ namespace MinesServer.GameShit
         public delegate bool ItemUsage(Player p);
         public void Choose(int id, Player p)
         {
-            ITopLevelPacket packet = InventoryPacket.Choose("ты хуесос", new bool[0, 0], 123, 123, 12);
+            ITopLevelPacket packet = InventoryPacket.Choose("Мы не хотим этого!", new bool[0, 0], 123, 123, 12);
             selected = id;
             if (id == -1)
             {

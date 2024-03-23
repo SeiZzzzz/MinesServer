@@ -21,42 +21,56 @@ namespace MinesServer.GameShit
             });
             commands.Add("setitem", (p, arg) =>
             {
-                if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1], out var i) && int.TryParse(arg.Split(" ")[2], out var c))
+                if (p.Id == 1)
                 {
-                    p.inventory[i] = c;
-                    AddConsoleLine(p, "ok");
-                    p.SendInventory();
+                    if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1], out var i) && int.TryParse(arg.Split(" ")[2], out var c))
+                    {
+                        p.inventory[i] = c;
+                        AddConsoleLine(p, "ok");
+                        p.SendInventory();
+                    }
+                }
+                else
+                {
+                    AddConsoleLine(p, "Команда недоступна");
                 }
             });
-            commands.Add("addgeo", (p, arg) =>
-            {
-                if (arg.Split(" ").Length > 1 && byte.TryParse(arg.Split(" ")[1], out var i))
-                {
-                    p.geo.Push(i);
-                    p.SendGeo();
-                }
-            });
-            commands.Add("addmoney", (p, arg) =>
-            {
-                if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1], out var i))
-                {
-                    p.money += i;
-                    AddConsoleLine(p, "ok");
-                    p.SendMoney();
-                }
-            });
+            //commands.Add("addgeo", (p, arg) =>
+            //{
+            //    if (arg.Split(" ").Length > 1 && byte.TryParse(arg.Split(" ")[1], out var i))
+            //    {
+            //        p.geo.Push(i);
+            //        p.SendGeo();
+            //    }
+            //});
+            //commands.Add("addmoney", (p, arg) =>
+            //{
+            //    if (arg.Split(" ").Length > 1 && int.TryParse(arg.Split(" ")[1], out var i))
+            //    {
+            //        p.money += i;
+            //        AddConsoleLine(p, "ok");
+            //        p.SendMoney();
+            //    }
+            //});
             commands.Add("myid", (p, arg) =>
             {
-                AddConsoleLine(p, p.Id.ToString());
+                AddConsoleLine(p, "Ваш ид: " + p.Id.ToString());
             });
             commands.Add("getallmap", (p, arg) =>
             {
-                for (int x = 0; x < World.ChunksW; x++)
+                if (p.Id == 1)
                 {
-                    for (int y = 0; y < World.ChunksH; y++)
+                    for (int x = 0; x < World.ChunksW; x++)
                     {
-                        p.connection?.SendB(new HBPacket([new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].cells)]));
+                        for (int y = 0; y < World.ChunksH; y++)
+                        {
+                            p.connection?.SendB(new HBPacket([new HBMapPacket(x * 32, y * 32, 32, 32, World.W.chunks[x, y].cells)]));
+                        }
                     }
+                }
+                else
+                {
+                    AddConsoleLine(p, "Команда недоступна");
                 }
             });
             commands.Add("setnick", (p, arg) =>
@@ -127,7 +141,7 @@ namespace MinesServer.GameShit
                                     ShowConsole(p);
                                 return;
                             }
-                            AddConsoleLine(p, "бля это че нахуй");
+                            AddConsoleLine(p, "Неизвестная команда.");
                             ShowConsole(p);
                         })]
                     }

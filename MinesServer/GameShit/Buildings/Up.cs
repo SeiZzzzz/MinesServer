@@ -35,7 +35,7 @@ namespace MinesServer.GameShit.Buildings
                     Skills = p.skillslist.GetSkills(),
                     OnSkill = onskill,
                     SlotAmount = p.skillslist.slots,
-                    Title = "титле",
+                    Title = "UP",
                     SkillIcon = skilltype,
                     Text = "описание и цена установки",
                     Button = new Button("Установить", "confirm", (args) => { p.skillslist.InstallSkill(skilltype.GetCode(), p.skillslist.selectedslot, p); p.win = GUIWin(p); p.SendWindow(); })
@@ -49,9 +49,8 @@ namespace MinesServer.GameShit.Buildings
                 SkillsToInstall = null,
                 SlotAmount = p.skillslist.slots,
                 OnSkill = onskill,
-                Title = "xxx",
+                Title = "UP",
                 Text = "Выберите скилл или пустой слот",
-                Button = new Button("buyslotcost", "buyslot", (args) => { if (p.creds > 1000) { p.skillslist.slots++; } p.win = GUIWin(p); p.SendWindow(); }),
                 SkillIcon = SkillType.Unknown
             } : new UpPage()
             {
@@ -61,7 +60,7 @@ namespace MinesServer.GameShit.Buildings
                 SlotAmount = p.skillslist.slots,
                 OnInstall = skillfromslot == null ? oninstall : null,
                 OnSkill = onskill,
-                Title = "penis",
+                Title = "UP",
                 Text = skillfromslot?.Description(),
                 Button = skillfromslot != null && skillfromslot.isUpReady() ? new Button("ап", "upgrade", (args) => { skillfromslot.Up(p); p.win = GUIWin(p); p.SendWindow(); }) : null,
                 OnDelete = skillfromslot != null ? (slot) => { p.skillslist.DeleteSkill(p); p.win = GUIWin(p); p.SendWindow(); } : null,

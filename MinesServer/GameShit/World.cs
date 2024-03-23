@@ -10,8 +10,8 @@ namespace MinesServer.GameShit
 {
     public class World
     {
-        public const int chunksx = 10;
-        public const int chunksy = 10;
+        public const int chunksx = 150;
+        public const int chunksy = 150;
         public const int CellsWidth = chunksx * ChunkWidth;
         public const int CellsHeight = chunksy * ChunkHeight;
         public const int ChunkWidth = 32;
@@ -19,7 +19,7 @@ namespace MinesServer.GameShit
         public const int ChunkVolume = ChunkWidth * ChunkHeight;
         public const int TotalVolume = ChunksAmount * ChunkVolume;
 
-        const float _chunksWidth = (float)CellsWidth / ChunkWidth;
+        const float _chunksWidth = (float)CellsWidth / ChunkHeight;
         const float _chunksHeight = (float)CellsWidth / ChunkHeight;
         public const int ChunksW = _chunksWidth > (int)_chunksWidth ? (int)_chunksWidth + 1 : (int)_chunksWidth; // Альтернатива Math.Ceiling для константных выражений
         public const int ChunksH = _chunksHeight > (int)_chunksHeight ? (int)_chunksHeight + 1 : (int)_chunksHeight; // Альтернатива Math.Ceiling для константных выражений
@@ -59,7 +59,7 @@ namespace MinesServer.GameShit
                 road = new($"{name}_road.mapb");
                 durability = new($"{name}_durability.mapb");
             }
-            CreateSpawns(4);
+            CreateSpawns(1);
             Console.WriteLine("Creating chunkmesh");
             x = DateTime.Now;
             Console.WriteLine($"{DateTime.Now - x} loaded");
@@ -88,17 +88,9 @@ namespace MinesServer.GameShit
                     }
                     if (CanBuildPack(-5, 5, -5, 5, x, y, null, true))
                     {
-                        for (int rx = -10; rx <= 10; rx++)
-                        {
-                            for (int ry = -10; ry <= 10; ry++)
-                            {
-                                SetCell(x + rx, y + ry, 36);
-                            }
-                        }
                         new Market(x - 7, y - 4, 0).Build();
                         new Resp(x - 8, y + 7, 0).Build();
                         new Up(x, y - 4, 0).Build();
-
                     }
                     if (y > CellsHeight)
                     {
