@@ -23,7 +23,7 @@ namespace MinesServer.GameShit.Programmator
         public Dictionary<string, PFunction> currentprog { get; set; }
         public DateTime delay;
         private string cFunction;
-        private Program? selected;
+        public Program? selected { get; set; }
         private PFunction current
         {
             get => currentprog[cFunction];
@@ -33,10 +33,11 @@ namespace MinesServer.GameShit.Programmator
             selected = p;
             cFunction = "";
             currentprog = p.programm;
+            /* func logger
             foreach (var i in currentprog)
             {
                 Console.WriteLine($"{i.Key} - {string.Join(' ', i.Value.actions.Select(i => i.type))}");
-            }
+            }*/
             foreach (var i in currentprog.Values)
                 i.Close();
             delay = DateTime.Now;

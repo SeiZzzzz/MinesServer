@@ -120,6 +120,11 @@ namespace MinesServer.Server
         }
         private void Prst(TYPacket f, pRSTPacket prst)
         {
+            var p = player.programsData.selected;
+            if (p != null && !player.programsData.ProgRunning)
+            {
+                SendU(new OpenProgrammatorPacket(p.id, p.name, p.data));
+            }
             if (player.programsData.ProgRunning)
                 player.RunProgramm();
             SendU(new ProgrammatorPacket(false));

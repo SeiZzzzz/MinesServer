@@ -29,12 +29,12 @@
             functions[""] = new PFunction();
             string currentFunc = "";
             var index = data.IndexOf("$");
-            data = data.Substring(index + 1);
-            for (int i = 0; i < data.Length; i++
+            var context = data.Substring(index + 1);
+            for (int i = 0; i < context.Length; i++
                 )
             {
                 int next;
-                switch (data[i])
+                switch (context[i])
                 {
                     case 'w':
                         functions[currentFunc] += new PAction(ActionType.RotateUp);
@@ -70,24 +70,24 @@
                         functions[currentFunc] += new PAction(ActionType.NextRow);
                         break;
                     case '?':
-                        next = data[(i + 1)..].IndexOf('<');
+                        next = context[(i + 1)..].IndexOf('<');
                         if (next != -1)
                         {
                             next++;
-                            functions[currentFunc] += new PAction(ActionType.RunIfFalse, data[i..][1..next]);
+                            functions[currentFunc] += new PAction(ActionType.RunIfFalse, context[i..][1..next]);
                             i += next;
                         }
 
                         break;
                     case '!':
                         i++;
-                        if (data[i] == '?')
+                        if (context[i] == '?')
                         {
-                            next = data[(i + 1)..].IndexOf('<');
+                            next = context[(i + 1)..].IndexOf('<');
                             if (next != -1)
                             {
                                 next++;
-                                functions[currentFunc] += new PAction(ActionType.RunIfTrue, data[i..][1..next]);
+                                functions[currentFunc] += new PAction(ActionType.RunIfTrue, context[i..][1..next]);
                                 i += next;
                             }
                         }
@@ -95,8 +95,8 @@
                         break;
                     case '[':
                         i++;
-                        next = data[i..].IndexOf(']');
-                        var option = data[i..][..next];
+                        next = context[i..].IndexOf(']');
+                        var option = context[i..][..next];
                         i += next;
                         switch (option)
                         {
@@ -153,7 +153,7 @@
                         break;
                     case '#':
                         i++;
-                        switch (data[i])
+                        switch (context[i])
                         {
                             case 'S':
                                 functions[currentFunc] += new PAction(ActionType.Stop);
@@ -162,11 +162,11 @@
                                 functions[currentFunc] += new PAction(ActionType.Start);
                                 break;
                             case 'R':
-                                next = data[(i + 1)..].IndexOf('>');
+                                next = context[(i + 1)..].IndexOf('>');
                                 if (next != -1)
                                 {
                                     next++;
-                                    functions[currentFunc] += new PAction(ActionType.RunOnRespawn, data[i..][1..next]);
+                                    functions[currentFunc] += new PAction(ActionType.RunOnRespawn, context[i..][1..next]);
                                     i += next;
                                 }
 
@@ -176,14 +176,14 @@
                         break;
                     case ':':
                         i++;
-                        switch (data[i])
+                        switch (context[i])
                         {
                             case '>':
-                                next = data[(i + 1)..].IndexOf('>');
+                                next = context[(i + 1)..].IndexOf('>');
                                 if (next != -1)
                                 {
                                     next++;
-                                    functions[currentFunc] += new PAction(ActionType.RunSub, data[i..][1..next]);
+                                    functions[currentFunc] += new PAction(ActionType.RunSub, context[i..][1..next]);
                                     i += next;
                                 }
 
@@ -193,14 +193,14 @@
                         break;
                     case '-':
                         i++;
-                        switch (data[i])
+                        switch (context[i])
                         {
                             case '>':
-                                next = data[(i + 1)..].IndexOf('>');
+                                next = context[(i + 1)..].IndexOf('>');
                                 if (next != -1)
                                 {
                                     next++;
-                                    functions[currentFunc] += new PAction(ActionType.RunFunction, data[i..][1..next]);
+                                    functions[currentFunc] += new PAction(ActionType.RunFunction, context[i..][1..next]);
                                     i += next;
                                 }
 
@@ -210,14 +210,14 @@
                         break;
                     case '=':
                         i++;
-                        switch (data[i])
+                        switch (context[i])
                         {
                             case '>':
-                                next = data[(i + 1)..].IndexOf('>');
+                                next = context[(i + 1)..].IndexOf('>');
                                 if (next != -1)
                                 {
                                     next++;
-                                    functions[currentFunc] += new PAction(ActionType.RunState, data[i..][1..next]);
+                                    functions[currentFunc] += new PAction(ActionType.RunState, context[i..][1..next]);
                                     i += next;
                                 }
 
@@ -283,21 +283,21 @@
 
                         break;
                     case '>':
-                        next = data[(i + 1)..].IndexOf('|');
+                        next = context[(i + 1)..].IndexOf('|');
                         if (next != -1)
                         {
                             next++;
-                            functions[currentFunc] += new PAction(ActionType.GoTo, data[i..][1..next]);
+                            functions[currentFunc] += new PAction(ActionType.GoTo, context[i..][1..next]);
                             i += next;
                         }
 
                         break;
                     case '|':
-                        next = data[(i + 1)..].IndexOf(':');
+                        next = context[(i + 1)..].IndexOf(':');
                         if (next != -1)
                         {
                             next++;
-                            currentFunc = data[i..][1..next];
+                            currentFunc = context[i..][1..next];
                             functions[currentFunc] = new PFunction();
                             i += next;
                         }
@@ -305,14 +305,14 @@
                         break;
                     case '<':
                         i++;
-                        switch (data[i])
+                        switch (context[i])
                         {
                             case '|':
                                 functions[currentFunc] += new PAction(ActionType.Return);
                                 break;
                             case '-':
                                 i++;
-                                if (data[i] == '|')
+                                if (context[i] == '|')
                                 {
                                     functions[currentFunc] += new PAction(ActionType.ReturnFunction);
                                 }
@@ -320,7 +320,7 @@
                                 break;
                             case '=':
                                 i++;
-                                if (data[i] == '|')
+                                if (context[i] == '|')
                                 {
                                     functions[currentFunc] += new PAction(ActionType.ReturnState);
                                 }
@@ -331,7 +331,7 @@
                         break;
                     case '^':
                         i++;
-                        switch (data[i])
+                        switch (context[i])
                         {
                             case 'W':
                                 functions[currentFunc] += new PAction(ActionType.MoveUp);
@@ -352,7 +352,7 @@
 
                         break;
                     default:
-                        var currentdata = data[i..];
+                        var currentdata = context[i..];
                         if (currentdata.StartsWith("CCW;"))
                         {
                             i += 3;

@@ -27,14 +27,12 @@ namespace MinesServer.GameShit.Programmator
             var progs = db.progs.Where(i => i.owner == p).ToList();
             if (progs.Count == 0)
                 return [];
-            return progs.Select(i => new ListEntry(i.name, new Button("open", "openprog", (a) => OpenProg(p, i)))).ToArray();
+            return progs.Select(i => new ListEntry(i.name, new Button("open", $"openprog:{i.id}", (a) => OpenProg(p, i)))).ToArray();
         }
         public static void OpenProg(Player p, Program prog)
         {
-            Console.WriteLine(prog.data);
-            p.connection?.SendU(new UpdateProgrammatorPacket(prog.id, prog.name, prog.data));
-            p.connection?.SendU(new OpenProgrammatorPacket(prog.id, prog.name,prog.data));
             p.win = null;
+            p.connection?.SendU(new OpenProgrammatorPacket(prog.id, prog.name,prog.data));
         }
         public static void Rename(Player p,int id)
         {
@@ -46,7 +44,7 @@ namespace MinesServer.GameShit.Programmator
                     var prog = db.progs.FirstOrDefault(p => p.id == id);
                     prog.name = args.Input;
                     db.SaveChanges();
-                    p.connection.SendU(new UpdateProgrammatorPacket(prog.id, prog.name, prog.data));
+                    p.connection?.SendU(new UpdateProgrammatorPacket(prog.id, prog.name, prog.data));
                 }
                 p.win = null;
             };
@@ -82,7 +80,7 @@ namespace MinesServer.GameShit.Programmator
                 programm.data = data.source;
                 db.SaveChanges();
                 p.RunProgramm(programm);
-                p.connection?.SendU(new OpenProgrammatorPacket(-1,programm.name,programm.data));
+                p.connection?.SendU(new UpdateProgrammatorPacket(programm.id,programm.name,programm.data));
             }
         }
         public static void OpenCreateProg(Player p)
