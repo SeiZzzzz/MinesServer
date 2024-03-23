@@ -23,6 +23,7 @@ namespace MinesServer.Server
                 var lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 while (true)
                 {
+                    UnlimitedUpdate();
                     int ticksToProcess = (int)((DateTimeOffset.Now.ToUnixTimeMilliseconds() - lasttick) / 1000f * tps);
                     if (ticksToProcess > 0)
                     {
@@ -35,6 +36,18 @@ namespace MinesServer.Server
                     }
                 }
             });
+        }
+        public void UnlimitedUpdate()
+        {
+            for (int i = 0; i < DataBase.activeplayers.Count; i++)
+            {
+                using var dbas = new DataBase();
+                if (DataBase.activeplayers.Count > i)
+                {
+                    var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
+                    player?.UnlimitedUpdate();
+                }
+            }
         }
         public void Update()
         {

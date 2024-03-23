@@ -16,14 +16,23 @@
                 return c;
             }
         }
+        public (int x, int y) startoffset { get; set; }
         public string calledfrom { get; set; }
-        public void Reset() => current = 0;
+        public void Reset()
+        {
+            current = 0;
+            startoffset = (0, 0);
+        }
         public bool? state { get; set; }
         public ActionType? laststateaction { get; set; }
         public void Close()
         {
-            foreach (var i in actions)
-                i.SetFather(this);
+            for (int i = 0; i < actions.Count; i++)
+            {
+                var st = actions[i];
+                st.father = this;
+                actions[i] = st;
+            }
         }
         public static PFunction operator +(PFunction a, PAction b)
         {

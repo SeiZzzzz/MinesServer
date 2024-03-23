@@ -65,7 +65,7 @@ namespace MinesServer.GameShit
         {
         get
             {
-                var retval = 3500;
+                var retval = 10000;
                 foreach (var c in skillslist.skills.Values)
                 {
                     if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
@@ -73,7 +73,6 @@ namespace MinesServer.GameShit
                         if (c.type == SkillType.Movement)
                         {
                             retval = (int)(c.GetEffect() * 100);
-                            c.AddExp(this);
                         }
                     }
                 }
@@ -150,6 +149,13 @@ namespace MinesServer.GameShit
         }
         #endregion
         #region actions
+        public void UnlimitedUpdate()
+        {
+            if (programsData.ProgRunning)
+            {
+                programsData.Step();
+            }
+        }
         public void Update()
         {
             actionpertick = false;
@@ -188,7 +194,6 @@ namespace MinesServer.GameShit
             }
             if (programsData.ProgRunning)
             {
-                programsData.Step();
                 return;
             }
             while (playerActions.Count > 0)

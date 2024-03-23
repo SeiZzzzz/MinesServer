@@ -11,10 +11,9 @@ namespace MinesServer.Network.TypicalEvents
         {
             get
             {
-
                 int id = BitConverter.ToInt32(program[4..8]);
-                string source = Encoding.Default.GetString(program[8..(Length)]);
-                source = source[source.IndexOf('$')..source.Length];
+                string source = Encoding.Default.GetString(program[8..Length]);
+                source = source[(source.IndexOf('$') + 1)..source.Length];
                 return (id, source);
             }
         }
