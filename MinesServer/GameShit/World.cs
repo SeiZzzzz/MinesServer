@@ -4,14 +4,15 @@ using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 
 namespace MinesServer.GameShit
 {
     public class World
     {
-        public const int chunksx = 10;
-        public const int chunksy = 10;
+        public const int chunksx = 200;
+        public const int chunksy = 200;
         public const int CellsWidth = chunksx * ChunkWidth;
         public const int CellsHeight = chunksy * ChunkHeight;
         public const int ChunkWidth = 32;
@@ -60,6 +61,13 @@ namespace MinesServer.GameShit
                 durability = new($"{name}_durability.mapb");
             }
             CreateSpawns(4);
+            using var db = new DataBase();
+            if (db.chats.FirstOrDefault(i => i.Name == "FED") == default)
+            {
+                db.chats.Add(new GChat.Chat("FED","Федеральный чат"));
+                db.chats.Add(new GChat.Chat("DNO","Дно"));
+                db.SaveChanges();
+            }
             Console.WriteLine("Creating chunkmesh");
             x = DateTime.Now;
             Console.WriteLine($"{DateTime.Now - x} loaded");

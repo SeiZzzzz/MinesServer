@@ -1,10 +1,12 @@
 ﻿using MinesServer.Enums;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
+using MinesServer.GameShit.GChat;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.Programmator;
 using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
+using MinesServer.Network.Chat;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Network.HubEvents;
@@ -45,6 +47,8 @@ namespace MinesServer.GameShit
         }
         #endregion
         #region fields
+        [NotMapped]
+        public Chat? currentchat { get; set; }
         [NotMapped]
         public Session? connection { get; set; }
         [NotMapped]
@@ -581,6 +585,13 @@ namespace MinesServer.GameShit
         }
         public void Beep() => connection?.SendU(new BibikaPacket());
 
+        public void SendChat()
+        {
+            using var db = new DataBase();
+            currentchat ??= db.chats.FirstOrDefault(i => i.tag == "FED");
+            connection?.SendU(new CurrentChatPacket(currentchat.tag, currentchat.Name));
+            connection?.SendU(new ChatMessagesPacket("FED", currentchat.GetMessages()));
+        }
         public void SendWindow()
         {
             if (win != null)

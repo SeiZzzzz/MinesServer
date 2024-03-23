@@ -2,6 +2,7 @@
 using MinesServer.GameShit;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
+using MinesServer.GameShit.GChat;
 using MinesServer.GameShit.Programmator;
 using MinesServer.GameShit.Sys_Craft;
 using MinesServer.GameShit.SysMarket;
@@ -20,6 +21,8 @@ namespace MinesServer.Server
         public DbSet<Settings> settings { get; set; }
         #endregion
         #region Utils
+        public DbSet<GLine> lines { get; set; }
+        public DbSet<Chat> chats { get; set; }
         public DbSet<Box> boxes { get; set; }
         public DbSet<Order> orders { get; set; }
         public DbSet<Clan> clans { get; set; }
@@ -67,6 +70,9 @@ namespace MinesServer.Server
                 .AutoInclude();
             modelBuilder.Entity<Crafter>()
                 .Navigation(c => c.currentcraft)
+                .AutoInclude();
+            modelBuilder.Entity<Chat>()
+                .Navigation(c => c.messages)
                 .AutoInclude();
         }
         public static void Save()

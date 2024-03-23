@@ -60,7 +60,7 @@ namespace MinesServer.Server
                 var item = gameActions.Dequeue();
                 try
                 {
-                if (item.action != null && item.initiator != null)
+                if (item.action != null)
                 {
                         item.action();
                 }
