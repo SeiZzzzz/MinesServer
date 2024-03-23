@@ -153,7 +153,7 @@ namespace MinesServer.GameShit
             {
                 if (packets.Count > 0)
                 {
-                    player.connection.SendB(new HBPacket(packets.ToArray()));
+                    player.connection?.SendB(new HBPacket(packets.ToArray()));
                 }
                 return false;
             }
@@ -516,6 +516,10 @@ namespace MinesServer.GameShit
         public Chunk GetChunk(int x, int y)
         {
             var pos = GetChunkPosByCoords(x, y);
+            if (pos.Item1 == chunksx)
+                pos = (pos.Item1 - 1, pos.Item2);
+            else if (pos.Item2 == chunksy)
+                pos = (pos.Item1, pos.Item2 - 1);
             return chunks[pos.Item1, pos.Item2];
         }
     }

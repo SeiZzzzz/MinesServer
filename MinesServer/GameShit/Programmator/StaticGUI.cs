@@ -23,7 +23,7 @@ namespace MinesServer.GameShit.Programmator
         }
         public static ListEntry[] LoadProgs(Player p)
         {
-            var db = new DataBase();
+            using var db = new DataBase();
             var progs = db.progs.Where(i => i.owner == p).ToList();
             if (progs.Count == 0)
                 return [];

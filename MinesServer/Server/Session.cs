@@ -1,4 +1,5 @@
-﻿using MinesServer.GameShit;
+﻿using Microsoft.EntityFrameworkCore;
+using MinesServer.GameShit;
 using MinesServer.GameShit.Programmator;
 using MinesServer.Network;
 using MinesServer.Network.Auth;
@@ -10,6 +11,7 @@ using MinesServer.Network.Programmator;
 using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using NetCoreServer;
+using System.Text.RegularExpressions;
 
 namespace MinesServer.Server
 {
@@ -109,9 +111,22 @@ namespace MinesServer.Server
                 case PDELPacket pdel: Pdel(packet, pdel);break;
                 case pRSTPacket prst: Prst(packet, prst); break;
                 case PRENPacket pren: Pren(packet, pren); break;
+                case ChatPacket chat: Chat(packet, chat);break;
+                case ChinPacket chin: Chin(packet, chin);break;
                 default:
                     // Invalid event type
                     break;
+            }
+        }
+        private void Chin(TYPacket f,ChinPacket chin)
+        {
+           
+        }
+        private void Chat(TYPacket f,ChatPacket chat)
+        {
+            if (Default.def.IsMatch(chat.message.Replace("\n", "")))
+            {
+                player.currentchat?.AddMessage(player, chat.message.Replace("\n", ""));
             }
         }
         private void Pren(TYPacket f,PRENPacket pren)

@@ -88,7 +88,7 @@ namespace MinesServer.Server
             {
                 return player;
             }
-            var db = new DataBase();
+            using var db = new DataBase();
             return db.players
                 .Where(i => i.Id == id)
                 .Include(p => p.clanrank)
@@ -108,7 +108,7 @@ namespace MinesServer.Server
             {
                 return player;
             }
-            var db = new DataBase();
+            using var db = new DataBase();
             return db.players
                 .Where(i => i.name == name)
                 .Include(p => p.clanrank)

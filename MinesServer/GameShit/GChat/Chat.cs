@@ -1,4 +1,6 @@
-﻿using MinesServer.Network.Chat;
+﻿using Azure.Core.GeoJson;
+using MinesServer.Network.Chat;
+using MinesServer.Server;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -20,16 +22,28 @@ namespace MinesServer.GameShit.GChat
         public GCMessage[] GetMessages()
         {
             List<GCMessage> l = new();
-            for(int i = messages.Count;i > 0;i--)
+            for(int i = messages.Count - 1;i > ((messages.Count - 1) > 30 ? (messages.Count - 1) - 30 : 0); i--)
             {
                 var line = messages[i];
-                l.Add(new GCMessage(line.id, line.time, line.player.cid, line.player.Id, line.player?.name, line.message, 1));
+                l.Add(new GCMessage(line.time, line.player.cid, line.player.Id, line.player.name, line.message, 1));
             }
             return l.ToArray();
         }
         public void AddMessage(Player p,string msg)
         {
-            messages.Add(new GLine() { player = p, message = msg,owner = this });
+            using var db = new DataBase();
+            var line = new GLine() { player = p, message = msg};
+            var last = messages.Last();
+            db.Attach(this);
+            messages.Add(line);
+            db.SaveChanges();
+            if (global)
+            {
+                foreach (var i in DataBase.activeplayers)
+                {
+                    i.connection?.SendU(new ChatMessagesPacket("FED", [new GCMessage(line.time, p.cid, p.Id, p.name,msg, 10)]));
+                }
+            }
         }
         public int id { get; set; }
         public virtual List<GLine> messages { get; set; }

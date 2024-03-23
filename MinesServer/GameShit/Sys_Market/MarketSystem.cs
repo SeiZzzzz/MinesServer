@@ -71,7 +71,7 @@ namespace MinesServer.GameShit.SysMarket
             long money = 0;
             if (sliders != null)
             {
-                var db = new DataBase();
+                using var db = new DataBase();
                 for (int i = 0; i < 6; i++)
                 {
                     money += sliders[i] * World.GetCrysCost(i);
@@ -126,7 +126,7 @@ namespace MinesServer.GameShit.SysMarket
         }
         public static void OpenOrder(Player p, int orderid)
         {
-            var db = new DataBase();
+            using var db = new DataBase();
             var o = db.orders.First(i => i.id == orderid);
             Player? buyer = null;
             if (o.buyerid > 0)

@@ -1,4 +1,5 @@
-﻿using MinesServer.Enums;
+﻿using Microsoft.Identity.Client;
+using MinesServer.Enums;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
 using MinesServer.GameShit.GChat;
@@ -574,12 +575,14 @@ namespace MinesServer.GameShit
             settings.SendSettings(this);
             OnLoad();
         }
+
         #endregion
         #region senders
-        private void OnLoad()
+        public void OnLoad()
         {
             SendClan();
             SendMap();
+            SendChat();
             foreach (var p in World.W.GetChunk(ChunkX, ChunkY).packs.Values)
                 connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off)])]));
         }

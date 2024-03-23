@@ -58,17 +58,17 @@ namespace MinesServer.Server
             for (int i = 0; i < gameActions.Count; i++)
             {
                 var item = gameActions.Dequeue();
-                try
-                {
+                /*try
+                {*/
                 if (item.action != null)
                 {
-                        item.action();
+                     item.action();
                 }
-                }
+                /*}
                 catch (Exception ex)
                 {
                     Console.WriteLine($"{item.initiator.name}[{item.initiator.Id}] caused {ex}");
-                }
+                }*/
             }
             for (int i = 0; i < DataBase.activeplayers.Count; i++)
             {

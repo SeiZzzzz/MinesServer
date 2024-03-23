@@ -10,7 +10,7 @@ namespace MinesServer.Network.Chat
 
         public string PacketName => packetName;
 
-        public int Length => 16 + Encoding.UTF8.GetByteCount(Channel) + Messages.Sum(x => x.Length + 2) + Messages.Length - 1;
+        public int Length => 16 + Encoding.Default.GetByteCount(Channel) + Messages.Sum(x => x.Length + 2) + Messages.Length - 1;
 
         public static ChatMessagesPacket Decode(ReadOnlySpan<byte> decodeFrom)
         {
