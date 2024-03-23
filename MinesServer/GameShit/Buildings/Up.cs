@@ -24,7 +24,7 @@ namespace MinesServer.GameShit.Buildings
             db.ups.Add(this);
             db.SaveChanges();
         }
-        public Up() { }
+        private Up() { }
         public override Window? GUIWin(Player p)
         {
             var onskill = (int arg) => { p.skillslist.selectedslot = arg; p.win = GUIWin(p); p.SendWindow(); };

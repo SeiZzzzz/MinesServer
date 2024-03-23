@@ -47,7 +47,7 @@ namespace MinesServer.Server
                 switch (p.data)
                 {
                     case AUPacket au: AU(au); break;
-                    case TYPacket ty: father.time.AddAction(() => TY(ty)); break;
+                    case TYPacket ty: father.time.AddAction(() => TY(ty),player); break;
                     default:
                         // Invalid packet
                         break;
@@ -283,7 +283,7 @@ namespace MinesServer.Server
                 }
                 player.CallWinAction(button);
                 player.SendWindow();
-            });
+            },player);
         }
         #endregion
         #region senders

@@ -10,22 +10,22 @@ namespace MinesServer.GameShit.Skills
         public SkillType type;
         public float GetEffect()
         {
-            effectfunc ??= PlayerSkills.skillz.First(i => i.type == type).effectfunc;
+            effectfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).effectfunc;
             return (float)Math.Round(effectfunc(lvl), 2);
         }
         public float GetExp()
         {
-            expfunc ??= PlayerSkills.skillz.First(i => i.type == type).expfunc;
+            expfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).expfunc;
             return expfunc(lvl);
         }
         public float GetDop()
         {
-            expfunc ??= PlayerSkills.skillz.First(i => i.type == type).dopfunc;
+            expfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).dopfunc;
             return dopfunc(lvl);
         }
         public float GetCost()
         {
-            costfunc ??= PlayerSkills.skillz.First(i => i.type == type).costfunc;
+            costfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).costfunc;
             return costfunc(lvl);
         }
         public Skill Clone()
@@ -44,6 +44,10 @@ namespace MinesServer.GameShit.Skills
                 p.SendLvl();
                 p.health.SendHp();
                 p.skillslist.Save();
+                if (EffectType() == SkillEffectType.OnMove)
+                {
+                    p.SendSpeed();
+                }
             }
         }
         public void AddExp(Player p, float expv = 1)

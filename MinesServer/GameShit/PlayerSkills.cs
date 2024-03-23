@@ -139,8 +139,8 @@ namespace MinesServer.GameShit
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
+                    costfunc = (int x) => 0f,
+                    effectfunc = (int x) => 90.00f - x * 0.05f,
                     expfunc = (int x) => 1f,
                     type = SkillType.Movement, // движение,
                     effecttype = SkillEffectType.OnMove

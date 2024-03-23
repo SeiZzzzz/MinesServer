@@ -17,7 +17,7 @@ namespace MinesServer.GameShit.Buildings
         public long moneyinside { get; set; }
         public DateTime brokentimer { get; set; }
         #endregion;
-        public Market() { }
+        private Market() { }
         public Market(int ownerid, int x, int y) : base(ownerid, x, y, PackType.Market)
         {
             using var db = new DataBase();

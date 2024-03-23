@@ -26,7 +26,7 @@ namespace MinesServer.GameShit.Buildings
             charge = 1000;
             maxcharge = 10000;
         }
-        public Gun()
+        private Gun()
         {
 
         }

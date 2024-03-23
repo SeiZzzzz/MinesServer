@@ -5,14 +5,14 @@ namespace MinesServer.Server
     public class ServerTime
     {
         public delegate void GameAction();
-        public Queue<GameAction> gameActions;
+        public Queue<(GameAction action,Player initiator)> gameActions;
         public ServerTime()
         {
-            gameActions = new Queue<GameAction>();
+            gameActions = new Queue<(GameAction,Player)>();
         }
-        public void AddAction(GameAction action)
+        public void AddAction(GameAction action,Player p)
         {
-            gameActions.Enqueue(action);
+            gameActions.Enqueue((action,p));
         }
 
         public void Start()
@@ -44,18 +44,18 @@ namespace MinesServer.Server
             }
             for (int i = 0; i < gameActions.Count; i++)
             {
-                /*try
-                {*/
-                var action = gameActions.Dequeue();
-                if (action != null)
+                var item = gameActions.Dequeue();
+                try
                 {
-                    action();
+                if (item.action != null && item.initiator != null)
+                {
+                        item.action();
                 }
-                /*}
+                }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
-                }*/
+                    Console.WriteLine($"{item.initiator.name}[{item.initiator.Id}] caused {ex}");
+                }
             }
             for (int i = 0; i < DataBase.activeplayers.Count; i++)
             {

@@ -40,7 +40,7 @@ namespace MinesServer.GameShit
                 programsData.Run();
                 return;
             }
-            
+
             programsData.Run(p);
         }
         #endregion
@@ -61,7 +61,25 @@ namespace MinesServer.GameShit
         public string name { get; set; }
         public Clan? clan { get; set; }
         public Rank? clanrank { get; set; }
-        public int pause = 3500;
+        public int pause //= 3500;
+        {
+        get
+            {
+                var retval = 3500;
+                foreach (var c in skillslist.skills.Values)
+                {
+                    if (c != null && c.UseSkill(SkillEffectType.OnMove, this))
+                    {
+                        if (c.type == SkillType.Movement)
+                        {
+                            retval = (int)(c.GetEffect() * 100);
+                            c.AddExp(this);
+                        }
+                    }
+                }
+                return retval;
+            }
+        }
         public List<Program> programs { get; set; }
         [NotMapped]
         public int cid { get => clan == null ? 0 : clan.id; }
@@ -569,14 +587,8 @@ namespace MinesServer.GameShit
         }
         public void SendMoney()
         {
-            if (this.money < 0)
-            {
-                this.money = long.MaxValue;
-            }
-            if (this.creds < 0)
-            {
-                this.creds = long.MaxValue;
-            }
+            this.money = this.money < 0 ? 0 : this.money > long.MaxValue ? long.MaxValue : this.money;
+            this.creds = this.creds < 0 ? 0 : this.creds > long.MaxValue ? long.MaxValue : this.creds;
             new MoneyPacket(this.money, this.creds);
             connection?.SendU(new MoneyPacket(this.money, this.creds));
         }
@@ -624,6 +636,7 @@ namespace MinesServer.GameShit
         }
         public void SendSpeed()
         {
+            Console.WriteLine(pause / 100);
             connection?.SendU(new SpeedPacket(pause / 100, (int)(pause / 100 * 0.6), 100000));
         }
         public void SendInventory()

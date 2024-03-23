@@ -56,7 +56,7 @@ namespace MinesServer.GameShit.Buildings
             set { crysinside[5] = value; }
         }
         #endregion
-        public Storage()
+        private Storage()
         {
         }
         public Storage(int x, int y, int ownerid) : base(x, y, ownerid, PackType.Storage)

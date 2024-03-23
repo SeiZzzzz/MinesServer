@@ -20,17 +20,22 @@ namespace MinesServer.GameShit.Programmator
         public ActionType type;
         private void Check(Player p,Func<int,int,bool> func)
         {
-            if (father.state == null)
+            var x = p.x + p.programsData.checkX;
+            var y = p.y + p.programsData.checkY;
+            if (World.W.ValidCoord(x, y))
             {
-                father.state = func(p.x,p.y);
-                return;
+                if (father.state == null)
+                {
+                    father.state = func(x, y);
+                    return;
+                }
+                father.state = father.laststateaction switch
+                {
+                    null => func(x, y),
+                    ActionType.Or => (bool)father.state || func(x, y),
+                    ActionType.And => (bool)father.state && func(x, y)
+                };
             }
-            father.state = father.laststateaction switch
-            {
-                null => func(p.x,p.y),
-                ActionType.Or => (bool)father.state || func(p.x, p.y),
-                ActionType.And => (bool)father.state && func(p.x,p.y)
-            };
         }
         public object? Execute(Player p, ref bool? template)
         {
@@ -140,8 +145,10 @@ namespace MinesServer.GameShit.Programmator
                     Check(p, (x, y) => p.health.HP < p.health.MaxHP / 2);
                     break;
                 case ActionType.IsEmpty:
+                    Check(p, (x, y) => World.GetProp(x, y).isEmpty);
                     break;
                 case ActionType.IsNotEmpty:
+                    Check(p, (x, y) => !World.GetProp(x, y).isEmpty);
                     break;
                 case ActionType.IsGreenBlock:
                     break;
