@@ -155,7 +155,7 @@ namespace MinesServer.GameShit
             }
             if (!online)
             {
-                if (DateTime.Now - afkstarttime > TimeSpan.FromSeconds(5))
+                if (DateTime.Now - afkstarttime > TimeSpan.FromSeconds(15))
                 {
                     DataBase.activeplayers.Remove(this);
                     health.Death();
@@ -209,14 +209,31 @@ namespace MinesServer.GameShit
         }
         public Vector2 GetDirCord(bool pack = false)
         {
-            var x = (uint)(pos.X + (dir == 3 ? 1 : dir == 1 ? -1 : 0));
-            var y = (uint)(pos.Y + (dir == 0 ? 1 : dir == 2 ? -1 : 0));
-            if (pack)
+            var x=(float)(pos.X + (dir == 3 ? 1 : dir == 1 ? -1 : 0));
+            var y = (float)(pos.Y + (dir == 0 ? 1 : dir == 2 ? -1 : 0));
+            if (x >= 0)
             {
-                x = (uint)(pos.X + (dir == 3 ? 2 : dir == 1 ? -2 : 0));
-                y = (uint)(pos.Y + (dir == 0 ? 2 : dir == 2 ? -2 : 0));
+                if (y >= 0)
+                {
+                    if (pack)
+                    {
+                        x = (float)(pos.X + (dir == 3 ? 2 : dir == 1 ? -2 : 0));
+                        y = (float)(pos.Y + (dir == 0 ? 2 : dir == 2 ? -2 : 0));
+                    }
+                }
+                else
+                {
+                    x = (float)pos.X;
+                    y = (float)pos.Y;
+                }
+            }
+            else
+            {
+                x = (float)pos.X;
+                y = (float)pos.Y;
             }
             return new Vector2(x, y);
+            
         }
         public void Geo()
         {
@@ -314,11 +331,20 @@ namespace MinesServer.GameShit
         public void Bz()
         {
             Random rand = new Random();
+            
             int x = (int)GetDirCord().X, y = (int)GetDirCord().Y;
             foreach (var player in World.W.GetPlayersFromPos(x, y))
             {
-                player.health.Hurt(1);
+                if (y > 0)
+                {
+                    if (rand.Next(0, 10) > 6)
+                    {
+                        player.health.Hurt(1);
+                    }
+                }
+                return;
             }
+            
             if (!World.W.ValidCoord(x, y))
             {
                 return;
@@ -444,6 +470,14 @@ namespace MinesServer.GameShit
                 {
                     if (autoDig)
                     {
+                        if (x <= 0 | x >= World.CellsWidth)
+                        {
+                            if (y <= 0 | y >= World.CellsHeight)
+                            {
+                                return false;
+                            }
+                            return false;
+                        }
                         Bz();
                     }
                     return true;
@@ -496,37 +530,45 @@ namespace MinesServer.GameShit
             {
                 return;
             }
-            var buildskills = skillslist.skills.Values.Where(c => c.effecttype == SkillEffectType.OnBld);
+           
             switch (type)
             {
                 case "G":
-                    foreach (var c in buildskills)
+                    foreach (var c in skillslist.skills.Values)
                     {
-                        if (c.type == SkillType.BuildGreen && World.GetProp(x, y).isEmpty)
+                        try
                         {
-                            c.AddExp(this);
-                            if (crys.RemoveCrys(0, (long)c.GetEffect()))
-                            {
-                                World.SetCell(x, y, 101);
+                            if (c.type == SkillType.BuildGreen && World.GetProp(x, y).isEmpty)
+                            {                                
+                                if (crys.RemoveCrys(0, (long)c.GetEffect()))
+                                {
+                                    c.AddExp(this);
+                                    World.SetCell(x, y, 101);
+                                }
                             }
                         }
+                        catch { }
                     }
                     break;
                 case "V":
 
                     break;
                 case "R":
-                    foreach (var c in buildskills)
+                    try
                     {
-                        if (c.type == SkillType.BuildRoad)
+                        foreach (var c in skillslist.skills.Values)
                         {
-                            c.AddExp(this);
-                            if (crys.RemoveCrys(0, (long)c.GetEffect()) && World.GetProp(x, y).isEmpty)
+                            if (c.type == SkillType.BuildRoad)
                             {
-                                World.SetCell(x, y, 35);
+                                
+                                if (crys.RemoveCrys(0, (long)c.GetEffect()) && World.GetProp(x, y).isEmpty)
+                                {
+                                    c.AddExp(this);
+                                    World.SetCell(x, y, 35);
+                                }
                             }
                         }
-                    }
+                    }catch { }
                     break;
             }
         }

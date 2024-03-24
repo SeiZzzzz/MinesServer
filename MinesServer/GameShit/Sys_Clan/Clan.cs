@@ -217,7 +217,7 @@ namespace MinesServer.GameShit.ClanSystem
                     {
                         Text = $"@@Заявка на прием в клан:\n\n\nИмя: <color=white>{target.player?.name}</color>\nID <color=white>{target.player?.Id}</color>\nИстекает через:" +
                         $" {string.Format("{0:hh}ч.{0:mm} мин.", (TimeSpan.FromDays(1) - (DateTime.Now - target.reqtime)))}",
-                        Buttons = [new Button("Принять", "accept", (args) => { AddMember(target); OpenClanWin(p); }), new Button("Откланить", "decline", (args) => { DeclineReq(target); OpenClanWin(p); }), new Button("Прокачка", "openskills", (args) => OpenPlayerSkills(p, target?.player))]
+                        Buttons = [new Button("Принять", "accept", (args) => { AddMember(target); OpenClanWin(p); }), new Button("Отклонить", "decline", (args) => { DeclineReq(target); OpenClanWin(p); }), new Button("Прокачка", "openskills", (args) => OpenPlayerSkills(p, target?.player))]
                     }
                 }]
             };

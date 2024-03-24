@@ -60,7 +60,14 @@ namespace MinesServer.Server
             using var db = new DataBase();
             DataBase.activeplayers.Remove(player);
             db.players.Update(player);
-            db.SaveChanges();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch
+            {
+                Console.WriteLine(player + "Не сохранено");
+            }
             player.afkstarttime = DateTime.Now;
             player.connection = null;
             player = null;
@@ -275,6 +282,7 @@ namespace MinesServer.Server
             {
                 return;
             }
+            Console.WriteLine(button.ToString());
             if ((auth != null && !auth.complited))
             {
 
@@ -297,7 +305,7 @@ namespace MinesServer.Server
                     CloseWindow();
                     return;
                 }
-                else if (button.ToString() == "clan" | button.ToString() == "sellall" | button.ToString() == "buycrys" | button.ToString() == "getallmap" | button.ToString() == "sellcrys" | button.ToString() == "auc" | button.ToString() == "getprofit" | button.StartsWith("save") | button.StartsWith("buy") | button.StartsWith("sell") | button.StartsWith("bet") | button.StartsWith("openorder") | button.StartsWith("createorder") | button.StartsWith("choose") | button.StartsWith("skill") | button.StartsWith("delete") | button.StartsWith("install") | button.StartsWith("confirm") | button.StartsWith("upgrade") | button.StartsWith("create") | button.StartsWith("setitem") | button.StartsWith("open") | button.StartsWith("dropbox"))
+                else if (button.ToString() == "clan" | button.ToString() == "sellall" | button.ToString() == "buycrys" | button.ToString() == "getallmap" | button.ToString() == "sellcrys" | button.ToString() == "auc" | button.ToString() == "getprofit" | button.StartsWith("save") | button.StartsWith("buy") | button.StartsWith("sell") | button.StartsWith("bet") | button.StartsWith("openorder") | button.StartsWith("createorder") | button.StartsWith("choose") | button.StartsWith("skill") | button.StartsWith("delete") | button.StartsWith("install") | button.StartsWith("confirm") | button.StartsWith("upgrade") | button.StartsWith("create") | button.StartsWith("setitem") | button.StartsWith("open") | button.StartsWith("dropbox") | button.StartsWith("craft") | button.StartsWith("claim"))
                 {
                     player.CallWinAction(button);
                     player.SendWindow();

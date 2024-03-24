@@ -56,7 +56,11 @@ namespace MinesServer
                 World.W.durability.Commit();
             });
             commands.Add("restart", () => { server.Stop(); Console.WriteLine("kinda restart"); server.Start(); });
-            commands.Add("players", () =>
+            commands.Add("stop", () =>
+            {
+                server.Stop();
+            });
+                commands.Add("players", () =>
             {
                 Console.WriteLine($"online {DataBase.activeplayers.Count}");
                 for (int i = 0; i < DataBase.activeplayers.Count; i++)

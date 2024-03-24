@@ -30,109 +30,139 @@ namespace MinesServer.GameShit.Programmator
         }
         public void Run(Program p)
         {
-            selected = p;
-            cFunction = "";
-            currentprog = p.programm;
-            /* func logger
-            foreach (var i in currentprog)
+            try
             {
-                Console.WriteLine($"{i.Key} - {string.Join(' ', i.Value.actions.Select(i => i.type))}");
-            }*/
-            foreach (var i in currentprog.Values)
-                i.Close();
-            delay = DateTime.Now;
-            ProgRunning = true;
+                selected = p;
+                cFunction = "";
+                currentprog = p.programm;
+                /* func logger
+                foreach (var i in currentprog)
+                {
+                    Console.WriteLine($"{i.Key} - {string.Join(' ', i.Value.actions.Select(i => i.type))}");
+                }*/
+                foreach (var i in currentprog.Values)
+                    i.Close();
+                delay = DateTime.Now;
+                ProgRunning = true;
+            }
+            catch
+            {
+                Console.WriteLine(p.name + " Использовал пидорскую прогу");
+            }
         }
         public void Run()
         {
-            if (ProgRunning || selected == null)
+            try
             {
-                ProgRunning = false;
-                return;
+                if (ProgRunning || selected == null)
+                {
+                    ProgRunning = false;
+                    return;
+                }
+                Run(selected);
             }
-            Run(selected);
+            catch
+            {
+                Console.WriteLine("Защита от пидора");
+            }
         }
         private void Next()
         {
-            var i = currentprog.Keys.ToList().IndexOf(cFunction);
-            if (currentprog.Count > i + 1)
-                cFunction = currentprog.ElementAt(i + 1).Key;
-            else
-                cFunction = currentprog.First().Key;
+            try
+            {
+                var i = currentprog.Keys.ToList().IndexOf(cFunction);
+                if (currentprog.Count > i + 1)
+                    cFunction = currentprog.ElementAt(i + 1).Key;
+                else
+                    cFunction = currentprog.First().Key;
+            }
+            catch
+            {
+                Console.WriteLine("Переход долбаёба");
+            }
         }
         public void IncreaseDelay(int ms) => delay = DateTime.Now + TimeSpan.FromMilliseconds(ms);
         private bool? temp = null;
         public void Step()
         {
-            if (current == null || DateTime.Now < delay)
+            try
             {
-                return;
-            }
-            PAction action;
-            if (current.actions.Count <= 0)
-            {
-                Next();
-                return;
-            }
-            action = current.Next;
-            object result = action.Execute(p, ref temp)!;
-            switch (result)
-            {
-                case string label:
-                    switch (action.type)
-                    {
-                        case ActionType.GoTo:
-                            current.Reset();
-                            currentprog[label].calledfrom = cFunction;
-                            cFunction = label;
-                            break;
-                        case ActionType.RunSub or ActionType.RunFunction:
-                            if (shiftX != 0 || shiftY != 0 || checkX != 0 || checkY != 0)
-                                currentprog[label].startoffset = (shiftX + checkX, shiftY + checkY);
-                            currentprog[label].calledfrom = cFunction;
-                            cFunction = label;
-                            break;
-                        case ActionType.RunIfTrue or ActionType.RunIfFalse:
-                            if (label == "")
-                            {
+                if (current == null || DateTime.Now < delay)
+                {
+                    return;
+                }
+                PAction action;
+                if (current.actions.Count <= 0)
+                {
+                    Next();
+                    return;
+                }
+                action = current.Next;
+                object result = action.Execute(p, ref temp)!;
+                switch (result)
+                {
+                    case string label:
+                        switch (action.type)
+                        {
+                            case ActionType.GoTo:
+                                current.Reset();
+                                currentprog[label].calledfrom = cFunction;
+                                cFunction = label;
                                 break;
-                            }
-                            current.Reset();
-                            cFunction = label;
-                            break;
-                    }
-                    break;
-                case bool state:
-                    switch (action.type)
-                    {
-                        case ActionType.ReturnFunction:
-                            current.Reset();
-                            current.startoffset = (0, 0);
-                            cFunction = current.calledfrom;
-                            current.state = state;
-                            current.startoffset = (0, 0);
-                            break;
-                    }
-                    break;
-                case null:
-                    switch (action.type)
-                    {
-                        case ActionType.CheckDown or ActionType.CheckUp or ActionType.CheckRight or ActionType.CheckLeft
-                        or ActionType.CheckDownLeft or ActionType.CheckDownRight or ActionType.CheckUpLeft or ActionType.CheckUpRight
-                        or ActionType.ShiftUp or ActionType.ShiftLeft or ActionType.ShiftDown or ActionType.ShiftRight or ActionType.ShiftForward:
-                            if (current.startoffset != default)
-                            {
+                            case ActionType.RunSub or ActionType.RunFunction:
+                                if (shiftX != 0 || shiftY != 0 || checkX != 0 || checkY != 0)
+                                    currentprog[label].startoffset = (shiftX + checkX, shiftY + checkY);
+                                currentprog[label].calledfrom = cFunction;
+                                cFunction = label;
+                                break;
+                            case ActionType.RunIfTrue or ActionType.RunIfFalse:
+                                if (label == "")
+                                {
+                                    break;
+                                }
+                                current.Reset();
+                                cFunction = label;
+                                break;
+                        }
+                        break;
+                    case bool state:
+                        switch (action.type)
+                        {
+                            case ActionType.ReturnFunction:
+                                current.Reset();
                                 current.startoffset = (0, 0);
-                            }
+                                cFunction = current.calledfrom;
+                                current.state = state;
+                                current.startoffset = (0, 0);
                                 break;
-                        case ActionType.Return:
-                            current.Reset();
-                            cFunction = current.calledfrom;
-                            break;
-                    }
-                    break;
+                        }
+                        break;
+                    case null:
+                        switch (action.type)
+                        {
+                            case ActionType.CheckDown or ActionType.CheckUp or ActionType.CheckRight or ActionType.CheckLeft
+                            or ActionType.CheckDownLeft or ActionType.CheckDownRight or ActionType.CheckUpLeft or ActionType.CheckUpRight
+                            or ActionType.ShiftUp or ActionType.ShiftLeft or ActionType.ShiftDown or ActionType.ShiftRight or ActionType.ShiftForward:
+                                if (current.startoffset != default)
+                                {
+                                    current.startoffset = (0, 0);
+                                }
+                                break;
+                            case ActionType.Return:
+                                current.Reset();
+                                cFunction = current.calledfrom;
+                                break;
+                        }
+                    
+                        break;
+                
+                }
+                IncreaseDelay(action.delay);
             }
-            IncreaseDelay(action.delay);
+            catch
+            {
+                Console.WriteLine("Я отказываюсь от тебя");
+            }
         }
     }
 }

@@ -47,10 +47,10 @@ namespace MinesServer.GameShit.Skills
                             lvl += 1;
 
                             p.money -= (long)GetCost();
-                            v.Add(type.GetCode(), (int)exp);
+                            v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
 
 
-                            p.skillslist.Save();
+                            p.skillslist.Save(); 
                             p.connection?.SendU(new SkillsPacket(v));
                             p.SendLvl();
                             p.SendMoney();

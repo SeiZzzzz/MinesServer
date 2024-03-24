@@ -1,10 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using MinesServer.Enums;
+using MinesServer.GameShit.Skills;
 using System.Numerics;
 
 namespace MinesServer.GameShit.Programmator
 {
     public struct PAction
     {
+        public PlayerSkills skillslist { get; set; }
         public PFunction father { get; set; }
         public PAction(ActionType t)
         {
@@ -47,63 +50,83 @@ namespace MinesServer.GameShit.Programmator
                 };
             }
         }
+        public int moveskop(Player p)
+        {
+            var speed = 150;
+            var todoor = 0;
+            foreach (var c in p.skillslist.skills.Values)
+            {
+                if (c != null && c.UseSkill(SkillEffectType.OnMove, p))
+                {
+                    if (c.type == SkillType.Movement)
+                    {
+                        speed -= (int)c.GetEffect() / 2;
+                    }
+                    if (c.type == SkillType.RoadMovement)
+                    {
+                        todoor = (int)c.GetEffect() / 10;
+                    }
+                }
+            }
+            return speed - todoor;
+        }
         public object? Execute(Player p, ref bool? template)
         {
             switch (type)
             {
                 case ActionType.MoveDown:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     if (p.Move(p.x, p.y + 1))
                     {
                         delay += 200;
                     }
                     break;
                 case ActionType.MoveUp:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     if (p.Move(p.x, p.y - 1))
                     {
                         delay += 200;
                     }
                     break;
                 case ActionType.MoveRight:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     if (p.Move(p.x + 1, p.y))
                     {
                         delay += 200;
                     }
                     break;
                 case ActionType.MoveLeft:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     if (p.Move(p.x - 1, p.y))
                     {
                         delay += 200;
                     }
                     break;
                 case ActionType.MoveForward:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     if (p.Move((int)p.GetDirCord().X, (int)p.GetDirCord().Y))
                     {
                         delay += 200;
                     }
                     break;
                 case ActionType.RotateDown:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     p.Move(p.x, p.y, 0);
                     break;
                 case ActionType.RotateUp:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     p.Move(p.x, p.y, 2);
                     break;
                 case ActionType.RotateLeft:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     p.Move(p.x, p.y, 3);
                     break;
                 case ActionType.RotateRight:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     p.Move(p.x, p.y, 1);
                     break;
                 case ActionType.RotateLeftRelative:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     var dirl = p.dir switch
                     {
                         0 => 3,
@@ -114,7 +137,7 @@ namespace MinesServer.GameShit.Programmator
                     p.Move(p.x, p.y, dirl);
                     break;
                 case ActionType.RotateRightRelative:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     var dirr = p.dir switch
                     {
                         0 => 1,
@@ -125,7 +148,7 @@ namespace MinesServer.GameShit.Programmator
                     p.Move(p.x, p.y, dirr);
                     break;
                 case ActionType.RotateRandom:
-                    delay = p.pause / 100;
+                    delay = moveskop(p);
                     var rand = new Random(Guid.NewGuid().GetHashCode());
                     p.Move(p.x, p.y, rand.Next(4));
                     break;
@@ -163,8 +186,8 @@ namespace MinesServer.GameShit.Programmator
                 case ActionType.ShiftForward:
                     p.programsData.shiftX += p.dir switch
                     {
-                        1 => -1,
-                        3 => 1,
+                        1 => 1,
+                        3 => -1,
                         _ => 0
                     };
                     p.programsData.shiftY += p.dir switch
@@ -253,6 +276,9 @@ namespace MinesServer.GameShit.Programmator
                     break;
                 case ActionType.IsHpLower50:
                     Check(p, (x, y) => p.health.HP < p.health.MaxHP / 2);
+                    break;
+                case ActionType.IsCrystal:
+                    Check(p, (x, y) => World.isCry(World.GetCell(x, y)));
                     break;
                 case ActionType.IsEmpty:
                     Check(p, (x, y) => World.GetProp(x, y).isEmpty);

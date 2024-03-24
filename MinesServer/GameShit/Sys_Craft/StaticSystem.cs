@@ -28,11 +28,11 @@ namespace MinesServer.GameShit.Sys_Craft
             text += recipie.costres?.Select(i => $"{MarketSystem.PackName(i.id)} x{i.num}").Aggregate("", (str, obj) => str + obj.ToString() + "\n");
             p.win?.CurrentTab.Open(new Page()
             {
-                Title = $"recipie {MarketSystem.PackName(result_id)}",
+                Title = $"Крафтер {MarketSystem.PackName(result_id)}",
                 Card = new Card(CardImageType.Item, result_id.ToString(), $" {MarketSystem.PackName(recipie.result.id)} x{recipie.result.num}\n Время сборки:{recipie.time} сек."),
-                Text = $"@@\n\nНужно для сборки четатам\n\n{text}\n\n",
-                Input = new InputConfig($"num", null, false),
-                Buttons = [new Button("craft", $"craft:{ActionMacros.Input}", (a) => { if (int.TryParse(a.Input, out var num)) Craft(p, recipie, num); })],
+                Text = $"@@\n\nДля сборки понадобиться: \n\n{text}\n\n",
+                Input = new InputConfig($"Количество", null, false),
+                Buttons = [new Button("Начать крафт", $"craft:{ActionMacros.Input}", (a) => { if (int.TryParse(a.Input, out var num)) Craft(p, recipie, num); })],
             });
         }
         public static void Craft(Player p, Recipie r, int num)
@@ -48,7 +48,7 @@ namespace MinesServer.GameShit.Sys_Craft
                 p.win?.CurrentTab.Open(FilledPage(p, c));
                 return;
             }
-            p.connection?.SendU(new OKPacket("Недостаточно ресов", "..."));
+            p.connection?.SendU(new OKPacket("...", "Недостаточно ресов"));
         }
         public static void Claim(Player p, Crafter c)
         {
@@ -80,7 +80,7 @@ namespace MinesServer.GameShit.Sys_Craft
             var progress = c.currentcraft?.progress <= 100 ? c.currentcraft?.progress : 100;
             string bar = "<color=#aaeeaa>" + new string('|', (int)(progress / 2)) + "</color>" + new string('-', 50 - (int)(progress / 2));
             bar += progress == 100 ? " ГОТОВА" : "";
-            string remain = progress != 100 ? $"осталось {(c.currentcraft.endtime - DateTime.Now)}" : "осталось нихуя";
+            string remain = progress != 100 ? $"осталось {(c.currentcraft.endtime - DateTime.Now)}" : " ";
             if (c.currentcraft?.progress >= 100)
             {
                 return new Page()

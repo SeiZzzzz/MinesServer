@@ -1,5 +1,6 @@
 ﻿using MinesServer.GameShit;
 
+
 namespace MinesServer.Server
 {
     public class ServerTime
@@ -19,7 +20,7 @@ namespace MinesServer.Server
         {
             Task.Run(() =>
             {
-                var tps = 128;
+                var tps = 20;
                 var lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 while (true)
                 {
@@ -37,7 +38,7 @@ namespace MinesServer.Server
                 }
             });
         }
-        public void UnlimitedUpdate()
+        async void UnlimitedUpdate()
         {
             for (int i = 0; i < DataBase.activeplayers.Count; i++)
             {
@@ -49,7 +50,7 @@ namespace MinesServer.Server
                 }
             }
         }
-        public void Update()
+        async void Update()
         {
             if (!MServer.started)
             {
@@ -67,7 +68,7 @@ namespace MinesServer.Server
                 }
                 catch (Exception ex)
                 {
-                    //Console.WriteLine($"{item.initiator.name}[{item.initiator.Id}] caused {ex}");
+                    Console.WriteLine($"{item.initiator.name}[{item.initiator.Id}] caused {ex}");
                 }
             }
             for (int i = 0; i < DataBase.activeplayers.Count; i++)

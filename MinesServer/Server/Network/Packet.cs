@@ -102,7 +102,7 @@ namespace MinesServer.Network
             var caret = lengthLength;
             var dataType = Encoding.UTF8.GetString(input[caret..(caret += dataTypeLength)]);
             var eventType = Encoding.UTF8.GetString(input[caret..(caret += eventTypeLength)]);
-            var decoder = GetDecoder(eventType) ?? throw new InvalidPayloadException($"Invalid event type: {eventType}");
+            var decoder = GetDecoder(eventType);
             return new(dataType, (ITopLevelPacket)decoder(input[caret..packetLength]));
         }
 
