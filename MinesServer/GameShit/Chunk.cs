@@ -119,6 +119,10 @@ namespace MinesServer.GameShit
                 SendPack((char)p.type, p.x, p.y, p.cid, p.off);
             }
         }
+        public void ResendPack(Pack p)
+        {
+            SendPack((char)p.type, p.x, p.y, p.cid, p.off);
+        }
         public void SendPack(char type, int x, int y, int cid, int off)
         {
             for (var xxx = -2; xxx <= 2; xxx++)
@@ -132,6 +136,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[cx, cy];
                         foreach (var id in ch.bots)
                         {
+                            ClearPack(x, y);
                             DataBase.GetPlayer(id.Key)?.connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack(type, x, y, (byte)cid, (byte)off)])]));
                         }
                     }

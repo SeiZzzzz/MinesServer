@@ -77,7 +77,7 @@ namespace MinesServer.GameShit
                     {
                         if (c.type == SkillType.Movement)
                         {
-                            retval = (int)(c.GetEffect() * 100);
+                            retval = (int)(c.Effect * 100);
                         }
                     }
                 }
@@ -171,7 +171,7 @@ namespace MinesServer.GameShit
             }
             if (!online)
             {
-                if (DateTime.Now - afkstarttime > TimeSpan.FromSeconds(5))
+                if (DateTime.Now - afkstarttime > TimeSpan.FromMinutes(5))
                 {
                     DataBase.activeplayers.Remove(this);
                     health.Death();
@@ -275,7 +275,7 @@ namespace MinesServer.GameShit
                 {
                     if (c.type == SkillType.MineGeneral)
                     {
-                        dob += c.GetEffect();
+                        dob += c.Effect;
                         c.AddExp(this, (float)Math.Truncate(dob));
                     }
                 }
@@ -358,7 +358,7 @@ namespace MinesServer.GameShit
                     {
                         hitdmg = c.type switch
                         {
-                            SkillType.Digging => hitdmg * (c.GetEffect() / 100f),
+                            SkillType.Digging => hitdmg * (c.Effect / 100f),
                             _ => 1f
                         };
                     }
@@ -455,7 +455,7 @@ namespace MinesServer.GameShit
             {
                 return;
             }
-            var buildskills = skillslist.skills.Values.Where(c => c.effecttype == SkillEffectType.OnBld);
+            var buildskills = skillslist.skills.Values.Where(c => c.EffectType() == SkillEffectType.OnBld);
             switch (type)
             {
                 case "G":
@@ -464,7 +464,7 @@ namespace MinesServer.GameShit
                         if (c.type == SkillType.BuildGreen && World.GetProp(x, y).isEmpty)
                         {
                             c.AddExp(this);
-                            if (crys.RemoveCrys(0, (long)c.GetEffect()))
+                            if (crys.RemoveCrys(0, (long)c.Effect))
                             {
                                 World.SetCell(x, y, 101);
                             }
@@ -480,7 +480,7 @@ namespace MinesServer.GameShit
                         if (c.type == SkillType.BuildRoad)
                         {
                             c.AddExp(this);
-                            if (crys.RemoveCrys(0, (long)c.GetEffect()) && World.GetProp(x, y).isEmpty)
+                            if (crys.RemoveCrys(0, (long)c.Effect) && World.GetProp(x, y).isEmpty)
                             {
                                 World.SetCell(x, y, 35);
                             }
@@ -584,7 +584,7 @@ namespace MinesServer.GameShit
             SendMap();
             SendChat();
             foreach (var p in World.W.GetChunk(ChunkX, ChunkY).packs.Values)
-                connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off)])]));
+            connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off)])]));
         }
         public void Beep() => connection?.SendU(new BibikaPacket());
 
@@ -593,7 +593,11 @@ namespace MinesServer.GameShit
             using var db = new DataBase();
             currentchat ??= db.chats.FirstOrDefault(i => i.tag == "FED");
             connection?.SendU(new CurrentChatPacket(currentchat.tag, currentchat.Name));
-            connection?.SendU(new ChatMessagesPacket("FED", currentchat.GetMessages()));
+            var msg = currentchat.GetMessages();
+            if (msg.Length > 0)
+            {
+                connection?.SendU(new ChatMessagesPacket("FED", currentchat.GetMessages()));
+            }
         }
         public void SendWindow()
         {

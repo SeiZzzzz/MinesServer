@@ -45,7 +45,7 @@ namespace MinesServer.GameShit
         public void Save()
         {
             using var db = new DataBase();
-            db.Attach(this);
+            db.skills.Attach(this);
             ser = Newtonsoft.Json.JsonConvert.SerializeObject(skills, Newtonsoft.Json.Formatting.None);
             db.SaveChanges();
         }

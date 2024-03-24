@@ -1,6 +1,7 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
+using MinesServer.GameShit.GUI.Horb.List;
 using MinesServer.GameShit.SysCraft;
 using MinesServer.GameShit.SysMarket;
 using MinesServer.Network.GUI;
@@ -21,15 +22,15 @@ namespace MinesServer.GameShit.Sys_Craft
             }
             return items;
         }
-        public static void OpenRecipie(Player p, int result_id)
+        public static void OpenRecipie(Player p, int id)
         {
-            var recipie = RDes.recipies.FirstOrDefault(i => i.result.id == result_id);
+            var recipie = RDes.recipies.FirstOrDefault(i => i.id == id);
             var text = recipie.costcrys?.Select(i => $"{crysnames[i.id]} x{i.num}").Aggregate("", (str, obj) => str + obj.ToString() + "\n");
             text += recipie.costres?.Select(i => $"{MarketSystem.PackName(i.id)} x{i.num}").Aggregate("", (str, obj) => str + obj.ToString() + "\n");
             p.win?.CurrentTab.Open(new Page()
             {
-                Title = $"recipie {MarketSystem.PackName(result_id)}",
-                Card = new Card(CardImageType.Item, result_id.ToString(), $" {MarketSystem.PackName(recipie.result.id)} x{recipie.result.num}\n Время сборки:{recipie.time} сек."),
+                Title = $"recipie {MarketSystem.PackName(recipie.result.id)}",
+                Card = new Card(CardImageType.Item, recipie.result.id.ToString(), $" {MarketSystem.PackName(recipie.result.id)} x{recipie.result.num}\n Время сборки:{recipie.time} сек."),
                 Text = $"@@\n\nНужно для сборки четатам\n\n{text}\n\n",
                 Input = new InputConfig($"num", null, false),
                 Buttons = [new Button("craft", $"craft:{ActionMacros.Input}", (a) => { if (int.TryParse(a.Input, out var num)) Craft(p, recipie, num); })],
@@ -43,16 +44,17 @@ namespace MinesServer.GameShit.Sys_Craft
                 var c = (craft as Crafter);
                 using var db = new DataBase();
                 db.crafts.Attach(c);
-                c.currentcraft = new CraftEntry(r.result.id, num, DateTime.Now + (TimeSpan.FromSeconds(r.time) * num));
+                c.currentcraft = new CraftEntry(r.id, num, DateTime.Now + (TimeSpan.FromSeconds(r.time) * num));
                 db.SaveChanges();
                 p.win?.CurrentTab.Open(FilledPage(p, c));
+                World.W.GetChunk(c.x, c.y).ResendPack(c);
                 return;
             }
             p.connection?.SendU(new OKPacket("Недостаточно ресов", "..."));
         }
         public static void Claim(Player p, Crafter c)
         {
-            var recipie = RDes.recipies.FirstOrDefault(i => i.result.id == c.currentcraft.result_id);
+            var recipie = c.currentcraft.GetRecipie();
             using var db = new DataBase();
             db.crafts.Attach(c);
             db.players.Attach(p);
@@ -61,6 +63,7 @@ namespace MinesServer.GameShit.Sys_Craft
             c.currentcraft = null;
             db.SaveChanges();
             p.SendInventory();
+            World.W.GetChunk(c.x, c.y).ResendPack(c);
             p.win = c.GUIWin(p);
         }
         public static bool MeetReqs(Player p, Recipie r, int num) => (r.costcrys != null ? !r.costcrys.Select(i => { return p.crys.cry[i.id] >= (i.num * num); }).Contains(false) : true) && (r.costres != null ? !r.costres.Select(i => { return p.inventory[i.id] >= (i.num * num); }).Contains(false) : true);
@@ -97,9 +100,19 @@ namespace MinesServer.GameShit.Sys_Craft
                 Buttons = [],
             };
         }
+        public static void SecondPage(Player p,int type)
+        {
+            var lol = RDes.recipies.Where(i => i.result.id == type);
+            p.win?.CurrentTab.Open(new Page()
+            {
+                List = lol.Select(r => new ListEntry(r.result.id.ToString(), new Button("open", $"openrecipie:{r.id}", (arg) => OpenRecipie(p, r.id)))).ToArray(),
+                Title = "Крафтер",
+                Buttons = [],
+            });
+        }
         public static IPage? GlobalFirstPage(Player p)
         {
-            var oninventory = (int type) => { OpenRecipie(p, type); };
+            var oninventory = (int type) => {SecondPage(p, type); };
             return new Page()
             {
                 OnInventory = oninventory,

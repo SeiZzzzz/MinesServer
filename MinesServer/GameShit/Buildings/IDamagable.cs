@@ -4,6 +4,8 @@
     {
         public void Damage(int i)
         {
+            if (ownerid == 0)
+                return;
             if (charge - 100 > 0)
             {
                 charge -= 100;
@@ -12,10 +14,8 @@
             {
                 charge = 0;
             }
-            if (ownerid == 0 || hp == 0)
-            {
+            if (hp == 0)
                 return;
-            }
             if (hp - i >= 0)
             {
                 hp -= i;

@@ -57,7 +57,7 @@ namespace MinesServer.Server
             }
             catch(Exception ex)
             {
-                Console.WriteLine($"invalid packet from {player.Id} {ex}");
+                Console.WriteLine($"invalid packet from {player?.Id} {ex}");
             }
         }
         protected override void OnDisconnected()
@@ -250,7 +250,7 @@ namespace MinesServer.Server
                 player.AddAciton(() =>
                 {
                     var dir = packet.Direction;
-                    player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir : -1);
+                    player.Move((int)parent.X, (int)parent.Y, dir < 9 ? dir : -1);
                 }, player.OnRoad ? (player.pause * 5) * 0.65 : player.pause * 5);
             }
         }

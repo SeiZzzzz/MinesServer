@@ -5,29 +5,12 @@ namespace MinesServer.GameShit.Skills
 {
     public class Skill
     {
+        public Skill()
+        {
+        }
         public int lvl = 1;
         public float exp = 0;
         public SkillType type;
-        public float GetEffect()
-        {
-            effectfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).effectfunc;
-            return (float)Math.Round(effectfunc(lvl), 2);
-        }
-        public float GetExp()
-        {
-            expfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).expfunc;
-            return expfunc(lvl);
-        }
-        public float GetDop()
-        {
-            expfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).dopfunc;
-            return dopfunc(lvl);
-        }
-        public float GetCost()
-        {
-            costfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).costfunc;
-            return costfunc(lvl);
-        }
         public Skill Clone()
         {
             return MemberwiseClone() as Skill;
@@ -38,8 +21,8 @@ namespace MinesServer.GameShit.Skills
             {
                 Dictionary<string, int> v = new();
                 lvl += 1;
-                exp -= GetExp();
-                v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
+                exp -= Expiriense;
+                v.Add(type.GetCode(), (int)((exp * 100f) / Expiriense));
                 p.connection?.SendU(new SkillsPacket(v));
                 p.SendLvl();
                 p.health.SendHp();
@@ -59,12 +42,12 @@ namespace MinesServer.GameShit.Skills
                 {
                     if (i.type == SkillType.Upgrade)
                     {
-                        expv *= i.GetEffect();
+                        expv *= i.Effect;
                     }
                 }
             }
             exp += expv;
-            v.Add(type.GetCode(), (int)((exp * 100f) / GetExp()));
+            v.Add(type.GetCode(), (int)((exp * 100f) / Expiriense));
             p.connection?.SendU(new SkillsPacket(v));
             p.skillslist.Save();
         }
@@ -76,33 +59,59 @@ namespace MinesServer.GameShit.Skills
             }
             return false;
         }
-        public string Description()
-        {
-            description ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type)?.description!;
-            if (description != null)
-            {
-                return description(lvl,GetEffect(),GetCost(),exp,GetExp());
-            }
-            return $"lvl:{lvl} effect:{GetEffect()} cost:{GetCost()} exp:{exp}/{GetExp()}";
-        }
         public bool isUpReady()
         {
-            return exp >= GetExp();
+            return exp >= Expiriense;
         }
         public SkillEffectType EffectType()
         {
             return PlayerSkills.skillz.First(i => i.type == type).effecttype;
         }
-        [NonSerialized]
-        public Func<int, float, float, float, float, string> description;
-        [NonSerialized]
-        public SkillEffectType effecttype;
-        [NonSerialized]
-        public Func<int, float> expfunc;
-        [NonSerialized]
-        public Func<int, float> effectfunc;
-        [NonSerialized]
-        public Func<int, float> costfunc;
+        public float Expiriense { get
+            {
+                expfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).expfunc;
+                return expfunc(lvl); 
+            } }
+        public string Description { get {
+                description ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type)?.description!;
+                if (description != null)
+                {
+                    description(lvl, Effect, Cost, exp, Expiriense);
+
+                }
+                return $"lvl:{lvl} effect:{Effect} cost:{Cost} exp:{exp}/{Expiriense}";
+                    } }
+        public float Effect { get
+            {
+                effectfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).effectfunc;
+                return effectfunc(lvl);
+            }
+        }
+        public float Cost { get {
+                costfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).costfunc;
+                return costfunc(lvl);
+            }
+        }
+        public Func<int, float, float, float, float, string> description {  
+            private get;
+            set;
+        }
+        public SkillEffectType effecttype { 
+            private get;
+            set;
+        }
+        public Func<int, float> expfunc {
+            private get;
+            set;
+        }
+        public Func<int, float> effectfunc { 
+            private get; 
+            set;
+        }
+        public Func<int, float> costfunc { 
+            private get; 
+            set; 
+        }
         [NonSerialized]
         public Func<int, float> dopfunc = null;
     }

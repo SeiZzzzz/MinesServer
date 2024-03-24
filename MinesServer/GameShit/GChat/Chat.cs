@@ -33,7 +33,6 @@ namespace MinesServer.GameShit.GChat
         {
             using var db = new DataBase();
             var line = new GLine() { player = p, message = msg};
-            var last = messages.Last();
             db.Attach(this);
             messages.Add(line);
             db.SaveChanges();

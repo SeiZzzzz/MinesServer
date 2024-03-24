@@ -5,6 +5,7 @@ using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations;
+using System.IO.Pipes;
 using System.Numerics;
 
 namespace MinesServer.GameShit
@@ -472,6 +473,10 @@ namespace MinesServer.GameShit
                                     var gun = pack.Value as Gun;
                                     db.Attach(gun);
                                     gun.Update();
+                                }
+                                if (pack.Value != null && pack.Value is Crafter)
+                                {
+                                    (pack.Value as Crafter).Update();
                                 }
                             }
                         }

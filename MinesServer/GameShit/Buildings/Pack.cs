@@ -34,7 +34,7 @@ namespace MinesServer.GameShit.Buildings
         }
         public virtual void Update()
         {
-
+            World.W.GetChunk(x, y).ResendPack(this);
         }
     }
 }

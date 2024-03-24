@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Net.WebSockets;
 
 namespace MinesServer.GameShit.SysCraft
 {
@@ -11,6 +12,7 @@ namespace MinesServer.GameShit.SysCraft
         }
         public static List<Recipie> GetResipies()
         {
+            var rid = 0;
             var l = new List<Recipie>();
             if (!Directory.Exists("recipies"))
             {
@@ -19,8 +21,12 @@ namespace MinesServer.GameShit.SysCraft
             }
             foreach (var i in Directory.GetFiles("recipies/"))
             {
-                JsonConvert.DeserializeObject<Recipie>(File.ReadAllText(i));
-                l.Add(JsonConvert.DeserializeObject<Recipie>(File.ReadAllText(i)));
+                var r = JsonConvert.DeserializeObject<Recipie>(File.ReadAllText(i));
+                var n = r;
+                n.id = rid;
+                r = n;
+                l.Add(r);
+                rid++;
             }
             return l;
         }

@@ -1,5 +1,6 @@
 ﻿using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.Sys_Craft;
+using MinesServer.GameShit.SysCraft;
 using MinesServer.Server;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -20,6 +21,23 @@ namespace MinesServer.GameShit.Buildings
         }
         public CraftEntry? currentcraft { get; set; }
         public DateTime brokentimer { get; set; }
+        [NotMapped]
+        public override int off
+        {
+            get
+            {
+                if (currentcraft != null)
+                {
+                    var ret = 1 + currentcraft.GetRecipie().result.id;
+                    if (currentcraft.progress >= 100)
+                    {
+                        ret += 50;
+                    }
+                    return ret;
+                }
+                return 0;
+            }
+        }
         [NotMapped]
         public float charge { get; set; }
         public int hp { get; set; }
@@ -46,9 +64,10 @@ namespace MinesServer.GameShit.Buildings
 
         }
         #endregion
-
         public override Window? GUIWin(Player p)
         {
+            if (p.Id != ownerid)
+                return null;
             return new Window()
             {
                 Tabs = [new Tab()

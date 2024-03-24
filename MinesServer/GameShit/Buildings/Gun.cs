@@ -144,7 +144,7 @@ namespace MinesServer.GameShit.Buildings
                                     {
                                         if (c.type == SkillType.Induction)
                                         {
-                                            basecrys *= (c.GetEffect() / 100);
+                                            basecrys *= (c.Effect / 100);
                                         }
                                     }
                                 }
@@ -154,7 +154,7 @@ namespace MinesServer.GameShit.Buildings
                                     continue;
                                 }
                                 charge = 0;
-                                World.W.GetChunk(x, y).ResendPacks();
+                                World.W.GetChunk(x, y).ResendPack(this);
                             }
                         }
                     }
