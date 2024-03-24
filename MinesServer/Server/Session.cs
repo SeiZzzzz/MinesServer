@@ -237,7 +237,6 @@ namespace MinesServer.Server
             {
                 return;
             }
-            Console.WriteLine(button.ToString());
             if ((auth != null && !auth.complited))
             {
                 
