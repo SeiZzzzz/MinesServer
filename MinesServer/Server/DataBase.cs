@@ -2,9 +2,10 @@
 using MinesServer.GameShit;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
-using MinesServer.GameShit.SysMarket;
+using MinesServer.GameShit.GChat;
 using MinesServer.GameShit.Programmator;
 using MinesServer.GameShit.Sys_Craft;
+using MinesServer.GameShit.SysMarket;
 
 namespace MinesServer.Server
 {
@@ -20,6 +21,8 @@ namespace MinesServer.Server
         public DbSet<Settings> settings { get; set; }
         #endregion
         #region Utils
+        public DbSet<GLine> lines { get; set; }
+        public DbSet<Chat> chats { get; set; }
         public DbSet<Box> boxes { get; set; }
         public DbSet<Order> orders { get; set; }
         public DbSet<Clan> clans { get; set; }
@@ -68,6 +71,9 @@ namespace MinesServer.Server
             modelBuilder.Entity<Crafter>()
                 .Navigation(c => c.currentcraft)
                 .AutoInclude();
+            modelBuilder.Entity<Chat>()
+                .Navigation(c => c.messages)
+                .AutoInclude();
         }
         public static void Save()
         {
@@ -82,7 +88,7 @@ namespace MinesServer.Server
             {
                 return player;
             }
-            var db = new DataBase();
+            using var db = new DataBase();
             return db.players
                 .Where(i => i.Id == id)
                 .Include(p => p.clanrank)
@@ -102,7 +108,7 @@ namespace MinesServer.Server
             {
                 return player;
             }
-            var db = new DataBase();
+            using var db = new DataBase();
             return db.players
                 .Where(i => i.name == name)
                 .Include(p => p.clanrank)
@@ -127,26 +133,32 @@ namespace MinesServer.Server
                 }
                 foreach (var i in db.resps)
                 {
+                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.markets)
                 {
+                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.ups)
                 {
+                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.guns)
                 {
+                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.storages)
                 {
+                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
                 foreach (var i in db.crafts)
                 {
+                    i.Build();
                     World.AddPack(i.x, i.y, i);
                 }
             }

@@ -24,10 +24,9 @@ namespace MinesServer.GameShit.Generator
         }
         public void CreateFillForCells(Sector s, bool gig = false, params CellType[] args)
         {
-            args = args.Append(CellType.Empty).ToArray();
         tme:
             Console.WriteLine("");
-            var dick = new Dictionary<CellType, (double, double)>();
+            var dick = new Dictionary<CellType, (float, float)>();
             var gt = 0;
             var gt1 = 0;
             var gte = 0;
@@ -41,22 +40,32 @@ namespace MinesServer.GameShit.Generator
                     end = start + rand.NextDouble();
                     continue;
                 }
-                dick[d] = (start, end);
+                dick[d] = ((float)start, (float)end);
             }
+            double offsetx = 0;
+            double offsety = 0;
         reg:
             var fr = NotTypedNoise();
-            double max = fr.Get(10000, 10000);
-            double min = fr.Get(0, 0);
-            double offsetx = 5;
-            double offsety = 5;
+            float max = (float)fr.Get(0, 0);
+            float min = (float)fr.Get(0, 0);
+            double localoffsetx = 5;
+            double localoffsety = 5;
             foreach (var c in s.seccells)
             {
-                var v = fr.Get((c.pos.Item1 + offsetx) / (s.width % 10), (c.pos.Item2 + offsety) / (s.height % 10));
-                while (v == double.NaN)
+                var x = offsetx + c.pos.Item1 == 0 ? 100 : c.pos.Item1;
+                var y = offsety +  c.pos.Item2 == 0 ? 100 : c.pos.Item2;
+                var widthx = (s.width) == 0 ? 100 : (s.width);
+                var heighty = (s.height) == 0 ? 100 : (s.height);
+                var v = (float)fr.Get((float)((float)x / (float)widthx), (float)((float)y / (float)heighty));
+                while (v == double.NaN || v == 0)
                 {
-                    offsetx++;
-                    offsety++;
-                    v = fr.Get((c.pos.Item1 + offsetx) / (s.width % 10), (c.pos.Item2 + offsety) / (s.height % 10));
+                    localoffsetx += rand.NextDouble();
+                    localoffsety += rand.NextDouble();
+                    if (localoffsetx > x)
+                        localoffsetx = 0;
+                    if (localoffsety > y)
+                        localoffsety = 0;
+                    v = (float)fr.Get((float)(x + localoffsetx) / (float)widthx, (float)(y + localoffsety) / (float)heighty);
                 }
                 max = max < v ? v : max;
                 min = min < v ? min : v;
@@ -64,6 +73,7 @@ namespace MinesServer.GameShit.Generator
             }
             var error = 0;
             var types = new Dictionary<CellType, int>();
+            segment:
             foreach (var c in s.seccells)
             {
                 c.value = ((c.value - min) / (max - min));
@@ -91,11 +101,14 @@ namespace MinesServer.GameShit.Generator
                     Console.Write($"\rtypes restart");
                     goto tme;
                 }
-                goto reg;
+                offsetx += 500;
+                offsety += 500;
+                goto segment;
             }
+            
             foreach (var i in types)
             {
-                var check = s.seccells.Count / dick.Count * 0.4 > i.Value;
+                var check = (s.seccells.Count / dick.Count) * 0.4 > i.Value;
                 if (check)
                 {
                     gte++;
@@ -103,12 +116,17 @@ namespace MinesServer.GameShit.Generator
                     if (gte > 3)
                     {
                         Console.Write($"\ra lots of errors restart segmentation");
+                        goto reg;
+                    }
+                    if (gte >6)
+                    {
+                        Console.Write($"\ra lots of errors restart segmentation");
                         goto tme;
                     }
-                    goto reg;
+                    goto segment;
                 }
             }
-            if (error > ((s.seccells.Count) * 0.6f))
+            if (error > ((s.seccells.Count) * 0.4f))
             {
                 gte++;
                 Console.Write($"\rgoto toosmall {gte}");

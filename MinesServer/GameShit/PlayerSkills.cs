@@ -28,8 +28,9 @@ namespace MinesServer.GameShit
                 return;
             }
             skills[selectedslot] = null;
-            p.SendLvl();
             Save();
+            p.SendLvl();
+            p.SendSpeed();
         }
         public void InstallSkill(string type, int slot, Player p)
         {
@@ -39,8 +40,9 @@ namespace MinesServer.GameShit
             }
             var s = new Skill();
             skills[slot] = skillz.First(i => i.type.GetCode() == type).Clone();
-            p.SendLvl();
             Save();
+            p.SendLvl();
+            p.SendSpeed();
         }
         public void Save()
         {
@@ -75,7 +77,7 @@ namespace MinesServer.GameShit
             }
             return ski.ToArray();
         }
-        public int slots { get; set; } = 20;
+        public int slots { get; set; } = 12;
         [NotMapped]
         public Dictionary<int, Skill?> skills = new();
         [NotMapped]
@@ -83,49 +85,49 @@ namespace MinesServer.GameShit
         {
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 100f + x * 10,
-                    expfunc = (int x) => 1,
+                    costfunc = (int x) => CoeffSkill.Digcoast((float)x),
+                    effectfunc = (int x) => CoeffSkill.Digeffect((float)x),
+                    expfunc = (int x) => CoeffSkill.Digexp((float)x),
                     type = SkillType.Digging, // dick
-                    effecttype = SkillEffectType.OnDig
+                    effecttype = SkillEffectType.OnDig,
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 5f - x * 0.2f < 0 ? 1f : 5f - x * 0.2f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Roadcoast(x),
+                    effectfunc = (int x) => CoeffSkill.Roadeffect(x),
+                    expfunc = (int x) => CoeffSkill.Roadexp(x),
                     type = SkillType.BuildRoad,
-                    effecttype = SkillEffectType.OnBld
+                    effecttype = SkillEffectType.OnBld,
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f + x * 2,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Greencoast(x),
+                    effectfunc = (int x) => CoeffSkill.Greeneff(x),
+                    expfunc = (int x) => CoeffSkill.Greenexp(x),
                     type = SkillType.BuildGreen,
-                    effecttype = SkillEffectType.OnBld
+                    effecttype = SkillEffectType.OnBld,
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f + x * 2,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Yellowcoast(x),
+                    effectfunc = (int x) => CoeffSkill.Yelloweffect(x),
+                    expfunc = (int x) => CoeffSkill.Yellowexp(x),
                     type = SkillType.BuildYellow,
-                    effecttype = SkillEffectType.OnBld
+                    effecttype = SkillEffectType.OnBld,
                 },
                  new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f + x * 2f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Redcoast(x),
+                    effectfunc = (int x) => CoeffSkill.Redeffect(x),
+                    expfunc = (int x) => CoeffSkill.Redexp(x),
                     type = SkillType.BuildRed,
                     effecttype = SkillEffectType.OnBld
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Oporacoast(x),
+                    effectfunc = (int x) => CoeffSkill.Oporaeffect(x),
+                    expfunc = (int x) => CoeffSkill.Oporaexp(x),
                     type = SkillType.BuildStructure,
                     effecttype = SkillEffectType.OnBld
                 },
@@ -139,33 +141,33 @@ namespace MinesServer.GameShit
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Movecoast(x),
+                    effectfunc = (int x) => CoeffSkill.Moveeff(x),
+                    expfunc = (int x) => CoeffSkill.Moveexp(x),
                     type = SkillType.Movement, // движение,
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => 20000000f,
+                    effectfunc = (int x) => 20f,
+                    expfunc = (int x) => 20000000f,
                     type = SkillType.RoadMovement, // по дорогам
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Capacitycoast(x),
+                    effectfunc = (int x) => CoeffSkill.Capacityeffect(x),
+                    expfunc = (int x) => CoeffSkill.Capacityexp(x),
                     type = SkillType.Packing, // упаковка
                     effecttype = SkillEffectType.OnMove
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => x * 3f,
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Hpcoast((float)x),
+                    effectfunc = (int x) => CoeffSkill.Hpeffect((float)x),
+                    expfunc = (int x) => CoeffSkill.Hpexp((float)x),
                     type = SkillType.Health, // хп
                     effecttype = SkillEffectType.OnHealth
                 },
@@ -219,9 +221,9 @@ namespace MinesServer.GameShit
                 },
                 new Skill()
                 {
-                    costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 0.08f + (float)(Math.Log10(x) * (Math.Pow(x, 0.5) / 4)),
-                    expfunc = (int x) => 1f,
+                    costfunc = (int x) => CoeffSkill.Minecoast((float)x),
+                    effectfunc = (int x) => CoeffSkill.Mineeffect((float)x),
+                    expfunc = (int x) => CoeffSkill.Mineexp((float)x),
                     type = SkillType.MineGeneral, // доба
                     effecttype = SkillEffectType.OnDigCrys
                 },
@@ -235,9 +237,9 @@ namespace MinesServer.GameShit
                 },
                 new Skill()
                 {
-                    costfunc = (int x) =>1f,
-                    effectfunc = (int x) =>  (float)Math.Round(1f+(x-((float)Math.Log10(x)*((float)Math.Pow(x,0.9))/2f)-x*0.098f)) >= 92 ? 92 : (float)Math.Round(1f+(x-((float)Math.Log10(x)*((float)Math.Pow(x,0.9))/2f)-x*0.098f)),
-                    expfunc = (int x) => 0,
+                    costfunc = (int x) =>CoeffSkill.Zopcoast(x),
+                    effectfunc = (int x) =>  CoeffSkill.Zopeffect(x),
+                    expfunc = (int x) => CoeffSkill.Zopexp(x),
                     type = SkillType.AntiGun, // антипуфка
                     effecttype = SkillEffectType.OnHurt
                 }

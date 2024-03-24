@@ -1,4 +1,5 @@
-﻿using MinesServer.GameShit.Buildings;
+﻿using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Consumables;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
@@ -111,6 +112,7 @@ namespace MinesServer.GameShit
                         }
                         return false;
                     }
+
                 },
                 {
                     24,
@@ -134,6 +136,19 @@ namespace MinesServer.GameShit
                         {
                             new Gun((int)coord.X, (int)coord.Y, p.Id, p.cid).Build();
                             return true;
+                        }
+                        return false;
+                    }
+                },
+                {
+                    28,
+                    (p) =>
+                    {
+                        var coord = p.GetDirCord(true);
+                        if (World.W.CanBuildPack(-2, 2, -2, 2, (int)coord.X, (int)coord.Y, p))
+                        {
+                            
+                            return false;
                         }
                         return false;
                     }
@@ -176,6 +191,7 @@ namespace MinesServer.GameShit
                         return false;
                     }
                 },
+
             };
         }
         public int this[int index]
@@ -243,7 +259,7 @@ namespace MinesServer.GameShit
         public delegate bool ItemUsage(Player p);
         public void Choose(int id, Player p)
         {
-            ITopLevelPacket packet = InventoryPacket.Choose("Мы не хотим этого!", new bool[0, 0], 123, 123, 12);
+            ITopLevelPacket packet = InventoryPacket.Choose("ты хуесос", new bool[0, 0], 123, 123, 12);
             selected = id;
             if (id == -1)
             {

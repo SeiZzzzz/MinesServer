@@ -59,11 +59,11 @@
                 var inside = new SectorFiller();
                 if (s[i].seccells.Count > 40000)
                 {
-                    inside.CreateFillForCells(s[i], true, s[i].GenerateInsides());
+                    inside.CreateFillForCells(s[i], false, s[i].GenerateInsides());
                 }
                 else if (s[i].seccells.Count <= 40000)
                 {
-                    inside.CreateFillForCells(s[i], false, s[i].GenerateInsides());
+                    inside.CreateFillForCells(s[i], true, s[i].GenerateInsides());
                 }
                 Console.WriteLine("saving sector " + s[i].seccells.Count);
                 foreach (var c in s[i].seccells)

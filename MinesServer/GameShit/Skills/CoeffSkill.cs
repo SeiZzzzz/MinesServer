@@ -10,7 +10,7 @@ namespace MinesServer.GameShit.Skills
     {
         public static float Digcoast(float x)
         {
-            float coast = 50;
+            float coast = 1000;
             if (x > 1 && x <= 5) { coast = coast + x * 150; }
             if (x > 5 && x <= 10) { coast = coast + (x * 250) - 50; }
             if (x > 10 && x <= 25) { coast = coast + (x * 1250) - 50; }
@@ -24,7 +24,9 @@ namespace MinesServer.GameShit.Skills
         }
         public static float Digeffect(float x)
         {
-            return 10 * x;
+            float eff = 100f;
+            if (x > 1) eff += x * 10;
+            return eff;
         }
         public static float Digexp(float x)
         {
@@ -93,7 +95,7 @@ namespace MinesServer.GameShit.Skills
         }
         public static float Mineeffect(float x)
         {
-            float eff = 0;
+            float eff = 1f;
             if (x > 1 && x <= 5) { eff = eff + (x * 0.15f); }
             if (x > 5 && x <= 10) { eff = eff + 0.25f + (x * 0.075f); }
             if (x > 10 && x <= 100) { eff = eff + 0.395f + (x * 0.055f); }

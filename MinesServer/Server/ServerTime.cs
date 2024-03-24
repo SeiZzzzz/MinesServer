@@ -5,14 +5,14 @@ namespace MinesServer.Server
     public class ServerTime
     {
         public delegate void GameAction();
-        public Queue<GameAction> gameActions;
+        public Queue<(GameAction action,Player initiator)> gameActions;
         public ServerTime()
         {
-            gameActions = new Queue<GameAction>();
+            gameActions = new Queue<(GameAction,Player)>();
         }
-        public void AddAction(GameAction action)
+        public void AddAction(GameAction action,Player p)
         {
-            gameActions.Enqueue(action);
+            gameActions.Enqueue((action,p));
         }
 
         public void Start()
@@ -23,6 +23,7 @@ namespace MinesServer.Server
                 var lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 while (true)
                 {
+                    UnlimitedUpdate();
                     int ticksToProcess = (int)((DateTimeOffset.Now.ToUnixTimeMilliseconds() - lasttick) / 1000f * tps);
                     if (ticksToProcess > 0)
                     {
@@ -36,6 +37,18 @@ namespace MinesServer.Server
                 }
             });
         }
+        public void UnlimitedUpdate()
+        {
+            for (int i = 0; i < DataBase.activeplayers.Count; i++)
+            {
+                using var dbas = new DataBase();
+                if (DataBase.activeplayers.Count > i)
+                {
+                    var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
+                    player?.UnlimitedUpdate();
+                }
+            }
+        }
         public void Update()
         {
             if (!MServer.started)
@@ -44,17 +57,17 @@ namespace MinesServer.Server
             }
             for (int i = 0; i < gameActions.Count; i++)
             {
+                var item = gameActions.Dequeue();
                 try
                 {
-                var action = gameActions.Dequeue();
-                if (action != null)
+                if (item.action != null)
                 {
-                    action();
+                     item.action();
                 }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
+                    //Console.WriteLine($"{item.initiator.name}[{item.initiator.Id}] caused {ex}");
                 }
             }
             for (int i = 0; i < DataBase.activeplayers.Count; i++)

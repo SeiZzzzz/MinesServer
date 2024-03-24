@@ -6,6 +6,7 @@ using MinesServer.Network.ConnectionStatus;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Network.HubEvents;
+using MinesServer.Network.Programmator;
 using MinesServer.Network.TypicalEvents;
 using MinesServer.Network.World;
 using NetCoreServer;
@@ -40,14 +41,14 @@ namespace MinesServer.Server
         protected override void OnReceived(byte[] buffer, long offset, long size)
         {
             var p = Packet.Decode(buffer);
-            switch (p.data)
-            {
-                case AUPacket au: AU(au); break;
-                case TYPacket ty: father.time.AddAction(() => TY(ty)); break;
-                default:
-                    // Invalid packet
-                    break;
-            }
+                switch (p.data)
+                {
+                    case AUPacket au: AU(au); break;
+                    case TYPacket ty: father.time.AddAction(() => TY(ty), player); break;
+                    default:
+                        // Invalid packet
+                        break;
+                }
         }
         protected override void OnDisconnected()
         {
@@ -57,10 +58,11 @@ namespace MinesServer.Server
             }
             Console.WriteLine(player.name + " disconnected");
             using var db = new DataBase();
-            
+            DataBase.activeplayers.Remove(player);
             db.players.Update(player);
             db.SaveChanges();
-            DataBase.activeplayers.Remove(player);
+            player.afkstarttime = DateTime.Now;
+            player.connection = null;
             player = null;
             Dispose();
         }
@@ -97,14 +99,50 @@ namespace MinesServer.Server
                 case ClanPacket clan: Clan(packet, clan); break;
                 case PopePacket pp: Pope(packet, pp); break;
                 case PROGPacket prog: PROG(packet, prog); break;
+                case PDELPacket pdel: Pdel(packet, pdel); break;
+                case pRSTPacket prst: Prst(packet, prst); break;
+                case PRENPacket pren: Pren(packet, pren); break;
+                case ChatPacket chat: Chat(packet, chat); break;
+                case ChinPacket chin: Chin(packet, chin); break;
                 default:
                     // Invalid event type
                     break;
             }
         }
+        private void Chin(TYPacket f,ChinPacket chin)
+        {
+           
+        }
+        private void Chat(TYPacket f,ChatPacket chat)
+        {
+            if (Default.def.IsMatch(chat.message.Replace("\n", "")))
+            {
+                player.currentchat?.AddMessage(player, chat.message.Replace("\n", ""));
+            }
+        }
+        private void Pren(TYPacket f,PRENPacket pren)
+        {
+            StaticGUI.Rename(player, pren.Id);
+        }
+        private void Prst(TYPacket f, pRSTPacket prst)
+        {
+            var p = player.programsData.selected;
+            if (p != null && !player.programsData.ProgRunning)
+            {
+                SendU(new OpenProgrammatorPacket(p.id, p.name, p.data));
+            }
+            if (player.programsData.ProgRunning)
+                player.RunProgramm();
+            SendU(new ProgrammatorPacket(false));
+        }
+        private void Pdel(TYPacket f,PDELPacket pdel)
+        {
+            StaticGUI.DeleteProg(player, pdel.Id);
+        }
         private void PROG(TYPacket f, PROGPacket p)
         {
             StaticGUI.StartedProg(player, p.prog);
+            SendU(new ProgrammatorPacket(player.programsData.ProgRunning));
         }
         private void Pope(TYPacket f, PopePacket p)
         {
@@ -203,8 +241,8 @@ namespace MinesServer.Server
                 player.AddAciton(() =>
                 {
                     var dir = packet.Direction;
-                    player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir - 10 : dir);
-                }, player.OnRoad ? (player.pause) * 0.65 : player.pause);
+                    player.Move((int)parent.X, (int)parent.Y, dir > 9 ? dir : -1);
+                }, player.OnRoad ? (player.pause * 5) * 0.65 : player.pause * 5);
             }
         }
         private void WhoisHandler(TYPacket parent, WhoiPacket packet)
@@ -239,11 +277,11 @@ namespace MinesServer.Server
             }
             if ((auth != null && !auth.complited))
             {
-                
+
                 if (button.ToString() == "exit:0")
                 {
                     return;
-                    }
+                }
                 if (button.ToString() == "exit")
                 {
                     auth.exit();
@@ -254,25 +292,24 @@ namespace MinesServer.Server
             }
             father.time.AddAction(() =>
             {
-                
                 if (button.ToString() == "exit" | button.ToString() == "exit:0")
                 {
                     CloseWindow();
                     return;
                 }
-                else if (button.ToString() == "clan" | button.ToString() == "sellall" | button.ToString() == "buycrys" | button.ToString() == "sellcrys" | button.ToString() == "auc" | button.ToString() == "getprofit" | button.StartsWith("save") | button.StartsWith("buy") | button.StartsWith("sell") | button.StartsWith("bet") | button.StartsWith("openorder") | button.StartsWith("createorder") | button.StartsWith("choose") | button.StartsWith("skill") | button.StartsWith("delete") | button.StartsWith("install") | button.StartsWith("confirm") | button.StartsWith("upgrade") | button.StartsWith("create") | button.StartsWith("setitem") | button.StartsWith("open") | button.StartsWith("dropbox"))
+                else if (button.ToString() == "clan" | button.ToString() == "sellall" | button.ToString() == "buycrys" | button.ToString() == "getallmap" | button.ToString() == "sellcrys" | button.ToString() == "auc" | button.ToString() == "getprofit" | button.StartsWith("save") | button.StartsWith("buy") | button.StartsWith("sell") | button.StartsWith("bet") | button.StartsWith("openorder") | button.StartsWith("createorder") | button.StartsWith("choose") | button.StartsWith("skill") | button.StartsWith("delete") | button.StartsWith("install") | button.StartsWith("confirm") | button.StartsWith("upgrade") | button.StartsWith("create") | button.StartsWith("setitem") | button.StartsWith("open") | button.StartsWith("dropbox"))
                 {
                     player.CallWinAction(button);
                     player.SendWindow();
-                    }
+                }
                 else
                 {
-                        return;
+                    return;
                 }
 
-                
-                return; 
-            });
+
+                return;
+            },player);
         }
         #endregion
         #region senders
@@ -309,10 +346,7 @@ namespace MinesServer.Server
         public void CloseWindow()
         {
             player.win = null;
-            if (player.skillslist.selectedslot != -1 && player.skillslist.selectedslot != null) 
-            { 
-                player.skillslist.selectedslot = -1;
-            }
+            player.skillslist.selectedslot = -1;
             SendU(new GuPacket());
         }
         #endregion

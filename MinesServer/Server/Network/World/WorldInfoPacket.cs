@@ -22,7 +22,6 @@ namespace MinesServer.Network.World
 
         public int Encode(Span<byte> output) => Encoding.UTF8.GetBytes($$"""{"width":{{Width}},"height":{{Height}},"name":"{{Name}}","v":{{VersionCode}},"version":"{{VersionName}}","update_url":"{{UpdateUrl}}","update_desc":"{{UpdateDescription}}"}""", output);
     }
-
     public readonly record struct WorldInfoPacket2(string Name, int Width, int Height, int VersionCode, string VersionName, string UpdateUrl, string UpdateDescription) : ITopLevelPacket, IDataPart<WorldInfoPacket2>
     {
 

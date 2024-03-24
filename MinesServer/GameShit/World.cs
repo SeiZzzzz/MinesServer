@@ -4,6 +4,7 @@ using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
 using MinesServer.Server;
+using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 
 namespace MinesServer.GameShit
@@ -19,7 +20,7 @@ namespace MinesServer.GameShit
         public const int ChunkVolume = ChunkWidth * ChunkHeight;
         public const int TotalVolume = ChunksAmount * ChunkVolume;
 
-        const float _chunksWidth = (float)CellsWidth / ChunkHeight;
+        const float _chunksWidth = (float)CellsWidth / ChunkWidth;
         const float _chunksHeight = (float)CellsWidth / ChunkHeight;
         public const int ChunksW = _chunksWidth > (int)_chunksWidth ? (int)_chunksWidth + 1 : (int)_chunksWidth; // Альтернатива Math.Ceiling для константных выражений
         public const int ChunksH = _chunksHeight > (int)_chunksHeight ? (int)_chunksHeight + 1 : (int)_chunksHeight; // Альтернатива Math.Ceiling для константных выражений
@@ -60,6 +61,13 @@ namespace MinesServer.GameShit
                 durability = new($"{name}_durability.mapb");
             }
             CreateSpawns(1);
+            using var db = new DataBase();
+            if (db.chats.FirstOrDefault(i => i.Name == "FED") == default)
+            {
+                db.chats.Add(new GChat.Chat("FED","Федеральный чат"));
+                db.chats.Add(new GChat.Chat("DNO","Дно"));
+                db.SaveChanges();
+            }
             Console.WriteLine("Creating chunkmesh");
             x = DateTime.Now;
             Console.WriteLine($"{DateTime.Now - x} loaded");
@@ -91,6 +99,7 @@ namespace MinesServer.GameShit
                         new Market(x - 7, y - 4, 0).Build();
                         new Resp(x - 8, y + 7, 0).Build();
                         new Up(x, y - 4, 0).Build();
+
                     }
                     if (y > CellsHeight)
                     {
@@ -137,7 +146,7 @@ namespace MinesServer.GameShit
             {
                 if (packets.Count > 0)
                 {
-                    player.connection.SendB(new HBPacket(packets.ToArray()));
+                    player.connection?.SendB(new HBPacket(packets.ToArray()));
                 }
                 return false;
             }
@@ -500,6 +509,10 @@ namespace MinesServer.GameShit
         public Chunk GetChunk(int x, int y)
         {
             var pos = GetChunkPosByCoords(x, y);
+            if (pos.Item1 == chunksx)
+                pos = (pos.Item1 - 1, pos.Item2);
+            else if (pos.Item2 == chunksy)
+                pos = (pos.Item1, pos.Item2 - 1);
             return chunks[pos.Item1, pos.Item2];
         }
     }

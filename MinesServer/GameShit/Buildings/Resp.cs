@@ -18,7 +18,7 @@ namespace MinesServer.GameShit.Buildings
         public int hp { get; set; }
         public DateTime brokentimer { get; set; }
         #endregion
-        public Resp()
+        private Resp()
         {
 
         }

@@ -72,8 +72,8 @@ namespace MinesServer.GameShit
                 {
                     AddConsoleLine(p, "Команда недоступна");
                 }
-            });
-            commands.Add("setnick", (p, arg) =>
+                });
+                commands.Add("setnick", (p, arg) =>
             {
                 if (arg.Split(' ').Length > 0)
                 {

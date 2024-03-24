@@ -7,7 +7,7 @@ namespace MinesServer.GameShit.Buildings
 {
     public class Crafter : Pack, IDamagable
     {
-        public Crafter()
+        private Crafter()
         {
 
         }

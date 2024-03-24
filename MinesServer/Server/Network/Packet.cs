@@ -46,6 +46,7 @@ namespace MinesServer.Network
             GeoPacket.packetName => x => GeoPacket.Decode(x), // GE
             SettingsPacket.packetName => x => SettingsPacket.Decode(x), // #S
             WorldInfoPacket.packetName => x => WorldInfoPacket.Decode(x), // cf
+            WorldInfoPacket2.packetName => x => WorldInfoPacket2.Decode(x), // CF
             PongPacket.packetName => x => PongPacket.Decode(x), // PO
             SkillsPacket.packetName => x => SkillsPacket.Decode(x), // @S
             OpenURLPacket.packetName => x => OpenURLPacket.Decode(x), // GR

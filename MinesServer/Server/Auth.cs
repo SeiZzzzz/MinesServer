@@ -48,22 +48,24 @@ namespace MinesServer.Server
             Player player = null;
             if (p.user_id.HasValue)
             {
+                player = DataBase.GetPlayer(p.user_id.Value)!;
                 try
                 {
-                    Console.WriteLine(DataBase.GetPlayer(p.user_id.Value).name + " connected (" + ip + ")");
+                    Console.WriteLine(player.name + " connected (" + ip + ")");
                 }
                 catch
                 {
                     Console.WriteLine("Null connected(" + ip + ")");
+                    player = null;
                 }
-                player = DataBase.GetPlayer(p.user_id.Value)!;
+                
             }
             if (player == null || p.token != CalculateMD5Hash(player.hash + sid))
             {
 
                 initiator.SendPing();
-                initiator.SendU(new WorldInfoPacket2(World.W.name, World.CellsWidth, World.CellsHeight, 3410, "3410", "http://pi.door/", "ok"));
                 initiator.SendU(new WorldInfoPacket(World.W.name, World.CellsWidth, World.CellsHeight, 3410, "3410", "http://pi.door/", "ok"));
+                initiator.SendU(new WorldInfoPacket2(World.W.name, World.CellsWidth, World.CellsHeight, 3410, "3410", "http://pi.door/", "ok"));
                 authwin = new Window()
                 {
                     Title = "ВХОД",
@@ -87,7 +89,6 @@ namespace MinesServer.Server
             }
             else if (player != null && player.connection == null && CalculateMD5Hash(player.hash + sid) == p.token)
             {
-                player.connection = null;
                 player.connection = initiator;
                 initiator.player = player;
                 player.Init();

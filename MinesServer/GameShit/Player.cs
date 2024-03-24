@@ -1,10 +1,13 @@
-﻿using MinesServer.Enums;
+﻿using Microsoft.Identity.Client;
+using MinesServer.Enums;
 using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.ClanSystem;
+using MinesServer.GameShit.GChat;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.Programmator;
 using MinesServer.GameShit.Skills;
 using MinesServer.Network.BotInfo;
+using MinesServer.Network.Chat;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.GUI;
 using MinesServer.Network.HubEvents;
@@ -40,11 +43,13 @@ namespace MinesServer.GameShit
                 programsData.Run();
                 return;
             }
-            
+
             programsData.Run(p);
         }
         #endregion
         #region fields
+        [NotMapped]
+        public Chat? currentchat { get; set; }
         [NotMapped]
         public Session? connection { get; set; }
         [NotMapped]
@@ -102,7 +107,8 @@ namespace MinesServer.GameShit
         public DateTime Delay = DateTime.Now;
         public bool CanAct { get => !(Delay > DateTime.Now); }
         public bool OnRoad { get => World.isRoad(World.GetCell(x, y)); }
-        public int dir { 
+        public int dir
+        {
             get;
             set;
         }
@@ -132,6 +138,13 @@ namespace MinesServer.GameShit
         }
         #endregion
         #region actions
+        public void UnlimitedUpdate()
+        {
+            if (programsData.ProgRunning)
+            {
+                programsData.Step();
+            }
+        }
         public void Update()
         {
             actionpertick = false;
@@ -170,7 +183,6 @@ namespace MinesServer.GameShit
             }
             if (programsData.ProgRunning)
             {
-                programsData.Step();
                 return;
             }
             while (playerActions.Count > 0)
@@ -213,19 +225,19 @@ namespace MinesServer.GameShit
             {
                 return;
             }
-            /*var cell = World.GetCell(x, y);
-            if (World.GetProp(cell).isPickable && !World.GetProp(cell).isEmpty)
-            {
-                geo.Push(cell);
-                World.Destroy(x, y);
-            }
-            else if (World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over && geo.Count > 0 && !World.PackPart(x, y))
-            {
-                var cplaceable = geo.Pop();
-                World.SetCell(x, y, cplaceable);
-                World.SetDurability(x, y, World.isCry(cplaceable) ? 0 : Physics.r.Next(1, 101) > 99 ? 0 : World.GetProp(cplaceable).durability);
-            }
-            SendGeo();*/
+            var cell = World.GetCell(x, y);
+            //if (World.GetProp(cell).isPickable && !World.GetProp(cell).isEmpty)
+            //{
+            //    geo.Push(cell);
+            //    World.Destroy(x, y);
+            //}
+            //else if (World.GetProp(cell).isEmpty && World.GetProp(cell).can_place_over && geo.Count > 0 && !World.PackPart(x, y))
+            //{
+            //    var cplaceable = geo.Pop();
+            //    World.SetCell(x, y, cplaceable);
+            //    World.SetDurability(x, y, World.isCry(cplaceable) ? 0 : Physics.r.Next(1, 101) > 99 ? 0 : World.GetProp(cplaceable).durability);
+            //}
+            //SendGeo();
         }
         public void BBox(long[]? c)
         {
@@ -345,7 +357,7 @@ namespace MinesServer.GameShit
                     {
                         if (World.GetProp(cell).durability > hitdmg / 100)
                         {
-                            if (rand.Next(((int)((float)World.GetProp(cell).durability) - ((int)hitdmg / 100)) * 100) < ((int)hitdmg) * 100)
+                            if (rand.Next(((int)((float)World.GetProp(cell).durability) - ((int)hitdmg / 100)) * 100) < ((int)hitdmg)*100)
                             {
                                 Mine(cell, x, y);
                                 c.AddExp(this);
@@ -362,13 +374,24 @@ namespace MinesServer.GameShit
                 }
                 return;
             }
+            if(World.GetProp(cell).is_diggable)
+            {
+                foreach (var c in skillslist.skills.Values)
+                {
+                    if (c != null && c.UseSkill(SkillEffectType.OnDig, this))
+                    {
+
+                                c.AddExp(this);
+                    }
+                }
+            }
             if (World.DamageCell(x, y, hitdmg)) OnDestroy(cell);
             else
             {
                 if (y < 100)
                 {
 
-                    if (World.GetProp(cell).is_destructible)
+                    if (World.GetCell(x,y) == 101 | World.GetCell(x, y) == 102)
                     {
                         World.DamageCell(x, y, 2); //playerActions.connection?.SendB(new HBPacket([new HBChatPacket(0, x, y, "ПОВЕРХНОСТЬ!!! Блоки разрушаются быстрее")]));
                     }
@@ -403,18 +426,18 @@ namespace MinesServer.GameShit
         }
         public bool Move(int x, int y, int dir = -1)
         {
-
+            
             if (!World.W.ValidCoord(x, y) || win != null)
             {
                 tp(this.x, this.y);
                 return false;
             }
+            var cell = World.GetCell(x, y);
             this.dir = dir;
             if (dir == -1)
             {
                 this.dir = pos.X > x ? 1 : pos.X < x ? 3 : pos.Y > y ? 2 : 0;
             }
-            var cell = World.GetCell(x, y);
             if (!World.GetProp(cell).isEmpty)
             {
                 if (dir == -1)
@@ -423,14 +446,13 @@ namespace MinesServer.GameShit
                     {
                         Bz();
                     }
-                    tp(this.x, this.y);
                     return true;
                 }
                 tp(this.x, this.y);
                 return false;
             }
             var newpos = new Vector2(x, y);
-            if (Vector2.Distance(pos, newpos) < 1.2f)
+            if (Vector2.Distance(pos, newpos) < 1.4f)
             {
                 foreach (var c in skillslist.skills.Values)
                 {
@@ -465,6 +487,7 @@ namespace MinesServer.GameShit
                 SendWindow();
             }
             return false;
+
         }
         public void Build(string type)
         {
@@ -550,7 +573,7 @@ namespace MinesServer.GameShit
         private void AddBasicSkills()
         {
             //базовые скиллы
-            skillslist.InstallSkill(SkillType.Health.GetCode(), 0, this);
+            skillslist.InstallSkill(SkillType.MineGeneral.GetCode(), 0, this);
             skillslist.InstallSkill(SkillType.Digging.GetCode(), 1, this);
             skillslist.InstallSkill(SkillType.Movement.GetCode(), 2, this);
         }
@@ -585,7 +608,7 @@ namespace MinesServer.GameShit
 
             MConsole.AddConsoleLine(this, "Если вы не понимаете, что происходит,");
             MConsole.AddConsoleLine(this, "или вас попросили выполнить команду,");
-            MConsole.AddConsoleLine(this, "сосите хуй глотайте сперму");
+            MConsole.AddConsoleLine(this, "то немедленно закройте консоль!!!");
             for (var i = 0; i < 8; i++)
             {
                 MConsole.AddConsoleLine(this);
@@ -593,17 +616,26 @@ namespace MinesServer.GameShit
             settings.SendSettings(this);
             OnLoad();
         }
+
         #endregion
         #region senders
-        private void OnLoad()
+        public void OnLoad()
         {
             SendClan();
             SendMap();
+            //SendChat();
             foreach (var p in World.W.GetChunk(ChunkX, ChunkY).packs.Values)
                 connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off)])]));
         }
         public void Beep() => connection?.SendU(new BibikaPacket());
 
+        public void SendChat()
+        {
+            using var db = new DataBase();
+            currentchat ??= db.chats.FirstOrDefault(i => i.tag == "FED");
+            connection?.SendU(new CurrentChatPacket(currentchat.tag, currentchat.Name));
+            connection?.SendU(new ChatMessagesPacket("FED", currentchat.GetMessages()));
+        }
         public void SendWindow()
         {
             if (win != null)
