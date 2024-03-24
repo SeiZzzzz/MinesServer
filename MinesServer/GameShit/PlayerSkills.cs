@@ -140,10 +140,14 @@ namespace MinesServer.GameShit
                 new Skill()
                 {
                     costfunc = (int x) => 0f,
-                    effectfunc = (int x) => 90.00f - x * 0.05f,
+                    effectfunc = (int x) => 70f - x * 0.05f > 30f ? 70f - x * 0.05f : 30f,
                     expfunc = (int x) => 1f,
                     type = SkillType.Movement, // движение,
-                    effecttype = SkillEffectType.OnMove
+                    effecttype = SkillEffectType.OnMove,
+                    description = string (int lvl,float effect,float cost,float expcurrent,float expneed) =>
+                    {
+                        return $"Передвижение Уровень:{lvl}\nexp - {expcurrent}/{expneed}\nСкорость передвижения {(effect * 1.2)} задержка";
+                    }
                 },
                 new Skill()
                 {

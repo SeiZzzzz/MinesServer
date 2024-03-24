@@ -78,6 +78,11 @@ namespace MinesServer.GameShit.Skills
         }
         public string Description()
         {
+            description ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type)?.description!;
+            if (description != null)
+            {
+                return description(lvl,GetEffect(),GetCost(),exp,GetExp());
+            }
             return $"lvl:{lvl} effect:{GetEffect()} cost:{GetCost()} exp:{exp}/{GetExp()}";
         }
         public bool isUpReady()
@@ -88,6 +93,8 @@ namespace MinesServer.GameShit.Skills
         {
             return PlayerSkills.skillz.First(i => i.type == type).effecttype;
         }
+        [NonSerialized]
+        public Func<int, float, float, float, float, string> description;
         [NonSerialized]
         public SkillEffectType effecttype;
         [NonSerialized]

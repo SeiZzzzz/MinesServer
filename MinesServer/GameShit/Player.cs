@@ -201,7 +201,7 @@ namespace MinesServer.GameShit
             {
                 return;
             }
-            while (playerActions.Count > 0)
+            if (playerActions.Count > 0)
             {
                 playerActions.Dequeue()();
             }
@@ -656,7 +656,7 @@ namespace MinesServer.GameShit
         public void SendSpeed()
         {
             Console.WriteLine(pause / 100);
-            connection?.SendU(new SpeedPacket(pause / 100, (int)(pause / 100 * 0.6), 100000));
+            connection?.SendU(new SpeedPacket((int)(pause / 100 * 1.2), (int)((pause / 100 * 1.2) * 0.6), 100000));
         }
         public void SendInventory()
         {
