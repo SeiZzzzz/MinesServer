@@ -100,26 +100,41 @@ namespace MinesServer.GameShit
                 new Skill()
                 {
                     costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f + x * 2,
+                    effectfunc = (int x) => 1,
+                    dopfunc = (int x) => x,
                     expfunc = (int x) => 1f,
                     type = SkillType.BuildGreen,
-                    effecttype = SkillEffectType.OnBld
+                    effecttype = SkillEffectType.OnBld,
+                    description = (lvl,effect,dopeffect,cost,expcurrent,expneed) =>
+                    {
+                        return $"Стройка зеленых Уровень:{lvl}\nExp - {expcurrent}/{expneed}\nСтоимость блока: {effect}\nПрочность блока: {dopeffect}";
+                    }
                 },
                 new Skill()
                 {
                     costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f + x * 2,
+                    effectfunc = (int x) => 1,
+                    dopfunc = (int x) => x,
                     expfunc = (int x) => 1f,
                     type = SkillType.BuildYellow,
-                    effecttype = SkillEffectType.OnBld
+                    effecttype = SkillEffectType.OnBld,
+                    description = (lvl,effect,dopeffect,cost,expcurrent,expneed) =>
+                    {
+                        return $"Стройка желтых Уровень:{lvl}\nExp - {expcurrent}/{expneed}\nСтоимость блока: {effect}\nПрочность блока: {dopeffect}";
+                    }
                 },
                  new Skill()
                 {
                     costfunc = (int x) => 1f,
-                    effectfunc = (int x) => 1f + x * 2f,
+                    effectfunc = (int x) => 1,
+                    dopfunc = (int x) => x,
                     expfunc = (int x) => 1f,
                     type = SkillType.BuildRed,
-                    effecttype = SkillEffectType.OnBld
+                    effecttype = SkillEffectType.OnBld,
+                     description = (lvl,effect,dopeffect,cost,expcurrent,expneed) =>
+                    {
+                        return $"Стройка красных Уровень:{lvl}\nExp - {expcurrent}/{expneed}\nСтоимость блока: {effect}\nПрочность блока: {dopeffect}";
+                    }
                 },
                 new Skill()
                 {
@@ -128,6 +143,19 @@ namespace MinesServer.GameShit
                     expfunc = (int x) => 1f,
                     type = SkillType.BuildStructure,
                     effecttype = SkillEffectType.OnBld
+                },
+                 new Skill()
+                {
+                    costfunc = (int x) => 1f,
+                    effectfunc = (int x) => 1f,
+                    dopfunc = (int x) => x,
+                    expfunc = (int x) => 1f,
+                    type = SkillType.BuildWar,
+                    effecttype = SkillEffectType.OnBld,
+                    description = (lvl,effect,dopeffect,cost,expcurrent,expneed) =>
+                    {
+                        return $"Стройка ВБ:{lvl}\nExp - {expcurrent}/{expneed}\nСтоимость блока: {effect}\nПрочность блока: {dopeffect}";
+                    }
                 },
                 new Skill()
                 {
@@ -144,9 +172,9 @@ namespace MinesServer.GameShit
                     expfunc = (int x) => 1f,
                     type = SkillType.Movement, // движение,
                     effecttype = SkillEffectType.OnMove,
-                    description = string (int lvl,float effect,float cost,float expcurrent,float expneed) =>
+                    description = (lvl,effect,dopeffect,cost,expcurrent,expneed) =>
                     {
-                        return $"Передвижение Уровень:{lvl}\nexp - {expcurrent}/{expneed}\nСкорость передвижения {(effect * 1.2)} задержка";
+                        return $"Передвижение Уровень:{lvl}\nExp - {expcurrent}/{expneed}\nСкорость передвижения {Math.Round((1 / (effect * 1.2f * 0.001f)) * 0.3f * 3.6f,2)} км/ч";
                     }
                 },
                 new Skill()

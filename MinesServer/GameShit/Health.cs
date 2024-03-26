@@ -75,6 +75,8 @@ namespace MinesServer.GameShit
             var newpos = r.GetRandompoint();
             player.x = newpos.Item1; player.y = newpos.Item2;
             player.tp(player.x, player.y);
+            player.ReSendPacks();
+            player.ReSendBots();
             player.SendMap();
             SendHp();
         }

@@ -30,14 +30,15 @@ namespace MinesServer.GameShit
             get => pos.Item2 * 32;
         }
         private long lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        private DateTime lastCrysupd = DateTime.Now;
         public byte[] cells => Enumerable.Range(0, World.ChunkHeight).SelectMany(y => Enumerable.Range(0, World.ChunkWidth).Select(x => this[x, y])).ToArray();
         public void Update()
         {
+            var currenttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
             if (shouldbeloaded())
             {
                 CheckBots();
                 updlasttick = false;
-                var currenttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 if (currenttick - lasttick > 700)
                 {
                     UpdateCells();
@@ -45,6 +46,11 @@ namespace MinesServer.GameShit
                 }
                 return;
             }
+            /*else if (lastCrysupd - DateTime.Now > TimeSpan.FromMinutes(5))
+            {
+                UpdateCrys();
+                lastCrysupd = DateTime.Now;
+            }*/
             Dispose();
         }
         public void SetCell(int x, int y, byte cell, bool packmesh = false)
@@ -54,6 +60,20 @@ namespace MinesServer.GameShit
             if (active)
             {
                 SendCellToBots(WorldX + x, WorldY + y, this[x, y]);
+            }
+        }
+        public void UpdateCrys()
+        {
+            for(int lx = 0;lx < 32;lx++)
+            {
+                for (int ly = 0; ly < 32; ly++)
+                {
+                    (int x,int y) d = (WorldX + lx, WorldY + ly);
+                    if (World.isCry(World.GetCell(d.x,d.y)))
+                    {
+                        World.SetDurability(d.x, d.y, World.GetDurability(d.x, d.y) + 1);
+                    }
+                }
             }
         }
         public void LoadPackProps()

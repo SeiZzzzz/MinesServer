@@ -1,9 +1,11 @@
 ﻿using MinesServer.GameShit;
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
-
+using MinesServer.Network;
 using MinesServer.Network.Auth;
+using MinesServer.Network.BotInfo;
 using MinesServer.Network.GUI;
+using MinesServer.Network.HubEvents;
 using MinesServer.Network.World;
 using System.Security.Cryptography;
 using System.Text;
@@ -88,7 +90,6 @@ namespace MinesServer.Server
             }
             if (player == null)
             {
-                initiator.SendU(new AHPacket());
                 return;
             }
             initiator.auth = null;

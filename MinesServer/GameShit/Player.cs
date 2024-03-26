@@ -154,13 +154,6 @@ namespace MinesServer.GameShit
         }
         #endregion
         #region actions
-        public void UnlimitedUpdate()
-        {
-            if (programsData.ProgRunning)
-            {
-                programsData.Step();
-            }
-        }
         public void Update()
         {
             actionpertick = false;
@@ -199,9 +192,10 @@ namespace MinesServer.GameShit
             }
             if (programsData.ProgRunning)
             {
+                programsData.Step();
                 return;
             }
-            if (playerActions.Count > 0)
+            while (playerActions.Count > 0)
             {
                 playerActions.Dequeue()();
             }
@@ -344,6 +338,11 @@ namespace MinesServer.GameShit
                 World.DamageCell(x, y, 1);
                 return;
             }
+            if (cell == (byte)CellType.MilitaryBlock)
+            {
+                World.DamageCell(x, y, 1);
+                return;
+            }
             float hitdmg = 0.2f;
             if (World.isCry(cell))
             {
@@ -393,17 +392,15 @@ namespace MinesServer.GameShit
         }
         public bool Move(int x, int y, int dir = -1)
         {
-
             if (!World.W.ValidCoord(x, y) || win != null)
             {
                 tp(this.x, this.y);
                 return false;
             }
-            this.dir = dir;
-            if (dir == -1)
-            {
+            if (dir == -1 || this.x != x || this.y != y)
                 this.dir = pos.X > x ? 1 : pos.X < x ? 3 : pos.Y > y ? 2 : 0;
-            }
+            else
+                this.dir = dir;
             var cell = World.GetCell(x, y);
             if (!World.GetProp(cell).isEmpty)
             {
@@ -466,13 +463,53 @@ namespace MinesServer.GameShit
                             c.AddExp(this);
                             if (crys.RemoveCrys(0, (long)c.Effect))
                             {
-                                World.SetCell(x, y, 101);
+                                World.SetCell(x, y, CellType.GreenBlock);
+                                World.SetDurability(x, y, c.AdditionalEffect);
                             }
+                            return;
+                        }
+                       else if (c.type == SkillType.BuildYellow && World.GetCell(x,y) == (byte)CellType.GreenBlock)
+                        {
+                            c.AddExp(this);
+                            if (crys.RemoveCrys(4, (long)c.Effect))
+                            {
+                                World.SetCell(x, y, CellType.YellowBlock);
+                                World.SetDurability(x, y, World.GetDurability(x,y) + c.AdditionalEffect);
+                            }
+                            return;
+                        }
+                        else if (c.type == SkillType.BuildRed && World.GetCell(x, y) == (byte)CellType.YellowBlock)
+                        {
+                            c.AddExp(this);
+                            if (crys.RemoveCrys(2, (long)c.Effect))
+                            {
+                                World.SetCell(x, y, CellType.RedBlock);
+                                World.SetDurability(x, y, World.GetDurability(x, y) + c.AdditionalEffect);
+                            }
+                            return;
                         }
                     }
                     break;
                 case "V":
-
+                    foreach (var c in buildskills)
+                    {
+                        if (c.type == SkillType.BuildWar)
+                        {
+                            c.AddExp(this);
+                            if (crys.RemoveCrys(5, (long)c.Effect) && World.GetProp(x, y).isEmpty)
+                            {
+                                World.SetCell(x, y, CellType.MilitaryBlockFrame);
+                                World.W.AsyncAction(50, () => {
+                                    if (World.GetCell(x, y) == (byte)CellType.MilitaryBlockFrame)
+                                    {
+                                        World.SetCell(x, y, CellType.MilitaryBlock);
+                                        World.SetDurability(x, y, c.AdditionalEffect);
+                                    }
+                                });
+                            }
+                            return;
+                        }
+                    }
                     break;
                 case "R":
                     foreach (var c in buildskills)
@@ -482,8 +519,23 @@ namespace MinesServer.GameShit
                             c.AddExp(this);
                             if (crys.RemoveCrys(0, (long)c.Effect) && World.GetProp(x, y).isEmpty)
                             {
-                                World.SetCell(x, y, 35);
+                                World.SetCell(x, y, CellType.Road);
                             }
+                            return;
+                        }
+                    }
+                    break;
+                case "O":
+                    foreach (var c in buildskills)
+                    {
+                        if (c.type == SkillType.BuildStructure)
+                        {
+                            c.AddExp(this);
+                            if (crys.RemoveCrys(0, (long)c.Effect) && World.GetProp(x, y).isEmpty)
+                            {
+                                World.SetCell(x, y, CellType.Support);
+                            }
+                            return;
                         }
                     }
                     break;
@@ -535,6 +587,7 @@ namespace MinesServer.GameShit
             skillslist.InstallSkill(SkillType.MineGeneral.GetCode(), 0, this);
             skillslist.InstallSkill(SkillType.Digging.GetCode(), 1, this);
             skillslist.InstallSkill(SkillType.Movement.GetCode(), 2, this);
+            skillslist.InstallSkill(SkillType.Health.GetCode(), 3, this);
         }
         public void Init()
         {
@@ -573,19 +626,13 @@ namespace MinesServer.GameShit
                 MConsole.AddConsoleLine(this);
             }
             settings.SendSettings(this);
-            OnLoad();
+            SendClan();
+            SendChat();
+            SendMap(true);
         }
 
         #endregion
         #region senders
-        public void OnLoad()
-        {
-            SendClan();
-            SendMap();
-            SendChat();
-            foreach (var p in World.W.GetChunk(ChunkX, ChunkY).packs.Values)
-            connection?.SendB(new HBPacket([new HBPacksPacket(x + y * World.CellsHeight, [new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off)])]));
-        }
         public void Beep() => connection?.SendU(new BibikaPacket());
 
         public void SendChat()
@@ -721,6 +768,7 @@ namespace MinesServer.GameShit
                         var ch = World.W.chunks[x, y];
                         foreach (var p in ch.packs.Values)
                         {
+                            connection?.SendB(new HBPacket([new HBPacksPacket((p.x / 32) + (p.y / 32) * World.ChunksH, [])]));
                             connection?.SendB(new HBPacket([new HBPacksPacket((p.x / 32) + (p.y / 32) * World.ChunksH, [new HBPack((char)p.type, p.x, p.y, (byte)p.cid, (byte)p.off)])]));
                         }
                     }
@@ -910,17 +958,6 @@ namespace MinesServer.GameShit
                 return;
             }
             win.ProcessButton(text);
-        }
-        public void OnDisconnect()
-        {
-            if (lastchunk.HasValue)
-            {
-                var chtoremove = World.W.chunks[lastchunk.Value.Item1, lastchunk.Value.Item2];
-                if (chtoremove.bots.ContainsKey(this.Id))
-                {
-                    chtoremove.bots.Remove(this.Id, out var p);
-                }
-            }
         }
 
     }

@@ -30,5 +30,9 @@ namespace MinesServer.GameShit.SysCraft
             }
             return l;
         }
+        public static Recipie ByResultId(int res_id)
+        {
+            return RDes.recipies.FirstOrDefault(i => i.result.id == res_id);
+        }
     }
 }

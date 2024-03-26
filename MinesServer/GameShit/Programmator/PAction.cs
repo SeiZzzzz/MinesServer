@@ -47,6 +47,11 @@ namespace MinesServer.GameShit.Programmator
                 };
             }
         }
+        private bool IsAcid(CellType type) => type switch
+        {
+            CellType.AcidRock or CellType.CorrosiveActiveAcid or CellType.GrayAcid or CellType.GrayAcid or CellType.LivingActiveAcid or CellType.PassiveAcid or CellType.PurpleAcid => true,
+            _ => false
+        };
         public object? Execute(Player p, ref bool? template)
         {
             switch (type)
@@ -248,6 +253,12 @@ namespace MinesServer.GameShit.Programmator
                     p.programsData.checkX = 1;
                     p.programsData.checkY = 1;
                     break;
+                case ActionType.Flip:
+                    p.programsData.checkX *= -1;
+                    p.programsData.checkY *= -1;
+                    p.programsData.shiftX *= -1;
+                    p.programsData.shiftY *= -1;
+                    break;
                 case ActionType.IsHpLower100:
                     Check(p, (x, y) => p.health.HP < p.health.MaxHP);
                     break;
@@ -260,9 +271,59 @@ namespace MinesServer.GameShit.Programmator
                 case ActionType.IsNotEmpty:
                     Check(p, (x, y) => !World.GetProp(x, y).isEmpty);
                     break;
-                case ActionType.IsGreenBlock:
+                case ActionType.IsAcid:
+                    var t = this;
+                    Check(p, (x, y) => t.IsAcid((CellType)World.GetCell(x, y)));
                     break;
-                case ActionType.RunSub or ActionType.RunState or ActionType.RunFunction:
+                case ActionType.IsRedRock:
+                    Check(p, (x, y) => World.GetCell(x, y) == (byte)CellType.RedRock);
+                    break;
+                case ActionType.IsBlackRock:
+                    Check(p, (x, y) => World.GetCell(x, y) == (byte)CellType.NiggerRock);
+                    break;
+                case ActionType.IsBoulder:
+                    Check(p, (x, y) => World.GetProp(x,y).isBoulder);
+                    break;
+                case ActionType.IsSand:
+                    Check(p, (x, y) => World.GetProp(x, y).isSand);
+                    break;
+                case ActionType.IsUnbreakable:
+                    Check(p, (x, y) => !World.GetProp(x,y).isEmpty && !World.GetProp(x, y).is_diggable);;
+                    break;
+                case ActionType.IsBox:
+                    Check(p, (x, y) => World.GetCell(x, y) == (byte)CellType.Box);
+                    break;
+                case ActionType.IsBreakableRock:
+                    Check(p, (x, y) => World.GetProp(x,y).is_diggable);
+                    break;
+                case ActionType.IsCrystal:
+                    Check(p, (x, y) => World.isCry(World.GetCell(x,y)));
+                    break;
+                case ActionType.IsGreenBlock:
+                    Check(p, (x, y) => World.GetCell(x, y) == (byte)CellType.GreenBlock);
+                    break;
+                case ActionType.IsYellowBlock:
+                    Check(p, (x, y) => World.GetCell(x, y) == (byte)CellType.YellowBlock);
+                    break;
+                case ActionType.IsRedBlock:
+                    Check(p, (x, y) => World.GetCell(x, y) == (byte)CellType.RedBlock);
+                    break;
+                case ActionType.IsFalling:
+                    Check(p, (x, y) => World.GetProp(x,y).isSand || World.GetProp(x, y).isBoulder);
+                    break;
+                case ActionType.IsLivingCrystal:
+                    Check(p, (x, y) => World.isAlive(World.GetCell(x,y))); 
+                    break;
+                case ActionType.IsPillar:
+                    Check(p, (x, y) => World.GetCell(x, y) == (byte)CellType.Support);
+                    break;
+                case ActionType.IsQuadBlock:
+                    Check(p, (x, y) => World.GetCell(x, y) == (byte)CellType.QuadBlock);
+                    break;
+                case ActionType.IsRoad:
+                    Check(p, (x, y) => World.isRoad(World.GetCell(x,y)));
+                    break;
+                case ActionType.RunSub or ActionType.RunState or ActionType.RunFunction or ActionType.RunOnRespawn:
                     return label;
                 case ActionType.ReturnFunction:
                     return father.state;
@@ -285,6 +346,8 @@ namespace MinesServer.GameShit.Programmator
                     break;
                 case ActionType.GoTo:
                     return label;
+                case 0 or _:
+                    break;
             }
             return null;
         }

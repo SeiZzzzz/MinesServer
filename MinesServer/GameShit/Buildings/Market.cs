@@ -101,21 +101,17 @@ namespace MinesServer.GameShit.Buildings
                 });
             }
         };
-        public override Window? GUIWin(Player p)
+        private Tab BuildSelltab(Player p)
         {
             Action adminaction = (p.Id != ownerid ? null : () => onadmn(p, this));
-            return new Window()
+            return new Tab()
             {
-                ShowTabs = true,
-                Title = "Market",
-                Tabs = [new Tab()
+                Label = "ПРОДАЖА",
+                Action = "sellcrys",
+                InitialPage = new Page()
                 {
-                    Label = "ПРОДАЖА",
-                    Action = "sellcrys",
-                    InitialPage = new Page()
-                    {
-                        OnAdmin = adminaction,
-                        CrystalConfig = new CrystalConfig(" ", "цена",
+                    OnAdmin = adminaction,
+                    CrystalConfig = new CrystalConfig(" ", "цена",
                             [new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0)}$</color>", 0, 0, p.crys[Enums.CrystalType.Green], 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1)}$</color>", 0, 0, p.crys[Enums.CrystalType.Blue], 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2)}$</color>", 0, 0, p.crys[Enums.CrystalType.Red], 0),
@@ -123,19 +119,23 @@ namespace MinesServer.GameShit.Buildings
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(4)}$</color>", 0, 0, p.crys[Enums.CrystalType.White], 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5)}$</color>", 0, 0, p.crys[Enums.CrystalType.Cyan], 0)]
                                 ),
-                        Text = "Продажа кри",
-                        Buttons = [new Button("sellall", $"sellall", (args) => MarketSystem.Sell(p.crys.cry, p, this)),
+                    Text = "Продажа кри",
+                    Buttons = [new Button("sellall", $"sellall", (args) => MarketSystem.Sell(p.crys.cry, p, this)),
                             new Button("sell", $"sell:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Sell(args.CrystalSliders, p, this))]
-                    }
-                },
-                    new Tab()
-                    {
-                        Label = "Покупка",
-                        Action = "buycrys",
-                        InitialPage = new Page()
-                        {
-                            OnAdmin = adminaction,
-                            CrystalConfig = new CrystalConfig(" ", "цена", [
+                }
+            };
+        }
+        private Tab BuildBuytab(Player p)
+        {
+            Action adminaction = (p.Id != ownerid ? null : () => onadmn(p, this));
+            return new Tab()
+            {
+                Label = "Покупка",
+                Action = "buycrys",
+                InitialPage = new Page()
+                {
+                    OnAdmin = adminaction,
+                    CrystalConfig = new CrystalConfig(" ", "цена", [
                             new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(0) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(0) * 10)), 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(1) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(1) * 10)), 0),
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(2) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(2) * 10)), 0),
@@ -144,17 +144,28 @@ namespace MinesServer.GameShit.Buildings
                                 new CrysLine($"<color=#aaeeaa>{World.GetCrysCost(5) * 10}$</color>", 0, 0, (int)(p.money / (World.GetCrysCost(5) * 10)), 0)
 
                             ], true),
-                            Text = "Покупка",
-                            Buttons = [new Button("buy", $"buy:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Buy(args.CrystalSliders, p, this))
+                    Text = "Покупка",
+                    Buttons = [new Button("buy", $"buy:{ActionMacros.CrystalSliders}", (args) => MarketSystem.Buy(args.CrystalSliders, p, this))
                         ]
-                        }
-                    },
-                    new Tab()
-                    {
-                        InitialPage = MarketSystem.GlobalFirstPage(p)!,
-                        Action = "auc",
-                        Label = "Auc"
-                    }]
+                }
+            };
+        }
+        private Tab AucTab(Player p)
+        {
+            return new Tab()
+            {
+                InitialPage = MarketSystem.GlobalFirstPage(p)!,
+                Action = "auc",
+                Label = "Auc"
+            };
+        }
+        public override Window? GUIWin(Player p)
+        {
+            return new Window()
+            {
+                ShowTabs = true,
+                Title = "Market",
+                Tabs = [BuildSelltab(p),BuildBuytab(p),AucTab(p)]
             };
         }
     }

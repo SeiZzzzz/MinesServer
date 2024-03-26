@@ -103,6 +103,7 @@ namespace MinesServer.GameShit
                     (p) =>
                     {
                         var coord = p.GetDirCord(true);
+                        Console.WriteLine(coord);
                         if (World.W.CanBuildPack(-2, 2, -2, 2, (int)coord.X, (int)coord.Y, p))
                         {
                             new Crafter((int)coord.X, (int)coord.Y, p.Id).Build();

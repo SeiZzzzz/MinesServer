@@ -158,7 +158,6 @@ namespace MinesServer.GameShit.ClanSystem
         {
             using var db = new DataBase();
             p = DataBase.GetPlayer(p.Id);
-            db.players.Attach(p);
             p.clan = null;
             p.clanrank = null;
             if (p.Id == ownerid)

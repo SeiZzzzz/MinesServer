@@ -112,6 +112,7 @@ namespace MinesServer.Server
                 case pRSTPacket prst: Prst(packet, prst); break;
                 case PRENPacket pren: Pren(packet, pren); break;
                 case ChatPacket chat: Chat(packet, chat);break;
+                case INVNPacket invn: Invn(packet, invn); break;
                 case ChinPacket chin: Chin(packet, chin);break;
                 default:
                     // Invalid event type
@@ -121,6 +122,10 @@ namespace MinesServer.Server
         private void Chin(TYPacket f,ChinPacket chin)
         {
            
+        }
+        private void Invn(TYPacket f,INVNPacket invn)
+        {
+
         }
         private void Chat(TYPacket f,ChatPacket chat)
         {
@@ -249,8 +254,7 @@ namespace MinesServer.Server
             {
                 player.AddAciton(() =>
                 {
-                    var dir = packet.Direction;
-                    player.Move((int)parent.X, (int)parent.Y, dir < 9 ? dir : -1);
+                    player.Move((int)parent.X, (int)parent.Y, packet.Direction);
                 }, player.OnRoad ? (player.pause * 5) * 0.65 : player.pause * 5);
             }
         }
@@ -313,7 +317,7 @@ namespace MinesServer.Server
         }
         public void SendPing()
         {
-            SendU(new PingPacket(0, 0, "sosi"));
+            SendU(new PingPacket(1, 1, "sosi"));
         }
         public void SendWin(string win)
         {

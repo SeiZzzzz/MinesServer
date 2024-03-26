@@ -30,6 +30,7 @@ namespace MinesServer.GameShit.Programmator
         }
         public void Run(Program p)
         {
+            GotoDeath = null;
             selected = p;
             cFunction = "";
             currentprog = p.programm;
@@ -43,6 +44,11 @@ namespace MinesServer.GameShit.Programmator
             delay = DateTime.Now;
             ProgRunning = true;
         }
+        public bool RespawnOnProg
+        {
+            get => p.resp.cost == 0 && GotoDeath != null;
+        }
+        private string? GotoDeath;
         public void Run()
         {
             if (ProgRunning || selected == null)
@@ -82,23 +88,40 @@ namespace MinesServer.GameShit.Programmator
                     switch (action.type)
                     {
                         case ActionType.GoTo:
-                            current.Reset();
-                            currentprog[label].calledfrom = cFunction;
-                            cFunction = label;
+                            if (currentprog.TryGetValue(label, out var _))
+                            {
+                                current.Reset();
+                                currentprog[label].calledfrom = cFunction;
+                                cFunction = label;
+                            }
                             break;
                         case ActionType.RunSub or ActionType.RunFunction:
-                            if (shiftX != 0 || shiftY != 0 || checkX != 0 || checkY != 0)
-                                currentprog[label].startoffset = (shiftX + checkX, shiftY + checkY);
-                            currentprog[label].calledfrom = cFunction;
-                            cFunction = label;
+                            if (currentprog.TryGetValue(label, out var _))
+                            {
+                                if (shiftX != 0 || shiftY != 0 || checkX != 0 || checkY != 0)
+                                    currentprog[label].startoffset = (shiftX + checkX, shiftY + checkY);
+                                currentprog[label].calledfrom = cFunction;
+                                cFunction = label;
+                            }
                             break;
                         case ActionType.RunIfTrue or ActionType.RunIfFalse:
-                            if (label == "")
+                            if (currentprog.TryGetValue(label, out var _))
                             {
-                                break;
+                                if (label == "")
+                                {
+                                    current.Reset();
+                                    cFunction = currentprog.FirstOrDefault().Key;
+                                    break;
+                                }
+                                current.Reset();
+                                cFunction = label;
                             }
-                            current.Reset();
-                            cFunction = label;
+                            break;
+                        case ActionType.RunOnRespawn:
+                            if (currentprog.TryGetValue(label, out var _))
+                            {
+                                GotoDeath = label;
+                            }
                             break;
                     }
                     break;
@@ -128,6 +151,9 @@ namespace MinesServer.GameShit.Programmator
                         case ActionType.Return:
                             current.Reset();
                             cFunction = current.calledfrom;
+                            break;
+                        case ActionType.Stop:
+                            Run();
                             break;
                     }
                     break;

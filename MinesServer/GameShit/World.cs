@@ -1,5 +1,6 @@
 ﻿using MinesServer.GameShit.Buildings;
 using MinesServer.GameShit.Generator;
+using MinesServer.GameShit.SysMarket;
 using MinesServer.Network.Constraints;
 using MinesServer.Network.HubEvents.FX;
 using MinesServer.Network.World;
@@ -12,8 +13,8 @@ namespace MinesServer.GameShit
 {
     public class World
     {
-        public const int chunksx = 200;
-        public const int chunksy = 200;
+        public const int chunksx = 201;
+        public const int chunksy = 201;
         public const int CellsWidth = chunksx * ChunkWidth;
         public const int CellsHeight = chunksy * ChunkHeight;
         public const int ChunkWidth = 32;
@@ -267,6 +268,7 @@ namespace MinesServer.GameShit
             SetCell(x + plusx, y + plusy, cell);
             SetDurability(x + plusx, y + plusy, durability);
         }
+        public static void SetCell(int x, int y, CellType type) => SetCell(x, y, (byte)type);
         public static void SetCell(int x, int y, byte cell, bool packmesh = false)
         {
             if (!W.ValidCoord(x, y))
@@ -422,10 +424,16 @@ namespace MinesServer.GameShit
             }
             return false;
         }
-        public static DateTime lastpackupd = DateTime.Now;
-        public static DateTime lastpackeffect = DateTime.Now;
+        private static DateTime lastpackupd = DateTime.Now;
+        private static DateTime lastpackeffect = DateTime.Now;
+        private static DateTime lazyupd = DateTime.Now;
         public static void Update()
         {
+            if (DateTime.Now - lazyupd >= TimeSpan.FromMinutes(1))
+            {
+                MarketSystem.GenerateRandomOrders();
+                lazyupd = DateTime.Now;
+            }
             if (DateTime.Now - lastpackupd >= TimeSpan.FromHours(1))
             {
                 using var db = new DataBase();
@@ -521,10 +529,6 @@ namespace MinesServer.GameShit
         public Chunk GetChunk(int x, int y)
         {
             var pos = GetChunkPosByCoords(x, y);
-            if (pos.Item1 == chunksx)
-                pos = (pos.Item1 - 1, pos.Item2);
-            else if (pos.Item2 == chunksy)
-                pos = (pos.Item1, pos.Item2 - 1);
             return chunks[pos.Item1, pos.Item2];
         }
     }

@@ -1,4 +1,7 @@
-﻿using RcherNZ.AccidentalNoise;
+﻿using Microsoft.EntityFrameworkCore.Migrations.Operations;
+using RcherNZ.AccidentalNoise;
+using System;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MinesServer.GameShit.Generator
 {
@@ -22,14 +25,9 @@ namespace MinesServer.GameShit.Generator
 
             };
         }
-        public void CreateFillForCells(Sector s, bool gig = false, params CellType[] args)
+        private Dictionary<CellType, (float, float)> RandomSizedParts(params CellType[] args)
         {
-        tme:
-            Console.WriteLine("");
             var dick = new Dictionary<CellType, (float, float)>();
-            var gt = 0;
-            var gt1 = 0;
-            var gte = 0;
             foreach (var d in args)
             {
                 double start = rand.NextDouble();
@@ -42,18 +40,19 @@ namespace MinesServer.GameShit.Generator
                 }
                 dick[d] = ((float)start, (float)end);
             }
-            double offsetx = 0;
-            double offsety = 0;
-        reg:
+            return dick;
+        }
+        private (float min,float max) FillNoiseToSector(Sector s)
+        {
             var fr = NotTypedNoise();
             float max = (float)fr.Get(0, 0);
             float min = (float)fr.Get(0, 0);
-            double localoffsetx = 5;
-            double localoffsety = 5;
+            double localoffsetx = rand.NextDouble();
+            double localoffsety = rand.NextDouble();
             foreach (var c in s.seccells)
             {
-                var x = offsetx + c.pos.Item1 == 0 ? 100 : c.pos.Item1;
-                var y = offsety +  c.pos.Item2 == 0 ? 100 : c.pos.Item2;
+                var x = c.pos.Item1 == 0 ? 100 : c.pos.Item1;
+                var y = c.pos.Item2 == 0 ? 100 : c.pos.Item2;
                 var widthx = (s.width) == 0 ? 100 : (s.width);
                 var heighty = (s.height) == 0 ? 100 : (s.height);
                 var v = (float)fr.Get((float)((float)x / (float)widthx), (float)((float)y / (float)heighty));
@@ -71,71 +70,81 @@ namespace MinesServer.GameShit.Generator
                 min = min < v ? min : v;
                 c.value = v;
             }
-            var error = 0;
-            var types = new Dictionary<CellType, int>();
-            segment:
+            return (min, max);
+        }
+        private Dictionary<CellType, int> SampleAndFindTypes(Sector s, Dictionary<CellType, (float, float)> parts, (float minvalue,float maxvalue) data)
+        {
+            var fr = NotTypedNoise();
+            var typesresult = new Dictionary<CellType, int>();
             foreach (var c in s.seccells)
             {
-                c.value = ((c.value - min) / (max - min));
-                for (int i = 0; i < dick.Count; i++)
+                c.value = ((c.value - data.minvalue) / (data.maxvalue - data.minvalue));
+                for (int i = 0; i < parts.Count; i++)
                 {
-                    c.type = c.value >= dick.ElementAt(i).Value.Item1 && c.value <= dick.ElementAt(i).Value.Item2 ? dick.ElementAt(i).Key : c.type;
-                    if (!types.ContainsKey(c.type))
-                        types[c.type] = 1;
+                    c.type = c.value >= parts.ElementAt(i).Value.Item1 && c.value <= parts.ElementAt(i).Value.Item2 ? parts.ElementAt(i).Key : c.type;
+                    if (!typesresult.ContainsKey(c.type))
+                        typesresult[c.type] = 1;
                     else
                     {
-                        types[c.type]++;
+                        typesresult[c.type]++;
                     }
                 }
-                if (c.type == CellType.Empty)
-                {
-                    error++;
-                }
             }
-            if (types.Count < args.Length - 1)
+            return typesresult;
+        }
+        //TODO: если значение не попадает в существующие отрезки перегенирировать
+        public void CreateFillForCells(Sector s, bool gig = false, params CellType[] args)
+        {
+            var segmentsmall = 0;
+            var notenouthparts = 0;
+            var empty = 0;
+            restart:
+            var parts = RandomSizedParts(args);
+            while(parts.Count < args.Length)
             {
-                gte++;
-                Console.Write($"\rnot enouth types {gte}");
-                if (gte > 6)
-                {
-                    Console.Write($"\rtypes restart");
-                    goto tme;
-                }
-                offsetx += 500;
-                offsety += 500;
-                goto segment;
+                parts = RandomSizedParts(args);
             }
-            
-            foreach (var i in types)
+        refillnoise:
+            var data = FillNoiseToSector(s);
+            var result = SampleAndFindTypes(s, parts, data);
+            if (result.Count < parts.Count)
             {
-                var check = (s.seccells.Count / dick.Count) * 0.4 > i.Value;
+                notenouthparts++;
+                if (notenouthparts > 2)
+                {
+                    notenouthparts = 0;
+                    Console.WriteLine("restarted");
+                    goto restart;
+                }
+                Console.WriteLine("to small result");
+                goto refillnoise;
+            }
+            if (result.ContainsKey(CellType.Empty) && s.seccells.Count * 0.4 < result[CellType.Empty])
+            {
+                empty++;
+                if (empty > 4)
+                {
+                    Console.WriteLine("too empty");
+                    empty = 0;
+                    goto restart;
+                }
+                goto refillnoise;
+            }
+            foreach (var i in result)
+            {
+                var check = (s.seccells.Count / parts.Count) * 0.4 > i.Value;
                 if (check)
                 {
-                    gte++;
-                    Console.Write($"\rto small segment {gte}");
-                    if (gte > 3)
+                    segmentsmall++;
+                    if (segmentsmall > 2)
                     {
-                        Console.Write($"\ra lots of errors restart segmentation");
-                        goto reg;
+                        segmentsmall = 0;
+                        Console.WriteLine("OneOfsegmentstosmall restart");
+                        goto restart;
                     }
-                    if (gte >6)
-                    {
-                        Console.Write($"\ra lots of errors restart segmentation");
-                        goto tme;
-                    }
-                    goto segment;
+                    Console.WriteLine($"OneOfsegmentstosmall resample {segmentsmall}");
+                    goto refillnoise;
                 }
-            }
-            if (error > ((s.seccells.Count) * 0.4f))
-            {
-                gte++;
-                Console.Write($"\rgoto toosmall {gte}");
-                if (gte > 3)
-                {
-                    Console.Write($"\ra lots of errors restart");
-                    goto tme;
-                }
-                goto reg;
             }
             if (gig)
             {

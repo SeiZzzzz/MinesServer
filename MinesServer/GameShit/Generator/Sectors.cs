@@ -260,7 +260,7 @@ namespace MinesServer.GameShit.Generator
                 }
             }
         }
-        private void resample(float res = .45f)
+        public void resample(float res = .45f)
         {
             for (int x = 0; x < size.Item1; x++)
             {

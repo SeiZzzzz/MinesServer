@@ -1,4 +1,5 @@
 ﻿using MinesServer.GameShit.SysCraft;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MinesServer.GameShit.Sys_Craft
@@ -20,7 +21,13 @@ namespace MinesServer.GameShit.Sys_Craft
             return RDes.recipies.FirstOrDefault(i => i.id == recipie_id);
         }
         [NotMapped]
-        public double progress { get => Math.Round((((endtime - starttime) - (endtime - DateTime.Now)) / (endtime - starttime)) * 100, 2); }
+        public double progress { get
+            {
+                var value = Math.Round((((endtime - starttime) - (endtime - DateTime.Now)) / (endtime - starttime)) * 100, 2);
+                value = value < 0 ? 0 : value < 101 ? value : 100;
+                return value;
+            }
+        }
         public int id { get; set; }
         public int recipie_id { get; set; }
         public int num { get; set; }

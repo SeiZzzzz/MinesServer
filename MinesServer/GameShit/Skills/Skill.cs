@@ -76,10 +76,9 @@ namespace MinesServer.GameShit.Skills
                 description ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type)?.description!;
                 if (description != null)
                 {
-                    description(lvl, Effect, Cost, exp, Expiriense);
-
+                    return description(lvl, Effect, AdditionalEffect, Cost, exp, Expiriense);
                 }
-                return $"lvl:{lvl} effect:{Effect} cost:{Cost} exp:{exp}/{Expiriense}";
+                return $"lvl:{lvl} effect:{Math.Round(Effect,2)} cost:{Cost} exp:{exp}/{Expiriense}";
                     } }
         public float Effect { get
             {
@@ -87,12 +86,20 @@ namespace MinesServer.GameShit.Skills
                 return effectfunc(lvl);
             }
         }
+        public float AdditionalEffect
+        {
+            get
+            {
+                dopfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).dopfunc;
+                return dopfunc == null ? 0 : dopfunc(lvl);
+            }
+        }
         public float Cost { get {
                 costfunc ??= PlayerSkills.skillz.FirstOrDefault(i => i.type == type).costfunc;
                 return costfunc(lvl);
             }
         }
-        public Func<int, float, float, float, float, string> description {  
+        public Func<int, float,float, float, float, float, string> description {  
             private get;
             set;
         }
@@ -112,7 +119,10 @@ namespace MinesServer.GameShit.Skills
             private get; 
             set; 
         }
-        [NonSerialized]
-        public Func<int, float> dopfunc = null;
+        public Func<int, float> dopfunc
+        {
+            private get;
+            set;
+        }
     }
 }

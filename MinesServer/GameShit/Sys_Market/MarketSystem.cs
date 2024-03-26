@@ -2,8 +2,11 @@
 using MinesServer.GameShit.GUI;
 using MinesServer.GameShit.GUI.Horb;
 using MinesServer.GameShit.GUI.Horb.List;
+using MinesServer.GameShit.SysCraft;
 using MinesServer.Server;
 using MoreLinq;
+using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace MinesServer.GameShit.SysMarket
 {
@@ -31,20 +34,18 @@ namespace MinesServer.GameShit.SysMarket
                 return;
             }
             long money = 0;
-            var db = new DataBase();
+            using var db = new DataBase();
+            db.players.Attach(p);
             for (int i = 0; i < 6; i++)
             {
-                if (p.money - (sliders[i] * (World.GetCrysCost(i) * 10)) >= 0)
-                {
-                    money -= sliders[i] * (World.GetCrysCost(i) * 10);
-                    p.crys.AddCrys(i, sliders[i]);
-                }
-                else
-                {
-                    money -= p.money / (World.GetCrysCost(i) * 10);
-                    p.crys.AddCrys(i, p.money / (World.GetCrysCost(i) * 10));
-                }
+                if (sliders[i] <= 0 || p.money - (sliders[i] * World.GetCrysCost(i) * 10) < 0)
+                    continue;
+                money -= sliders[i] * (World.GetCrysCost(i) * 10);
+                p.crys.AddCrys(i, sliders[i]);
             }
+            p.money += money;
+            db.SaveChanges();
+            p.SendMoney();
             var page = new Page()
             {
                 OnAdmin = (p.Id != m.ownerid ? null : () => m.onadmn(p, m)),
@@ -60,11 +61,8 @@ namespace MinesServer.GameShit.SysMarket
                 Text = $"Покупка\nКупленно кристалов на <color=#aaeeaa>{-money}$</color>",
                 Buttons = [new Button("buy", $"buy:{ActionMacros.CrystalSliders}", (args) => Buy(args.CrystalSliders, p, m))]
             };
-            p.win.CurrentTab.Replace(page);
-            p.money += money;
+            p.win?.CurrentTab.Replace(page);
             p.SendWindow();
-            db.SaveChanges();
-            p.SendMoney();
         }
         public static void Sell(long[] sliders, Player p, Market m)
         {
@@ -72,11 +70,17 @@ namespace MinesServer.GameShit.SysMarket
             if (sliders != null)
             {
                 using var db = new DataBase();
+                db.players.Attach(p);
                 for (int i = 0; i < 6; i++)
                 {
-                    money += sliders[i] * World.GetCrysCost(i);
-                    p.crys.RemoveCrys(i, sliders[i]);
+                    var value = sliders[i];
+                    if (p.crys.RemoveCrys(i, sliders[i]))
+                        money += value * World.GetCrysCost(i);
                 }
+                m.moneyinside += (long)(money * 0.1);
+                p.money += money;
+                db.SaveChanges();
+                p.SendMoney();
                 var page = new Page()
                 {
                     OnAdmin = (p.Id != m.ownerid ? null : () => m.onadmn(p, m)),
@@ -90,18 +94,14 @@ namespace MinesServer.GameShit.SysMarket
                     Buttons = [new Button("sellall", $"sellall", (args) => Sell(p.crys.cry, p, m)),
                         new Button("sell", $"sell:{ActionMacros.CrystalSliders}", (args) => Sell(args.CrystalSliders, p, m))]
                 };
-                p.win.CurrentTab.Replace(page);
-                m.moneyinside += (long)(money * 0.1);
-                p.money += money;
+                p.win?.CurrentTab.Replace(page);
                 p.SendWindow();
-                db.SaveChanges();
-                p.SendMoney();
             }
 
         }
         public static void CreateOrder(Player p, int type, int num, int cost)
         {
-            if (p.inventory[type] < num)
+            if (p.inventory[type] < num || num <= 0)
             {
                 p.win = null;
                 return;
@@ -140,7 +140,7 @@ namespace MinesServer.GameShit.SysMarket
                 Title = $"Order of player {p.name} {timer}",
                 Text = buyer == null ? null : $"last bet by: {buyer.name}",
                 Input = new InputConfig($"minimal bet is <color=#aaeeaa>{(int)Math.Ceiling(cost)}$</color>", null, false),
-                Buttons = [new Button("bet", $"bet:{ActionMacros.Input}", (args) => { if (int.TryParse(args.Input, out var bet)) { var db = new DataBase(); db.Attach(o); o.Bet(p, bet); db.SaveChanges(); } OpenOrder(p, orderid); p.SendWindow(); })],
+                Buttons = [new Button("minimalbet","minimalbet", (args) => { var db = new DataBase(); db.Attach(o); o.Bet(p, (long)cost); db.SaveChanges(); OpenOrder(p, orderid); p.SendWindow(); }),new Button("bet", $"bet:{ActionMacros.Input}", (args) => { if (int.TryParse(args.Input, out var bet)) { var db = new DataBase(); db.Attach(o); o.Bet(p, bet); db.SaveChanges(); } OpenOrder(p, orderid); p.SendWindow(); })],
                 Card = new Card(CardImageType.Item, o.itemid.ToString(), $"{PackName(o.itemid)} x{o.num} costs <color=#aaeeaa>{o.cost}$</color>"),
             });
 
@@ -212,6 +212,34 @@ namespace MinesServer.GameShit.SysMarket
                 List = GetItems(p, item)
             });
         }
+        private static Random r = new Random();
+        public static void GenerateRandomOrders()
+        {
+            foreach (var i in constypes)
+            {
+                var num = r.Next(0, 11);
+                if (num == 0)
+                    continue;
+                using var db = new DataBase();
+                var order = new Order()
+                {
+                    initiatorid = 0,
+                    cost = RDes.ByResultId(i).Cost() * num,
+                    num = num,
+                    itemid = i
+                };
+                db.orders.Add(order);
+                db.SaveChanges();
+            }
+        }
+        public static long Cost(this Recipie r)
+        {
+            long ret = 0;
+            ret += r.costres?.Select(i => RDes.ByResultId(i.id).Cost() * i.num).Sum() ?? 0;
+            ret += r.costcrys?.Select(i => World.GetCrysCost(i.id) * 2L * i.num).Sum() ?? 0;
+            return ret;
+        }
+        private static int[] constypes = [5];
         public static IPage? GlobalFirstPage(Player p)
         {
             var oninventory = (int type) => { OpenItemAuc(p, type); };

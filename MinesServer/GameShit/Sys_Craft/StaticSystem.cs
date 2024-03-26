@@ -38,7 +38,7 @@ namespace MinesServer.GameShit.Sys_Craft
         }
         public static void Craft(Player p, Recipie r, int num)
         {
-            if (World.ContainsPack(p.x, p.y, out var craft) && MeetReqs(p, r, num))
+            if (World.ContainsPack(p.x, p.y, out var craft) && MeetReqs(p, r, num) && num > 0)
             {
                 DeleteReqs(p, r, num);
                 var c = (craft as Crafter);

@@ -23,7 +23,6 @@ namespace MinesServer.Server
                 var lasttick = DateTimeOffset.Now.ToUnixTimeMilliseconds();
                 while (true)
                 {
-                    UnlimitedUpdate();
                     int ticksToProcess = (int)((DateTimeOffset.Now.ToUnixTimeMilliseconds() - lasttick) / 1000f * tps);
                     if (ticksToProcess > 0)
                     {
@@ -36,18 +35,6 @@ namespace MinesServer.Server
                     }
                 }
             });
-        }
-        public void UnlimitedUpdate()
-        {
-            for (int i = 0; i < DataBase.activeplayers.Count; i++)
-            {
-                using var dbas = new DataBase();
-                if (DataBase.activeplayers.Count > i)
-                {
-                    var player = DataBase.GetPlayer(DataBase.activeplayers.ElementAt(i).Id);
-                    player?.UnlimitedUpdate();
-                }
-            }
         }
         public void Update()
         {
@@ -86,10 +73,10 @@ namespace MinesServer.Server
                     World.W.chunks[x, y].Update();
                 }
             }
+            World.Update();
             World.W.cells.Commit();
             World.W.road.Commit();
             World.W.durability.Commit();
-            World.Update();
             using var db = new DataBase();
             foreach (var order in db.orders)
             {
